@@ -1,0 +1,1034 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning,matrix}
+\geometry{margin=2.5cm}
+
+% Command for circled numbers
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+% Couleurs personnalisees
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Boites colorees
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Definition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=A savoir,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Methode,
+    arc=3mm
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Note de Cours,
+    arc=3mm
+}
+
+\newtcolorbox{theoreme}{
+    colback=fondgris,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Theoreme,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Degenerescence, Cyclage et Methode a Deux Phases}\\[0.5em]
+\large\color{defvert}Initialisation, Terminaison et Faits Supplementaires\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Prof. Herve KERIVIN, PhD\\
+\small Universite Clermont Auvergne\\
+Clermont Auvergne INP - ISIMA\\
+LIMOS UMR 6158 CNRS}
+\date{\large Version 2024-2025 - Cours 3}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================
+\section{Les Trois Pieges de la Methode du Simplexe}
+%=============================================
+
+\begin{notecours}
+\textbf{Rappel -- La methode du simplexe repose sur trois etapes :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Initialisation :}} comment obtenir un dictionnaire realisable de depart ?
+    \item \textcolor{defvert}{\textbf{Iteration :}} peut-on toujours choisir une variable entrante, une variable sortante, et construire le dictionnaire suivant par pivotage ?
+    \item \textcolor{importantrouge}{\textbf{Terminaison :}} la methode du simplexe peut-elle construire une sequence infinie de dictionnaires sans jamais atteindre une solution optimale ?
+\end{itemize}
+\end{notecours}
+
+\begin{astuce}
+Ces trois questions correspondent aux trois grandes difficultes potentielles de la methode du simplexe. Ce cours les traite systematiquement.
+\end{astuce}
+
+%=============================================
+\section{Degenerescence}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Solutions et Iterations Degenerees}
+
+\begin{definition}
+\textbf{Solution degeneree :}
+
+Une solution de base dans laquelle une ou plusieurs \textcolor{importantrouge}{\textbf{variables de base prennent la valeur zero}} est appelee une \textcolor{defvert}{\textbf{solution degeneree}}.
+\end{definition}
+
+\begin{definition}
+\textbf{Iteration degeneree :}
+
+Une iteration du simplexe qui \textcolor{importantrouge}{\textbf{ne change pas la solution de base}} est appelee une \textcolor{defvert}{\textbf{iteration degeneree}}.
+\end{definition}
+
+\begin{important}
+\textbf{Pourquoi la degenerescence pose probleme ?}
+
+La motivation de la methode du simplexe est d'augmenter la valeur de la fonction objectif a chaque iteration. Une iteration degeneree ne fait pas progresser $z$, ce qui peut conduire a un blocage.
+
+\textcolor{importantrouge}{\textbf{La degenerescence abonde dans les problemes de PL issus d'applications pratiques.}}
+
+Lorsqu'elle se produit, la methode peut \textcolor{titrebleu}{\textbf{stagner}} en traversant plusieurs (parfois beaucoup) d'iterations degenerees consecutives ; ce bloc se termine par une \textcolor{defvert}{\textbf{percee}} representee par une iteration non-degeneree.
+\end{important}
+\newpage
+\subsection{Exemple de Degenerescence}
+
+\begin{exemple}
+\textbf{Dictionnaire realisable de depart :}
+
+\begin{align*}
+x_4 &= 1 - 2x_3\\
+x_5 &= 3 - 2x_1 + 4x_2 - 6x_3\\
+x_6 &= 2 + x_1 - 3x_2 - 4x_3\\
+z &= 2x_1 - x_2 + 8x_3
+\end{align*}
+
+\textbf{Variable entrante :} $x_3$ (coefficient le plus grand dans $z$)
+
+\textbf{Ratios pour la variable sortante :}
+\begin{itemize}
+    \item $x_4$ : $x_3 \leq \frac{1}{2}$ \quad \textcolor{defvert}{(borne la plus stringente)}
+    \item $x_5$ : $x_3 \leq \frac{3}{6} = \frac{1}{2}$
+    \item $x_6$ : $x_3 \leq \frac{2}{4} = \frac{1}{2}$ \quad 
+\end{itemize}
+
+On a une egalite parfaite entre les trois ratios. Par convention (plus petit indice), on choisit $x_4$ comme variable sortante. Apres pivotage :
+
+\begin{align*}
+x_3 &= \frac{1}{2} - \frac{1}{2}x_4\\
+x_5 &= \phantom{0} - 2x_1 + 4x_2 + 3x_4\\
+x_6 &= \phantom{0} + x_1 - 3x_2 + 2x_4\\
+z &= 4 + 2x_1 - x_2 - 4x_4
+\end{align*}
+
+\textbf{Observation :} Deux variables de base ($x_5$ et $x_6$) valent zero car elles ont atteint leur borne en meme temps que $x_4$. \textcolor{importantrouge}{\textbf{La solution est degeneree !}}
+
+La valeur de $z$ est passee de $0$ a $4$ : c'est une iteration \textcolor{defvert}{\textbf{non degeneree}} ($z$ a augmente).
+\end{exemple}
+
+\begin{exemple}
+\textbf{Continuation -- iteration suivante :}
+
+Variable entrante : $x_1$ (coefficient $+2 > 0$ dans $z$).
+
+\textbf{Ratios :}
+\begin{itemize}
+    \item $x_3$ : pas de borne (coefficient de $x_1$ est nul dans cette equation)
+    \item $x_5 = -2x_1 + \ldots \geq 0 \Rightarrow x_1 \leq 0$ \quad \textcolor{importantrouge}{(impose $x_1 = 0$)}
+    \item $x_6 = x_1 + \ldots \geq 0$ : pas de borne restrictive
+\end{itemize}
+
+Variable sortante : $x_5$. Apres pivotage :
+
+\begin{align*}
+x_1 &= 2x_2 + \frac{3}{2}x_4 - \frac{1}{2}x_5\\
+x_3 &= \frac{1}{2} - \frac{1}{2}x_4\\
+x_6 &= -x_2 + \frac{7}{2}x_4 - \frac{1}{2}x_5\\
+z &= 4 + 3x_2 - x_4 - x_5
+\end{align*}
+
+\textbf{Solution inchangee :} $x_3 = \frac{1}{2}$, tous les autres a zero, $z = 4$.
+
+\textcolor{importantrouge}{\textbf{C'est une iteration degeneree}} : la solution de base n'a pas change.
+\end{exemple}
+
+%=============================================
+\section{Cyclage}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Definition et Theoremes}
+
+\begin{definition}
+\textbf{Cyclage :}
+
+La methode du simplexe \textcolor{defvert}{\textbf{cycle}} si un meme dictionnaire apparait dans deux iterations differentes.
+
+\textcolor{importantrouge}{\textbf{Le cyclage ne peut se produire qu'en presence de degenerescence.}}
+\end{definition}
+
+\begin{theoreme}
+\textbf{Theoreme 1 :}
+
+\textit{Si la methode du simplexe ne se termine pas, alors elle doit cycler.}
+\end{theoreme}
+
+\begin{theoreme}
+\textbf{Theoreme 2 (Regle de Bland) :}
+
+\textit{La methode du simplexe se termine tant que les variables entrante et sortante sont selectionnees par la \textcolor{defvert}{regle du plus petit indice} a chaque iteration.}
+\end{theoreme}
+
+\begin{definition}
+\textbf{Regle du plus petit indice (Smallest-subscript rule) :}
+
+La \textcolor{titrebleu}{\textbf{regle du plus petit indice}} consiste a departager les ex-aequo dans le choix des variables entrante et sortante en choisissant toujours le candidat $x_k$ ayant le \textcolor{defvert}{\textbf{plus petit indice}} $k$.
+\end{definition}
+
+\newpage
+\subsection{Exemple de Cyclage}
+
+\begin{exemple}
+\textbf{Dictionnaire de depart (exemple classique) :}
+
+\begin{align*}
+x_5 &= \phantom{1-{}} - \frac{1}{2}x_1 + \frac{11}{2}x_2 + \frac{5}{2}x_3 - 9x_4\\
+x_6 &= \phantom{1-{}} - \frac{1}{2}x_1 + \frac{3}{2}x_2 + \frac{1}{2}x_3 - x_4\\
+x_7 &= 1 - x_1\\
+z &= \phantom{1-{}} 10x_1 - 57x_2 - 9x_3 - 24x_4
+\end{align*}
+
+\textbf{Regles appliquees :}
+\begin{itemize}
+    \item Variable entrante : celle avec le plus grand coefficient dans $z$
+    \item Ex-aequo pour la sortante : on choisit la variable avec le plus petit indice
+\end{itemize}
+
+\textbf{Sequence des 6 premieres iterations :}
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+\toprule
+Iter. & Entrante & Sortante & Solution & $z$ \\
+\midrule
+\circled{1} & $x_1$ & $x_5$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\circled{2} & $x_2$ & $x_6$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\circled{3} & $x_3$ & $x_1$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\circled{4} & $x_4$ & $x_2$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\circled{5} & $x_5$ & $x_3$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\circled{6} & $x_6$ & $x_4$ & $(0,0,0,0,0,0,1)$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Apres 6 iterations, on retombe sur le \textcolor{importantrouge}{\textbf{dictionnaire initial}} : \textcolor{importantrouge}{\textbf{cyclage !}}
+\end{exemple}
+
+\begin{astuce}
+\textbf{Sortie du cycle par la regle de Bland :}
+
+En appliquant la regle du plus petit indice pour le choix de la variable \textbf{entrante} (et pas seulement la sortante), on garantit la terminaison. La variable entrante choisie a l'iteration 1 devient alors $x_1$ (le plus petit indice avec coefficient positif), ce qui mene a une sequence differente et non cyclante.
+\end{astuce}
+\subsection{Exemple détaillé : Les étapes du cyclage}
+
+Dans cet exemple classique, nous partons d'une solution initiale qui est déjà dégénérée (les constantes des deux premières lignes sont nulles).
+
+\subsubsection*{État de départ (Dictionnaire Initial)}
+\begin{align*}
+x_5 &= 0 - \frac{1}{2}x_1 + \frac{11}{2}x_2 + \frac{5}{2}x_3 - 9x_4\\
+x_6 &= 0 - \frac{1}{2}x_1 + \frac{3}{2}x_2 + \frac{1}{2}x_3 - x_4\\
+x_7 &= 1 - x_1\\
+z &= 0 + 10x_1 - 57x_2 - 9x_3 - 24x_4
+\end{align*}
+\textbf{Solution actuelle :} $x_1, x_2, x_3, x_4 = 0$ (hors-base). $x_5=0, x_6=0, x_7=1$ (en base). $\mathbf{z = 0}$.
+
+\hrulefill
+
+\subsubsection*{Itération 1 : On fait du sur-place}
+
+\begin{enumerate}
+    \item \textbf{Choix de la variable entrante :} 
+    On regarde l'équation de $z$. Le plus grand coefficient positif est \textbf{$+10$} devant $x_1$. Donc \textbf{$x_1$ entre}.
+
+    \item \textbf{Choix de la variable sortante (Ratios) :}
+    \begin{itemize}
+        \item Pour $x_5$ : on a $-\frac{1}{2}x_1$. Comme $x_5$ vaut déjà $0$, $x_1$ est bloqué à $\mathbf{0}$.
+        \item Pour $x_6$ : on a $-\frac{1}{2}x_1$. Comme $x_6$ vaut déjà $0$, $x_1$ est bloqué à $\mathbf{0}$.
+        \item Pour $x_7$ : on a $1 - x_1 \geq 0 \implies x_1 \leq 1$.
+    \end{itemize}
+    Il y a une égalité (ratio de $0$) entre $x_5$ et $x_6$. La règle classique dit "on choisit la variable avec le plus petit indice". C'est donc \textbf{$x_5$ qui sort}.
+
+    \item \textbf{Pivotage :} 
+    On isole $x_1$ dans l'équation de $x_5$ :
+    $$x_1 = -2x_5 + 11x_2 + 5x_3 - 18x_4$$
+    On substitue $x_1$ dans les autres équations pour obtenir le \textbf{Nouveau Dictionnaire 1} :
+    \begin{align*}
+    x_1 &= 0 + 11x_2 + 5x_3 - 18x_4 - 2x_5\\
+    x_6 &= 0 - 4x_2 - 2x_3 + 8x_4 + x_5\\
+    x_7 &= 1 - 11x_2 - 5x_3 + 18x_4 + 2x_5\\
+    z &= 0 + 53x_2 + 41x_3 - 204x_4 - 20x_5
+    \end{align*}
+\end{enumerate}
+\textbf{Bilan Itération 1 :} La base a changé (c'est maintenant $x_1, x_6, x_7$), mais comme les constantes n'ont pas bougé, la solution reste physiquement la même $(0,0,0,0,0,0,1)$ et $\mathbf{z}$ \textbf{vaut toujours 0}.
+
+\hrulefill
+
+\subsubsection*{Itération 2 : Le piège continue}
+
+\begin{enumerate}
+    \item \textbf{Variable entrante :} 
+    Dans la nouvelle équation de $z$, le plus grand coefficient positif est \textbf{$+53$}. Donc \textbf{$x_2$ entre}.
+
+    \item \textbf{Variable sortante (Ratios) :}
+    \begin{itemize}
+        \item Pour $x_1$ : on a $+11x_2$. C'est un plus ! $x_1$ va augmenter avec $x_2$, donc il ne bloque pas.
+        \item Pour $x_6$ : on a $-4x_2$. Comme $x_6$ vaut $0$, $x_2$ est bloqué à $\mathbf{0}$.
+        \item Pour $x_7$ : on a $1 - 11x_2 \implies x_2 \leq \frac{1}{11}$.
+    \end{itemize}
+    C'est $x_6$ qui bloque avec un ratio de $0$. Donc \textbf{$x_6$ sort}.
+
+    \item \textbf{Pivotage :} 
+    On isole $x_2$ dans l'équation de $x_6$ :
+    $$x_2 = -\frac{1}{4}x_6 - \frac{1}{2}x_3 + 2x_4 + \frac{1}{4}x_5$$
+    On remplace $x_2$ partout. Voici le \textbf{Nouveau Dictionnaire 2} :
+    \begin{align*}
+    x_2 &= 0 - \frac{1}{2}x_3 + 2x_4 + \frac{1}{4}x_5 - \frac{1}{4}x_6\\
+    x_1 &= 0 - \frac{1}{2}x_3 + 4x_4 + \frac{3}{4}x_5 - \frac{11}{4}x_6\\
+    x_7 &= 1 + \frac{1}{2}x_3 - 4x_4 - \frac{3}{4}x_5 + \frac{11}{4}x_6\\
+    z &= 0 + \frac{29}{2}x_3 - 98x_4 - \frac{27}{4}x_5 - \frac{53}{4}x_6
+    \end{align*}
+\end{enumerate}
+\textbf{Bilan Itération 2 :} Toujours $(0,0,0,0,0,0,1)$ et $\mathbf{z = 0}$.
+
+\hrulefill
+
+\subsubsection*{Itération 3 : Toujours coincé}
+
+\begin{enumerate}
+    \item \textbf{Variable entrante :} 
+    Dans $z$, le seul coefficient positif est \textbf{$+\frac{29}{2}$} pour $x_3$. Donc \textbf{$x_3$ entre}.
+
+    \item \textbf{Variable sortante :}
+    \begin{itemize}
+        \item Pour $x_2$ : on a $-\frac{1}{2}x_3 \implies$ bloqué à $0$.
+        \item Pour $x_1$ : on a $-\frac{1}{2}x_3 \implies$ bloqué à $0$.
+    \end{itemize}
+    Égalité parfaite sur le ratio zéro. La règle dit "plus petit indice", donc entre $x_1$ et $x_2$, c'est \textbf{$x_1$ qui sort}.
+\end{enumerate}
+
+\hrulefill
+
+\subsubsection*{La boucle fatale (Itérations 4, 5 et 6)}
+
+Si l'algorithme continue d'appliquer aveuglément cette mécanique :
+\begin{itemize}
+    \item \textbf{À l'itération 4 :} $x_4$ entre, $x_2$ sort. $z$ reste à $0$.
+    \item \textbf{À l'itération 5 :} $x_5$ entre, $x_3$ sort. $z$ reste à $0$.
+    \item \textbf{À l'itération 6 :} $x_6$ entre, $x_4$ sort. 
+\end{itemize}
+
+\newpage
+\subsection{Methode de Perturbation}
+
+\begin{methode}
+\textbf{Idee :} Ajouter une petite valeur positive a chacune des valeurs du membre droit afin que ces petites valeurs n'operent pas a la meme echelle.
+
+\textbf{Etape 1 :} Choisir $m$ scalaires positifs $\epsilon_1, \epsilon_2, \ldots, \epsilon_m$ tels que :
+$$0 < \epsilon_m \ll \epsilon_{m-1} \ll \cdots \ll \epsilon_2 \ll \epsilon_1 \ll 1$$
+
+\textbf{Etape 2 :} Appliquer la methode du simplexe au probleme perturbe :
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i + \epsilon_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+\textbf{Propriete cle :} Aucune combinaison lineaire des $\epsilon_i$ avec des coefficients issus du simplexe ne peut produire un nombre du meme ordre que les donnees, ni faire depasser $\epsilon_i$ par $\epsilon_j$ pour $i > j$.
+\end{methode}
+
+\begin{definition}
+\textbf{Ordre lexicographique :}
+
+Une expression $r = r_0 + r_1\epsilon_1 + \cdots + r_m\epsilon_m$ est \textcolor{defvert}{\textbf{lexicographiquement plus petite}} qu'une expression $s = s_0 + s_1\epsilon_1 + \cdots + s_m\epsilon_m$ s'il existe un plus petit indice $k$ tel que $r_k \neq s_k$ et $r_k < s_k$.
+
+$r$ est lexicographiquement plus petite que $s$ si et seulement si $r$ est numeriquement plus petite que $s$ pour toutes les valeurs de $\epsilon_1, \epsilon_2, \ldots, \epsilon_m$ satisfaisant la condition ci-dessus.
+\end{definition}
+
+\begin{theoreme}
+\textbf{Theoreme 3 (Methode lexicographique) :}
+
+\textit{La methode du simplexe se termine tant que la variable sortante est selectionnee par la \textcolor{defvert}{regle lexicographique} a chaque iteration.}
+\end{theoreme}
+
+\newpage
+\subsection{Prevention du Cyclage -- Recapitulatif}
+
+\begin{important}
+\textbf{Deux grandes families de methodes anti-cyclage :}
+
+\textbf{Methode 1 -- Plus petit indice (Bland, 1977) :}
+\begin{itemize}
+    \item Simple a implementer
+    \item Peut etre computationnellement inefficace (long chemin du simplexe)
+\end{itemize}
+
+\textbf{Methode 2 -- Perturbation / Lexicographique :}
+\begin{itemize}
+    \item Methode de perturbation (Charnes, 1952)
+    \item Methode lexicographique (Dantzig, Orden et Wolfe, 1955)
+    \item Peut etre couteuse a implementer
+\end{itemize}
+
+\textcolor{defvert}{\textbf{En pratique :}} rencontrer des problemes qui cyclent est tres rare. Les erreurs d'arrondi dans les implementations informatiques font que les membres droits mis a jour ne sont presque jamais exactement nuls. Les implementations modernes du simplexe tendent donc a ignorer la possibilite de cyclage.
+\end{important}
+
+%=============================================
+\section{Initialisation -- Methode a Deux Phases}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Probleme d'Origine Infaisable}
+
+\begin{notecours}
+\textbf{Rappel :} La methode du simplexe necessite un \textcolor{defvert}{\textbf{dictionnaire realisable}} pour demarrer. Or, si certains membres droits $b_i$ sont negatifs, l'origine n'est pas realisable et on ne peut pas partir du dictionnaire initial standard.
+\end{notecours}
+
+\begin{exemple}
+\textbf{Probleme avec origine infaisable :}
+
+\begin{align*}
+\text{maximiser} \quad & z = x_1 - x_2 + x_3\\
+\text{sujet a} \quad & 2x_1 - x_2 + 2x_3 \leq 4\\
+& 2x_1 - 3x_2 + x_3 \leq -5\\
+& -x_1 + x_2 - 2x_3 \leq -1\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\textbf{Dictionnaire initial :}
+\begin{align*}
+x_4 &= 4 - 2x_1 + x_2 - 2x_3\\
+x_5 &= -5 - 2x_1 + 3x_2 - x_3\\
+x_6 &= -1 + x_1 - x_2 + 2x_3\\
+z &= x_1 - x_2 + x_3
+\end{align*}
+
+\textcolor{importantrouge}{\textbf{Infaisable !}} ($x_5 = -5 < 0$ et $x_6 = -1 < 0$ a l'origine)
+\end{exemple}
+
+\newpage
+\subsection{Probleme Auxiliaire}
+
+\begin{definition}
+\textbf{Probleme auxiliaire (auxiliary LP problem) :}
+
+Considerons un probleme de PL avec une origine infaisable :
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+Son \textcolor{defvert}{\textbf{probleme auxiliaire}} est :
+\begin{align*}
+\text{maximiser} \quad & w = -x_0\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij}x_j - x_0 \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 0, 1, 2, \ldots, n
+\end{align*}
+\end{definition}
+
+\begin{theoreme}
+\textbf{Theoreme 4 :}
+
+\textit{Le probleme de PL original a une solution realisable si et seulement si la valeur optimale du probleme auxiliaire est zero.}
+\end{theoreme}
+
+\begin{astuce}
+\textbf{Pourquoi le probleme auxiliaire est plus facile ?}
+
+\begin{itemize}
+    \item Le probleme auxiliaire est toujours \textcolor{defvert}{\textbf{faisable}} : il suffit de prendre $x_1 = x_2 = \cdots = x_n = 0$ et $x_0 \geq \max_i(-b_i)$
+    \item On peut donc partir d'un dictionnaire realisable en faisant entrer $x_0$ dans la base et sortir la variable de base la \textcolor{importantrouge}{\textbf{plus infaisable}} (celle avec le $b_i$ le plus negatif) -- \textbf{ce n'est pas une iteration du simplexe !}
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Resolution du Probleme Auxiliaire}
+
+\begin{exemple}
+\textbf{Dictionnaire initial du probleme auxiliaire :}
+
+\begin{align*}
+x_4 &= 4 - 2x_1 + x_2 - 2x_3 + x_0\\
+x_5 &= -5 - 2x_1 + 3x_2 - x_3 + x_0\\
+x_6 &= -1 + x_1 - x_2 + 2x_3 + x_0\\
+w &= -x_0
+\end{align*}
+
+\textcolor{importantrouge}{\textbf{Infaisable}} ($x_5 = -5$ est la variable la plus infaisable).
+
+\textbf{Pivot d'initialisation :} $x_0$ entre, $x_5$ sort.
+
+\textbf{Dictionnaire realisable pour le probleme auxiliaire :}
+
+\begin{align*}
+x_0 &= 5 + 2x_1 - 3x_2 + x_3 + x_5\\
+x_4 &= 9 \phantom{{}+2x_1} - 2x_2 - x_3 + x_5\\
+x_6 &= 4 + 3x_1 - 4x_2 + 3x_3 + x_5\\
+w &= -5 - 2x_1 + 3x_2 - x_3 - x_5
+\end{align*}
+
+\textbf{On applique maintenant le simplexe} en suivant la regle : \textit{si $x_0$ est candidat a sortir de la base, on le choisit toujours comme variable sortante.}
+\end{exemple}
+
+\begin{methode}
+\textbf{Apres deux iterations du simplexe, le dictionnaire optimal du probleme auxiliaire est :}
+
+\begin{align*}
+x_3 &= 1{,}6 - 0{,}2x_1 + 0{,}2x_5 + 0{,}6x_6 - 0{,}8x_0\\
+x_2 &= 2{,}2 + 0{,}6x_1 + 0{,}4x_5 + 0{,}2x_6 - 0{,}6x_0\\
+x_4 &= 3 - x_1 \phantom{{}+ 0{,}4x_5} - x_6 + 2x_0\\
+w &= -x_0
+\end{align*}
+
+\textbf{Valeur optimale :} $w^* = 0$ (car $x_0 = 0$ en posant les variables hors-base a zero).
+
+\textbf{Solution realisable pour le probleme original :} $x_1 = 0$, $x_2 = 2{,}2$, $x_3 = 1{,}6$.
+\end{methode}
+
+\newpage
+\subsection{Retour au Probleme Original}
+
+\begin{methode}
+\textbf{Construction du dictionnaire realisable pour le probleme original :}
+
+On supprime $x_0$ du dictionnaire optimal du probleme auxiliaire et on \textcolor{defvert}{\textbf{exprime la fonction objectif originale}} uniquement en termes des variables hors-base :
+
+\begin{align*}
+x_3 &= 1{,}6 - 0{,}2x_1 + 0{,}2x_5 + 0{,}6x_6\\
+x_2 &= 2{,}2 + 0{,}6x_1 + 0{,}4x_5 + 0{,}2x_6\\
+x_4 &= 3 - x_1 - x_6\\
+z &= -0{,}6 + 0{,}2x_1 - 0{,}2x_5 + 0{,}4x_6
+\end{align*}
+
+On peut maintenant appliquer la methode du simplexe a partir de ce dictionnaire pour trouver la solution optimale du probleme original.
+\end{methode}
+
+\begin{important}
+\textbf{Deux types de dictionnaires optimaux possibles pour le probleme auxiliaire :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{\textbf{$x_0$ est hors-base}} et $w^* = 0$ : le probleme original est \textcolor{defvert}{\textbf{faisable}} $\Rightarrow$ passer a la Phase 2
+    \item \textcolor{importantrouge}{\textbf{$x_0$ est de base}} et $w^* < 0$ (i.e., $w^* \neq 0$) : le probleme original est \textcolor{importantrouge}{\textbf{infaisable}} $\Rightarrow$ \textbf{STOP}
+\end{itemize}
+\end{important}
+
+\newpage
+
+\section{Methode du Simplexe a Deux Phases}
+
+\subsection{Description Generale}
+
+\begin{important}
+\textbf{Methode du simplexe a deux phases :}
+
+\textbf{\textcolor{titrebleu}{Phase 1 :}} Resoudre le probleme auxiliaire.
+\begin{itemize}
+    \item Si $x_0$ est candidat a sortir, le choisir comme variable sortante
+    \item Le dictionnaire optimal a l'une des deux proprietes suivantes :
+    \begin{itemize}
+        \item $x_0$ est hors-base et $w^* = 0$
+        \item $x_0$ est de base et $w^* \neq 0$
+    \end{itemize}
+\end{itemize}
+
+\textbf{\textcolor{defvert}{Phase 2 :}}
+\begin{itemize}
+    \item Si $w^* = 0$ : resoudre le probleme original en partant du dictionnaire realisable obtenu en Phase 1
+    \item Si $w^* > 0$ : conclure que le probleme original est \textcolor{importantrouge}{\textbf{infaisable}}
+\end{itemize}
+\end{important}
+
+\subsection{Explications Detailled : La Methode des Deux Phases}
+
+La méthode du simplexe standard exige de démarrer avec un dictionnaire \textbf{réalisable} (où toutes les constantes à droite sont $\geq 0$). Lorsque ce n'est pas le cas, on doit utiliser la méthode des deux phases.
+
+\subsubsection*{1. Pourquoi le dictionnaire de départ est-il infaisable ?}
+Si, après avoir ajouté les variables d'écart, une ou plusieurs équations présentent une constante négative (par exemple $x_5 = -5 \dots$), le dictionnaire est dit \textbf{infaisable}. En géométrie, cela signifie que le point de départ $(0,0,\dots)$ se trouve en dehors de la zone des solutions autorisées. On ne peut pas lancer le simplexe classique.
+
+\subsubsection*{2. Le rôle de l'intrus $x_0$ et du faux objectif $w$}
+Pour "réparer" ce dictionnaire, on introduit une variable artificielle de secours, notée $x_0$. 
+\begin{itemize}
+    \item On ajoute $+x_0$ à toutes les contraintes.
+    \item On force $x_0$ à entrer dans la base à la place de la variable la plus négative (c'est le \textbf{pivot d'initialisation}). Cela rend toutes les constantes positives.
+    \item On met notre vraie fonction objectif $z$ de côté et on crée un problème auxiliaire dont le but est de minimiser $x_0$, c'est-à-dire de \textbf{maximiser $w = -x_0$}.
+\end{itemize}
+
+\subsubsection*{3. Quand s'arrêter en Phase 1 ?}
+On applique le simplexe sur la fonction $w$. La règle d'arrêt est la même que d'habitude : \textbf{l'algorithme s'arrête net dès qu'il n'y a plus aucun coefficient strictement positif dans l'équation de $w$}. Cela signifie qu'on a atteint le maximum possible pour $w$.
+
+\subsubsection*{4. Comment interpréter la fin de la Phase 1 ?}
+Lorsque le simplexe s'arrête, on regarde la valeur finale de $w$ (notée $w^*$). Il y a deux issues possibles qui agissent comme un détecteur de mensonge :
+
+\begin{itemize}
+    \item \textbf{Scénario d'Échec ($w^* < 0$) :} L'algorithme est bloqué, mais $x_0$ est toujours dans la base (il vaut une valeur $>0$). On n'a pas réussi à l'éliminer. 
+    \textbf{Conclusion :} Les contraintes se contredisent. Le problème original est mathématiquement \textbf{infaisable}. On s'arrête ici.
+    
+    \item \textbf{Scénario de Victoire ($w^* = 0$) :} L'algorithme s'arrête et $x_0$ est hors-base (il vaut $0$). On a réussi à éliminer l'intrus ! Le dictionnaire actuel est propre et réalisable. On peut passer à la Phase 2.
+\end{itemize}
+
+\subsubsection*{5. La transition et la Phase 2}
+Si la Phase 1 est un succès ($w^* = 0$), on effectue la transition :
+\subsubsection*{5. La transition et la Phase 2}
+Si la Phase 1 est un succès ($w^* = 0$), on effectue la transition :
+\begin{enumerate}
+    \item On supprime purement et simplement la variable $x_0$ de toutes les équations du dictionnaire.
+    \item On ressuscite la vraie fonction objectif $z$.
+    \item On \textbf{substitue} les variables de base présentes dans $z$ par leurs nouvelles expressions pour que $z$ ne dépende que des variables hors-base.
+\end{enumerate}
+On obtient alors un dictionnaire parfaitement valide. Il ne reste plus qu'à relancer le simplexe classique (Phase 2) sur $z$ pour grimper jusqu'à la solution optimale finale !
+
+\newpage
+\subsection{Variante -- Variables Artificielles}
+
+\begin{notecours}
+\textbf{Autre version de la methode a deux phases :}
+
+Lorsque le probleme contient des \textcolor{titrebleu}{\textbf{contraintes d'egalite}} ou des \textbf{inegalites $\geq$}, il n'y a pas de variable de base evidente. On introduit alors des \textcolor{algoviolet}{\textbf{variables artificielles}}.
+\end{notecours}
+
+\begin{exemple}
+\textbf{Exemple -- Probleme avec egalite et inegalite inversee :}
+
+\begin{align*}
+\text{maximiser} \quad & z = x_1 + 4x_2\\
+\text{sujet a} \quad & x_1 + 2x_2 \leq 14\\
+& -x_1 + 2x_2 \geq 5\\
+& 2x_1 + 4x_2 = 18\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{Mise sous forme d'egalites :}
+\begin{align*}
+x_1 + 2x_2 + x_3 &= 14\\
+-x_1 + 2x_2 - x_4 &= 5\\
+2x_1 + 4x_2 &= 18
+\end{align*}
+
+\textbf{Probleme :} Les deux derniers systemes n'ont pas de variable de base naturelle.
+
+\textbf{Probleme artificiel (Phase 1) :} On ajoute des variables artificielles $y_1, y_2 \geq 0$ :
+\begin{align*}
+\text{minimiser} \quad & w = y_1 + y_2\\
+\text{sujet a} \quad & x_1 + 2x_2 + x_3 = 14\\
+& -x_1 + 2x_2 - x_4 + y_1 = 5\\
+& 2x_1 + 4x_2 + y_2 = 18\\
+& x_1, x_2, x_3, x_4, y_1, y_2 \geq 0
+\end{align*}
+
+\textbf{Base de depart faisable :} $B = \{x_3, y_1, y_2\}$.
+\end{exemple}
+\newpage
+\subsection{Exemple detaille : Phase 1 avec Variables Artificielles}
+
+\textbf{Le probleme original (avec variables d'ecart) :}
+\begin{align*}
+x_1 + 2x_2 + x_3 &= 14 \\
+-x_1 + 2x_2 - x_4 &= 5 \\
+2x_1 + 4x_2 &= 18
+\end{align*}
+
+Puisque les deux dernieres equations n'ont pas de variable de base evidente, on introduit les variables artificielles $y_1$ et $y_2$. Le but de la Phase 1 est de maximiser $w = -y_1 - y_2$.
+
+\subsubsection*{Etape 0 : Dictionnaire Initial de la Phase 1}
+On exprime $w$ en fonction des variables hors-base ($x_1, x_2, x_4$) en substituant $y_1$ et $y_2$ :
+$$w = -(5 + x_1 - 2x_2 + x_4) - (18 - 2x_1 - 4x_2) = -23 + x_1 + 6x_2 - x_4$$
+
+\begin{align*}
+x_3 &= 14 - x_1 - 2x_2 \\
+y_1 &= \phantom{0}5 + x_1 - 2x_2 + x_4 \\
+y_2 &= 18 - 2x_1 - 4x_2 \\
+w &= -23 + x_1 + \mathbf{6}x_2 - x_4
+\end{align*}
+
+\hrulefill
+
+\subsubsection*{Iteration 1}
+\begin{itemize}
+    \item \textbf{Variable entrante :} $x_2$ (plus grand coefficient positif dans $w$, $+6$).
+    \item \textbf{Ratios pour la sortante :} 
+    \begin{itemize}
+        \item $x_3 : 14 - 2x_2 \geq 0 \implies x_2 \leq 7$
+        \item $y_1 : \phantom{0}5 - 2x_2 \geq 0 \implies x_2 \leq \frac{5}{2}$ \quad \textcolor{importantrouge}{(Borne la plus stricte)}
+        \item $y_2 : 18 - 4x_2 \geq 0 \implies x_2 \leq \frac{9}{2}$
+    \end{itemize}
+    \item \textbf{Variable sortante :} $y_1$.
+\end{itemize}
+
+Apres pivotage (on isole $x_2$ et on substitue) :
+\begin{align*}
+x_2 &= \frac{5}{2} + \frac{1}{2}x_1 + \frac{1}{2}x_4 - \frac{1}{2}y_1 \\
+x_3 &= 9 - 2x_1 - x_4 + y_1 \\
+y_2 &= 8 - 4x_1 - 2x_4 + 2y_1 \\
+w &= -8 + \mathbf{4}x_1 + 2x_4 - 3y_1
+\end{align*}
+
+\hrulefill
+
+\subsubsection*{Iteration 2}
+\begin{itemize}
+    \item \textbf{Variable entrante :} $x_1$ (coefficient $+4$ dans $w$).
+    \item \textbf{Ratios pour la sortante :} 
+    \begin{itemize}
+        \item $x_2 :$ coefficient positif ($+\frac{1}{2}$), pas de borne.
+        \item $x_3 : 9 - 2x_1 \geq 0 \implies x_1 \leq \frac{9}{2}$
+        \item $y_2 : 8 - 4x_1 \geq 0 \implies x_1 \leq 2$ \quad \textcolor{importantrouge}{(Borne la plus stricte)}
+    \end{itemize}
+    \item \textbf{Variable sortante :} $y_2$.
+\end{itemize}
+
+Apres pivotage (on isole $x_1$ et on substitue) :
+\begin{align*}
+x_1 &= 2 - \frac{1}{2}x_4 + \frac{1}{2}y_1 - \frac{1}{4}y_2 \\
+x_2 &= \frac{7}{2} + \frac{1}{4}x_4 - \frac{1}{4}y_1 - \frac{1}{8}y_2 \\
+x_3 &= 5 + \frac{1}{2}y_2 \\
+w &= \mathbf{0 - y_1 - y_2}
+\end{align*}
+
+\subsubsection*{Bilan de la Phase 1}
+Tous les coefficients dans l'equation de $w$ sont negatifs ou nuls. L'algorithme s'arrete.
+La valeur optimale est $w^* = 0$, et les variables artificielles $y_1$ et $y_2$ sont toutes les deux hors-base (elles valent zero). 
+
+\textbf{Conclusion :} Le probleme original est faisable. On peut rayer $y_1$ et $y_2$ de ce dictionnaire, reconstruire la vraie fonction objectif $z$, et debuter la Phase 2 !
+\begin{methode}
+\textbf{Procedure de Phase 1 avec variables artificielles :}
+
+\begin{enumerate}
+    \item Resoudre le probleme artificiel par le simplexe
+    \item Si $w^* > 0$ : le probleme original est \textcolor{importantrouge}{\textbf{infaisable}}
+    \item Si $w^* = 0$ : le probleme original est \textcolor{defvert}{\textbf{faisable}}
+    \begin{itemize}
+        \item Si toutes les variables artificielles sont hors-base : resoudre le probleme original depuis la base optimale de la Phase 1
+        \item Si certaines variables artificielles restent de base avec valeur zero (dictionnaire degenere) : tenter de les faire sortir par une serie de pivots ; il peut arriver que certaines doivent rester de base !
+    \end{itemize}
+\end{enumerate}
+\end{methode}
+
+%=============================================
+\section{Methode du Grand M}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Principe}
+
+\begin{definition}
+\textbf{Methode du grand $M$ (Big-$M$ method) :}
+
+La methode du grand $M$ combine les Phases 1 et 2 en un seul probleme de PL.
+\end{definition}
+
+\begin{methode}
+\textbf{Etapes de la methode du grand $M$ :}
+
+\begin{enumerate}
+    \item Ecrire le probleme sous forme standard (maximisation avec toutes les contraintes $\leq$)
+    \item Si la contrainte $i$ a un membre droit $b_i$ negatif, soustraire une variable artificielle $y_i \geq 0$
+    \item Soit $M$ un tres grand nombre positif ; ajouter $-My_i$ a la fonction objectif pour chaque variable artificielle
+    \item Eliminer les variables artificielles de la derniere ligne du dictionnaire ; appliquer le simplexe
+\end{enumerate}
+
+\textcolor{importantrouge}{\textbf{Si une variable artificielle apparait comme variable de base non nulle dans la solution optimale, le probleme original est infaisable.}}
+\end{methode}
+
+\begin{exemple}
+\textbf{Application au probleme precedent :}
+
+\begin{align*}
+\text{maximiser} \quad & z = x_1 + 2x_2\\
+\text{sujet a} \quad & 2x_1 + 3x_2 \geq 6 \quad \Rightarrow \quad -2x_1 - 3x_2 \leq -6\\
+& 3x_1 + 2x_2 \leq 12\\
+& x_1 \geq 0
+\end{align*}
+
+La premiere contrainte (sous forme $\leq$) a un membre droit negatif. On introduit $y_1$ :
+$$-2x_1 - 3x_2 + y_1 = -6 \quad (y_1 \geq 0)$$
+
+La fonction objectif modifiee devient :
+$$\text{maximiser} \quad z = x_1 + 2x_2 - My_1$$
+
+ou $M \gg 0$ penalise fortement toute solution avec $y_1 > 0$.
+\end{exemple}
+
+%=============================================
+\section{Theoreme Fondamental de la Programmation Lineaire}
+%=============================================
+
+\needspace{10\baselineskip}
+
+\begin{important}
+\textbf{Ce que decouvrent les deux phases :}
+
+\begin{itemize}
+    \item \textbf{Phase 1 :} decouvre si le probleme est \textcolor{importantrouge}{\textbf{infaisable}}. Si le probleme est faisable, la Phase 1 livre une \textcolor{defvert}{\textbf{solution de base realisable}}.
+    \item \textbf{Phase 2 :} decouvre si le probleme est \textcolor{importantrouge}{\textbf{non borne}}. Si le probleme n'est pas non borne, la Phase 2 livre une \textcolor{defvert}{\textbf{solution de base optimale}}.
+\end{itemize}
+\end{important}
+
+\begin{theoreme}
+\textbf{Theoreme 5 (Theoreme fondamental de la programmation lineaire) :}
+
+\textit{Tout probleme de PL sous forme standard possede les trois proprietes suivantes :}
+\begin{enumerate}
+    \item \textit{S'il n'a pas de solution optimale, alors il est soit infaisable soit non borne.}
+    \item \textit{S'il a une solution realisable, alors il a une \textcolor{defvert}{solution de base realisable}.}
+    \item \textit{S'il a une solution optimale, alors il a une \textcolor{titrebleu}{solution de base optimale}.}
+\end{enumerate}
+\end{theoreme}
+
+\begin{astuce}
+\textbf{Implication pratique :}
+
+Ce theoreme justifie pourquoi la methode du simplexe -- qui explore uniquement les solutions de base -- est \textcolor{defvert}{\textbf{complete}} : si une solution optimale existe, elle sera trouvee.
+\end{astuce}
+
+%=============================================
+\section{Faits Supplementaires -- Complexite du Simplexe}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Le Probleme de Klee-Minty}
+
+\begin{notecours}
+\textbf{La methode du simplexe est-elle polynomiale ?}
+
+En pratique, le simplexe est tres efficace. Mais dans le pire cas, il peut etre exponentiel en la taille du probleme.
+\end{notecours}
+
+\begin{definition}
+\textbf{Probleme de Klee-Minty (1972) :}
+
+\begin{align*}
+\text{maximiser} \quad & \sum_{j=1}^{n} 10^{n-j}x_j\\
+\text{sujet a} \quad & 2\sum_{j=1}^{i-1} 10^{i-j}x_j + x_i \leq 100^{i-1} \quad \text{pour } i = 1, 2, \ldots, n\\
+& x_j \geq 0 \quad \text{pour } i = 1, 2, \ldots, n
+\end{align*}
+
+\begin{itemize}
+    \item La region realisable est une \textcolor{algoviolet}{\textbf{distorsion du cube en $n$ dimensions}}
+    \item Avec la \textcolor{titrebleu}{\textbf{regle du plus grand coefficient}}, le simplexe passe par \textcolor{importantrouge}{\textbf{tous les $2^n$ sommets}}
+    \item Avec la \textcolor{defvert}{\textbf{regle de la plus grande augmentation}}, le simplexe ne necessite que \textcolor{defvert}{\textbf{2 dictionnaires}} (1 iteration !)
+\end{itemize}
+\end{definition}
+
+\newpage
+\subsection{Regles de Selection et Complexite}
+
+\begin{exemple}
+\textbf{Illustration sur un exemple a $n=3$ variables :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 100x_1 + 10x_2 + x_3\\
+\text{sujet a} \quad & x_1 \leq 1\\
+& 20x_1 + x_2 \leq 100\\
+& 200x_1 + 20x_2 + x_3 \leq 10\,000\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\begin{center}
+\begin{tabular}{l|c|c}
+\toprule
+\textbf{Regle} & \textbf{Nombre d'iterations} & \textbf{Complexite pire cas} \\
+\midrule
+Plus grand coefficient & 7 & $2^n$ \\
+Plus grande augmentation & 1 & exponentiel (Jeroslow, 1973) \\
+Plus petit indice (Bland) & variable & exponentiel (Avis-Chvatal, 1978) \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{exemple}
+
+\begin{important}
+\textbf{Algorithmes polynomiaux pour la programmation lineaire :}
+
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Methode de l'ellipsoide}} -- Khachiyan (1979)
+    \item \textcolor{defvert}{\textbf{Methode des points interieurs (projectifs)}} -- Karmarkar (1984)
+\end{itemize}
+
+Ces methodes sont polynomiales dans le pire cas, mais en pratique la methode du simplexe reste souvent plus rapide.
+\end{important}
+
+%=============================================
+\section{Resume et Algorithme Complet}
+%=============================================
+
+\begin{important}
+\textbf{Algorithme complet de la methode du simplexe a deux phases :}
+
+\textbf{\textcolor{titrebleu}{PHASE 1 -- Initialisation}}
+\begin{enumerate}
+    \item Former le probleme auxiliaire (ou artificiel)
+    \item Construire un dictionnaire realisable par un pivot unique : $x_0$ entre, la variable de base la plus infaisable sort
+    \item Appliquer le simplexe au probleme auxiliaire (regle : $x_0$ sort en priorite si ex-aequo)
+    \item \textbf{Si} $w^* > 0$ : le probleme est \textcolor{importantrouge}{\textbf{infaisable}} -- STOP
+    \item \textbf{Si} $w^* = 0$ : extraire le dictionnaire realisable pour le probleme original
+\end{enumerate}
+
+\textbf{\textcolor{defvert}{PHASE 2 -- Optimisation}}
+\begin{enumerate}
+    \item Exprimer la fonction objectif originale en variables hors-base
+    \item Appliquer le simplexe jusqu'a ce que tous les $\bar{c}_j \leq 0$ dans $z$
+    \item \textbf{Si} aucun candidat sortant n'existe : le probleme est \textcolor{importantrouge}{\textbf{non borne}} -- STOP
+    \item \textbf{Sinon} : la solution actuelle est \textcolor{defvert}{\textbf{optimale}}
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Points cles a retenir :}
+
+\begin{itemize}
+    \item La \textcolor{importantrouge}{\textbf{degenerescence}} conduit a des iterations qui ne font pas progresser $z$
+    \item Le \textcolor{importantrouge}{\textbf{cyclage}} ne se produit qu'en presence de degenerescence et est evite par la regle de Bland ou la methode lexicographique
+    \item La \textcolor{titrebleu}{\textbf{methode a deux phases}} permet de traiter les problemes sans origine realisable
+    \item Le \textcolor{defvert}{\textbf{theoreme fondamental}} garantit que toute solution optimale est une solution de base optimale
+    \item Le simplexe n'est \textcolor{importantrouge}{\textbf{pas polynomial}} dans le pire cas, mais reste tres efficace en pratique
+\end{itemize}
+\end{astuce}
+
+%=============================================
+\section{Exercices}
+%=============================================
+
+\begin{exemple}
+\textbf{Exercice 1 -- Identification de degenerescence}
+
+Pour le dictionnaire suivant :
+\begin{align*}
+x_4 &= 1 - 2x_3\\
+x_5 &= 3 - 2x_1 + 4x_2 - 6x_3\\
+x_6 &= 2 + x_1 - 3x_2 - 4x_3\\
+z &= 2x_1 - x_2 + 8x_3
+\end{align*}
+
+\begin{enumerate}
+    \item La solution de base actuelle est-elle degeneree ? Justifier.
+    \item Effectuer une iteration en choisissant $x_3$ comme variable entrante. Le pivot est-il degenere ?
+    \item Effectuer une deuxieme iteration en choisissant $x_1$ comme variable entrante. Ce pivot est-il degenere ? Pourquoi ?
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 -- Methode a deux phases}
+
+Resoudre par la methode du simplexe a deux phases :
+\begin{align*}
+\text{maximiser} \quad & z = x_1 - x_2 + x_3\\
+\text{sujet a} \quad & 2x_1 - x_2 + 2x_3 \leq 4\\
+& 2x_1 - 3x_2 + x_3 \leq -5\\
+& -x_1 + x_2 - 2x_3 \leq -1\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\begin{enumerate}
+    \item Identifier pourquoi l'origine n'est pas realisable.
+    \item Former le probleme auxiliaire et construire le premier dictionnaire realisable.
+    \item Resoudre la Phase 1. Quelle est la valeur optimale $w^*$ ?
+    \item Deduire le dictionnaire de depart pour la Phase 2 et resoudre.
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 3 -- Probleme avec variables artificielles}
+
+Resoudre par la methode a deux phases (avec variables artificielles) :
+\begin{align*}
+\text{maximiser} \quad & z = x_1 + 4x_2\\
+\text{sujet a} \quad & x_1 + 2x_2 \leq 14\\
+& -x_1 + 2x_2 \geq 5\\
+& 2x_1 + 4x_2 = 18\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{Indication :} La contrainte $-x_1 + 2x_2 \geq 5$ devient $x_1 - 2x_2 \leq -5$ en forme standard, ce qui necessite une variable artificielle.
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 4 -- Regle de Bland}
+
+Reprendre l'exemple de cyclage de la Section~3.2 et appliquer la \textbf{regle de Bland} (plus petit indice pour la variable entrante et la variable sortante).
+
+\begin{enumerate}
+    \item Montrer que l'algorithme ne cycle plus.
+    \item Comparer le nombre d'iterations avec la regle du plus grand coefficient.
+\end{enumerate}
+\end{exemple}
+
+\end{document}

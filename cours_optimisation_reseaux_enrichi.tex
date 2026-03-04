@@ -1,0 +1,2955 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs personnalisées
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Configuration des listings avec couleurs
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    showstringspaces=false,
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{blue!80!black}\bfseries,
+    stringstyle=\color{red!70!black},
+    backgroundcolor=\color{fondgris},
+    rulecolor=\color{titrebleu}
+}
+
+% Boîtes colorées
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=D\'efinition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=\`A savoir,
+    arc=3mm
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Note de Cours,
+    arc=3mm
+}
+
+\newtcolorbox{algorithme}{
+    colback=fondgris,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Algorithme,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Optimisation dans les Réseaux}\\[0.5em]
+\large\color{defvert}Graphes, Problèmes de Base et Connexité}
+\author{\large Cours détaillé avec exemples et notes complémentaires\\
+\textit{F. Bendali-Mailfert}}
+\date{\large Version 2025 - Enrichie}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\begin{notecours}
+Ce cours présente les fondements de l'optimisation dans les réseaux, un domaine essentiel de la recherche opérationnelle. Nous étudierons les structures de graphes, les problèmes classiques (plus court chemin, flot maximum, flot de coût minimum) et les questions de connexité dans les réseaux de télécommunications.
+\end{notecours}
+
+\begin{important}
+L'optimisation dans les réseaux trouve des applications concrètes dans :
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Les télécommunications}} : topologie et routage
+    \item \textcolor{defvert}{\textbf{Les transports}} : logistique et distribution
+    \item \textcolor{algoviolet}{\textbf{L'informatique}} : réseaux informatiques et flux de données
+    \item \textcolor{exempleorange}{\textbf{L'énergie}} : distribution électrique et gaz
+\end{itemize}
+\end{important}
+
+\newpage
+\section{Problèmes de Réseaux et Structures de Modélisation}
+
+\subsection{Principaux problèmes dans les réseaux}
+
+\begin{definition}
+Les problèmes fondamentaux dans les réseaux sont :
+
+\textbf{1. Le dimensionnement :}
+Rechercher les capacités à mettre sur les liaisons dans un réseau.
+
+\textbf{2. La topologie (design) :}
+Rechercher la structure optimale : nœuds principaux et liens.
+
+\textbf{3. Le routage :}
+Rechercher les "meilleurs" chemins pour acheminer le trafic.
+\end{definition}
+
+\begin{notecours}
+\textbf{Domaines d'application principaux :}
+
+\textcolor{titrebleu}{\textbf{Télécommunications :}}
+\begin{itemize}
+    \item Topologie et routage dans les réseaux filaires
+    \item Topologie dans les réseaux sans fil
+\end{itemize}
+
+Ces problèmes sont au cœur de la conception et de l'exploitation des réseaux modernes.
+\end{notecours}
+
+\newpage
+\section{Rappels de Graphes : Définitions et Notations}
+
+\subsection{Graphes non orientés et orientés}
+
+\needspace{15\baselineskip}
+\subsubsection{Définition d'un graphe}
+
+\begin{definition}
+Un \textbf{graphe} $G = (V, E)$ est un couple formé de deux ensembles disjoints :
+
+\textbf{Graphe non orienté :}
+\begin{itemize}
+    \item $V = \{v_1, v_2, \ldots, v_n\}$ : ensemble de \textcolor{titrebleu}{\textbf{sommets}}
+    \item $E = \{e_1, e_2, \ldots, e_m\}$ : ensemble d'\textcolor{defvert}{\textbf{arêtes}}
+    \item Pour tout $i$, $e_i$ est une \textit{paire} d'éléments de $V$
+\end{itemize}
+
+\textbf{Graphe orienté :}
+\begin{itemize}
+    \item $V = \{v_1, v_2, \ldots, v_n\}$ : ensemble de \textcolor{titrebleu}{\textbf{sommets}}
+    \item $E = \{e_1, e_2, \ldots, e_m\}$ : ensemble d'\textcolor{algoviolet}{\textbf{arcs}}
+    \item Pour tout $i$, $e_i$ est un \textit{couple} d'éléments de $V$
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Notations importantes :}
+
+\textbf{Pour un graphe non orienté :}
+\begin{itemize}
+    \item $u \in V$ et $v \in V$ sont les \textbf{extrémités} de l'arête $e = \{u, v\}$ ou $e = uv$
+\end{itemize}
+
+\textbf{Pour un graphe orienté :}
+\begin{itemize}
+    \item $I(e) = u \in V$ : extrémité \textbf{initiale} de l'arc $e = (u, v)$
+    \item $T(e) = v \in V$ : extrémité \textbf{terminale} de l'arc $e = (u, v)$ ou $\overrightarrow{uv}$
+\end{itemize}
+\end{notecours}
+
+\begin{astuce}
+Un \textbf{graphe simple} n'a ni boucle (arête reliant un sommet à lui-même) ni arête multiple (plusieurs arêtes entre les mêmes sommets).
+\end{astuce}
+
+\needspace{10\baselineskip}
+\subsubsection{Exemple illustratif}
+
+\begin{exemple}
+Considérons un graphe $G = (V, E)$ avec :
+\begin{itemize}
+    \item $V = \{1, 2, 3, 4, 5, 6\}$
+    \item $E = \{(1,2), (1,3), (2,3), (2,4), (3,4), (3,5), (4,5), (5,6)\}$
+\end{itemize}
+
+Ce graphe peut représenter un réseau de communication où :
+\begin{itemize}
+    \item Les sommets sont des routeurs ou des commutateurs
+    \item Les arêtes/arcs sont des liens de communication
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Incidence et Adjacence}
+
+\needspace{12\baselineskip}
+\subsubsection{Définitions}
+
+\begin{definition}
+\textbf{Incidence :}
+Un sommet $v \in V$ et une arête $e \in E$ sont \textbf{incidents} si $v$ est une extrémité de $e$.
+
+\textbf{Adjacence :}
+\begin{itemize}
+    \item Deux \textcolor{titrebleu}{\textbf{sommets}} sont adjacents lorsqu'ils sont incidents à une même arête
+    \item Deux \textcolor{defvert}{\textbf{arêtes ou arcs}} sont adjacents lorsqu'ils sont incidents à un même sommet
+\end{itemize}
+\end{definition}
+
+\needspace{20\baselineskip}
+\subsubsection{Matrices de représentation - Cas non orienté}
+
+\begin{definition}
+\textbf{Matrice d'adjacence} $A = (a_{ij})$ :
+$$a_{ij} = \text{nombre d'arêtes incidentes à } i \text{ et } j$$
+
+Propriétés :
+\begin{itemize}
+    \item $A$ est \textcolor{titrebleu}{\textbf{symétrique}}
+    \item $A$ est à valeurs dans $\{0, 1\}$ pour un graphe simple
+\end{itemize}
+
+\textbf{Matrice d'incidence} $B = (b_{ij})$ :
+\begin{itemize}
+    \item Ligne $i$ : sommet $v_i$
+    \item Colonne $j$ : arête $e_j$
+\end{itemize}
+$$b_{ij} = \text{nombre de fois où } v_i \text{ est incidente à } e_j$$
+
+Propriétés :
+\begin{itemize}
+    \item $B$ est à valeurs dans $\{0, 1, 2\}$
+    \item $\sum_{i=1}^{n} b_{ij} = 2$ pour tout $j$ (chaque arête a deux extrémités)
+\end{itemize}
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsubsection{Matrices de représentation - Cas orienté}
+
+\begin{definition}
+\textbf{Matrice d'adjacence :} identique au cas non orienté (mais non symétrique)
+
+\textbf{Matrice d'incidence} $B = (b_{ij})$ :
+$$b_{ij} = \begin{cases}
+    +1 & \text{si } v_i = I(e_j) \text{ (extrémité initiale)}\\
+    -1 & \text{si } v_i = T(e_j) \text{ (extrémité terminale)}\\
+    0 & \text{sinon}
+\end{cases}$$
+
+Propriétés :
+\begin{itemize}
+    \item $B$ est à valeurs dans $\{-1, 0, +1\}$
+    \item $\sum_{i=1}^{n} b_{ij} = 0$ pour tout $j$ (conservation du flot)
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Convention de signe :}
+\begin{itemize}
+    \item $+1$ : le sommet est le \textbf{départ} de l'arc (flux sortant)
+    \item $-1$ : le sommet est l'\textbf{arrivée} de l'arc (flux entrant)
+    \item $0$ : le sommet n'est pas incident à l'arc
+\end{itemize}
+\end{notecours}
+
+\newpage
+\subsubsection{Exemple de matrices}
+
+\begin{exemple}
+Soit un graphe non orienté avec 4 sommets et 6 arêtes $\{a, b, c, d, e, f\}$ :
+
+\textbf{Matrice d'adjacence :}
+$$A = \begin{pmatrix}
+0 & 1 & 2 & 1\\
+1 & 0 & 1 & 0\\
+2 & 1 & 0 & 0\\
+1 & 0 & 0 & 1
+\end{pmatrix}$$
+
+Interprétation : Il y a 2 arêtes entre les sommets 1 et 3.
+
+\textbf{Matrice d'incidence (non orienté) :}
+$$B = \begin{pmatrix}
+    & a & b & c & d & e & f\\
+1 & 1 & 0 & 1 & 1 & 1 & 0\\
+2 & 1 & 1 & 0 & 0 & 0 & 0\\
+3 & 0 & 1 & 1 & 1 & 0 & 0\\
+4 & 0 & 0 & 0 & 0 & 1 & 2
+\end{pmatrix}$$
+
+\textbf{Matrice d'incidence (orienté) :}
+$$B = \begin{pmatrix}
+    & a & b & c & d & e & f\\
+1 & -1 & 0 & 1 & -1 & 1 & 0\\
+2 & 1 & 1 & 0 & 0 & 0 & 0\\
+3 & 0 & -1 & -1 & 1 & 0 & 0\\
+4 & 0 & 0 & 0 & 0 & -1 & 0
+\end{pmatrix}$$
+
+Note : La somme de chaque colonne est 0.
+\end{exemple}
+
+\newpage
+\subsection{Degré et Graphe Complet}
+
+\needspace{10\baselineskip}
+\subsubsection{Degré d'un sommet}
+
+\begin{definition}
+Le \textbf{degré} $d(v)$ d'un sommet $v$ est le nombre d'arêtes incidentes à ce sommet.
+
+\textbf{Notations :}
+\begin{itemize}
+    \item $\delta(G) = \min\{d(v), v \in V\}$ : degré \textcolor{titrebleu}{\textbf{minimum}}
+    \item $\Delta(G) = \max\{d(v), v \in V\}$ : degré \textcolor{defvert}{\textbf{maximum}}
+\end{itemize}
+\end{definition}
+
+\begin{astuce}
+\textbf{Propriété importante :}
+La somme des degrés de tous les sommets d'un graphe est égale à deux fois le nombre d'arêtes :
+$$\sum_{v \in V} d(v) = 2|E|$$
+
+Conséquence : Le nombre de sommets de degré impair est toujours pair.
+\end{astuce}
+
+\needspace{10\baselineskip}
+\subsubsection{Graphe complet}
+
+\begin{definition}
+Un \textbf{graphe complet} (ou \textbf{clique}) est un graphe où deux sommets quelconques sont adjacents.
+
+Notation : $K_n$ pour un graphe complet à $n$ sommets.
+
+\textbf{Propriétés :}
+\begin{itemize}
+    \item Nombre d'arêtes : $|E| = \frac{n(n-1)}{2}$
+    \item Degré de chaque sommet : $d(v) = n-1$ pour tout $v \in V$
+    \item $\delta(K_n) = \Delta(K_n) = n-1$
+\end{itemize}
+\end{definition}
+
+\begin{exemple}
+\textbf{Graphes complets :}
+\begin{itemize}
+    \item $K_3$ (triangle) : 3 sommets, 3 arêtes
+    \item $K_4$ (tétraèdre) : 4 sommets, 6 arêtes
+    \item $K_5$ : 5 sommets, 10 arêtes
+    \item $K_n$ : $n$ sommets, $\frac{n(n-1)}{2}$ arêtes
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Sous-graphes}
+
+\needspace{12\baselineskip}
+\subsubsection{Définitions}
+
+\begin{definition}
+Soit $G = (V, E)$ un graphe, $U \subseteq V$ et $F \subseteq E$.
+
+\textbf{1. Sous-graphe général :}
+
+$H = (U, F)$ est un \textcolor{titrebleu}{\textbf{sous-graphe}} de $G$ si pour tout $e \in F$, ses extrémités sont dans $U$.
+
+\textbf{2. Sous-graphe engendré par des sommets :}
+
+$G_U = (U, F)$ est le sous-graphe de $G$ \textcolor{defvert}{\textbf{engendré par}} $U$ si $F$ est formé par toutes les arêtes dont les extrémités sont dans $U$.
+
+\textbf{3. Sous-graphe engendré par des arêtes :}
+
+$G[F] = (U, F)$ est le sous-graphe \textcolor{algoviolet}{\textbf{engendré par}} $F$ dont :
+\begin{itemize}
+    \item Les arêtes sont dans $F$
+    \item Les sommets sont formés des extrémités des arêtes de $F$
+\end{itemize}
+
+\textbf{4. Graphe partiel :}
+
+Un sous-graphe $H = (U, F)$ est un \textcolor{exempleorange}{\textbf{graphe partiel}} si $U = V$ (tous les sommets sont conservés).
+\end{definition}
+
+\begin{notecours}
+\textbf{Différence importante :}
+\begin{itemize}
+    \item \textbf{Sous-graphe engendré par $U$} : on prend TOUTES les arêtes entre sommets de $U$
+    \item \textbf{Sous-graphe général} : on peut choisir seulement certaines arêtes
+    \item \textbf{Graphe partiel} : on garde tous les sommets, on enlève des arêtes
+\end{itemize}
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsubsection{Stables et graphes k-partis}
+
+\begin{definition}
+\textbf{Stable :}
+
+Un sous-ensemble $S$ de sommets est un \textcolor{titrebleu}{\textbf{stable}} si le sous-graphe $G_S$ engendré par $S$ est vide d'arêtes (aucun sommet de $S$ n'est adjacent à un autre sommet de $S$).
+
+\textbf{Graphe k-parti :}
+
+Un graphe est \textcolor{defvert}{\textbf{k-parti}} si son ensemble de sommets admet une partition en $k$ stables.
+
+\textbf{Graphe biparti :}
+
+Un graphe est \textcolor{algoviolet}{\textbf{biparti}} s'il est 2-parti. On peut partitionner ses sommets en deux stables $V_1$ et $V_2$ tels que toute arête relie un sommet de $V_1$ à un sommet de $V_2$.
+\end{definition}
+
+\begin{astuce}
+\textbf{Propriété caractéristique :}
+Un graphe est biparti si et seulement s'il ne contient pas de cycle de longueur impaire.
+\end{astuce}
+
+\begin{exemple}
+\textbf{Exemples de graphes bipartis :}
+\begin{itemize}
+    \item Les arbres sont toujours bipartis
+    \item Le graphe complet biparti $K_{m,n}$ : $m$ sommets dans un stable, $n$ dans l'autre
+    \item Les cycles de longueur paire
+\end{itemize}
+
+\textbf{Non-biparti :}
+\begin{itemize}
+    \item Triangle ($K_3$)
+    \item Tout cycle de longueur impaire
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Cheminements}
+
+\needspace{12\baselineskip}
+\subsubsection{Chaînes et cycles (graphes non orientés)}
+
+\begin{definition}
+\textbf{Chaîne :}
+
+Une \textcolor{titrebleu}{\textbf{chaîne}} d'un graphe $G = (V, E)$ est une suite alternée de sommets et d'arêtes :
+$$v_0 e_1 v_1 e_2 \ldots v_{k-1} e_k v_k$$
+telle que pour tout $i$, les extrémités de $e_i$ sont $v_{i-1}$ et $v_i$.
+
+\textbf{Chaîne simple :}
+
+Si toutes les \textcolor{defvert}{\textbf{arêtes}} sont différentes.
+
+\textbf{Chaîne élémentaire :}
+
+Si tous les \textcolor{algoviolet}{\textbf{sommets}} sont différents (implique que la chaîne est simple).
+
+\textbf{Cycle :}
+
+Un \textcolor{exempleorange}{\textbf{cycle}} est une chaîne \textit{fermée} simple (où $v_0 = v_k$).
+
+\textbf{Longueur :}
+
+La longueur d'une chaîne ou d'un cycle est le nombre d'arêtes qui la compose.
+\end{definition}
+
+\begin{exemple}
+Considérons un graphe avec sommets $\{1, 2, 3, 4, 5, 6\}$ et arêtes $\{a, b, c, d, e, f, g, h, i, j\}$ :
+
+\textbf{Chaîne simple :} $1a2c3h6i2b3d4$ de longueur 6
+\begin{itemize}
+    \item Toutes les arêtes sont différentes
+    \item Le sommet 2 et le sommet 3 apparaissent deux fois
+\end{itemize}
+
+\textbf{Chaîne élémentaire :} $1j6h3f5e4$ de longueur 4
+\begin{itemize}
+    \item Tous les sommets sont différents
+    \item Donc toutes les arêtes sont aussi différentes
+\end{itemize}
+
+\textbf{Cycle :} $2c3d4e5f3b2$ de longueur 5
+\begin{itemize}
+    \item Commence et finit au sommet 2
+    \item Toutes les arêtes sont différentes
+\end{itemize}
+
+\textbf{Cycle élémentaire :} $1j6g5f3c2a1$ de longueur 5
+\begin{itemize}
+    \item Tous les sommets intermédiaires sont différents
+    \item Seul le sommet de départ/arrivée (1) est répété
+\end{itemize}
+\end{exemple}
+
+\needspace{15\baselineskip}
+\subsubsection{Chemins et circuits (graphes orientés)}
+
+\begin{definition}
+\textbf{Chemin :}
+
+Un \textcolor{titrebleu}{\textbf{chemin}} de $G = (V, E)$ est une suite alternée de sommets et d'arcs :
+$$v_0 e_1 v_1 e_2 \ldots v_{k-1} e_k v_k$$
+telle que pour tout $i$, l'arc $e_i$ admet $v_{i-1}$ comme extrémité initiale et $v_i$ comme extrémité terminale.
+
+\textbf{Chemin simple :}
+
+Si tous les \textcolor{defvert}{\textbf{arcs}} sont différents.
+
+\textbf{Chemin élémentaire :}
+
+Si tous les \textcolor{algoviolet}{\textbf{sommets}} sont différents.
+
+\textbf{Circuit :}
+
+Un \textcolor{exempleorange}{\textbf{circuit}} est un chemin \textit{fermé} simple.
+\end{definition}
+
+\begin{notecours}
+\textbf{Différence fondamentale avec les graphes non orientés :}
+
+Dans un graphe orienté, on doit respecter le sens des arcs. Un arc $(u, v)$ ne peut être emprunté que de $u$ vers $v$, pas dans l'autre sens.
+\end{notecours}
+
+\begin{exemple}
+Dans un graphe orienté :
+
+\textbf{Chemin élémentaire :} $1 \to 6 \to 2 \to 5 \to 3 \to 4$ de longueur 5
+\begin{itemize}
+    \item Tous les sommets sont différents
+    \item On suit le sens des arcs
+\end{itemize}
+
+\textbf{Chaîne élémentaire :} $1 \to 2 \to 3 \to 5 \to 4$ de longueur 4
+\begin{itemize}
+    \item On peut ignorer le sens des arcs (considérer le graphe sous-jacent)
+\end{itemize}
+
+\textbf{Circuit :} $2 \to 5 \to 3 \to 2$ de longueur 3
+\begin{itemize}
+    \item Commence et finit au même sommet
+    \item Respecte le sens des arcs
+\end{itemize}
+
+\textbf{Cycle :} $3 \to 4 \to 5 \to 3$ de longueur 3
+\begin{itemize}
+    \item Peut être vu comme un circuit dans le graphe non orienté sous-jacent
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Connexité}
+
+\needspace{12\baselineskip}
+\subsubsection{Définitions}
+
+\begin{definition}
+\textbf{Connexité :}
+
+Un graphe est \textcolor{titrebleu}{\textbf{connexe}} si et seulement si entre tout couple de sommets existe une chaîne.
+
+\textbf{Forte connexité :}
+
+Un graphe orienté est \textcolor{defvert}{\textbf{fortement connexe}} si et seulement si entre tout couple de sommets existe un chemin (dans les deux sens).
+\end{definition}
+
+\begin{astuce}
+\textbf{Vérification pratique :}
+\begin{itemize}
+    \item Pour un graphe \textbf{non orienté} : il suffit qu'il n'y ait qu'une seule composante connexe
+    \item Pour un graphe \textbf{orienté} : depuis chaque sommet, on doit pouvoir atteindre tous les autres en suivant les arcs
+\end{itemize}
+\end{astuce}
+
+\needspace{12\baselineskip}
+\subsubsection{Coupe (Cocycle)}
+
+\begin{definition}
+Une \textcolor{titrebleu}{\textbf{coupe}} (ou \textbf{cocycle}) associée à un ensemble de sommets $S \subseteq V$ dans un graphe $G = (V, E)$ est un sous-ensemble d'arêtes dont une extrémité exactement est dans $S$.
+
+\textbf{Notation :}
+$$[S, V \setminus S] = \delta(S) = \{e = uv \in E : u \in S, v \in V \setminus S\}$$
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation :}
+
+La coupe $\delta(S)$ représente l'ensemble des arêtes qui "traversent" la frontière entre $S$ et son complémentaire $V \setminus S$.
+
+Si on supprime toutes les arêtes de $\delta(S)$, le graphe est déconnecté en (au moins) deux composantes : $S$ et $V \setminus S$.
+\end{notecours}
+
+\begin{exemple}
+Soit $V = \{1, 2, 3, 4, 5, 6\}$ et $S = \{1, 2, 3\}$.
+
+Si les arêtes sont : $\{(1,2), (2,3), (1,3), (3,4), (2,5), (4,5), (5,6)\}$
+
+Alors : $\delta(S) = \{(3,4), (2,5)\}$
+
+Ces deux arêtes sont les seules qui relient $S$ au reste du graphe.
+\end{exemple}
+
+\newpage
+\subsection{Arbres}
+
+\needspace{12\baselineskip}
+\subsubsection{Définition et propriétés}
+
+\begin{definition}
+Un \textcolor{titrebleu}{\textbf{arbre}} $A = (V, E)$ est un graphe connexe sans cycle.
+\end{definition}
+
+\begin{important}
+Un arbre satisfait les propriétés équivalentes suivantes :
+\begin{enumerate}
+    \item $|E| = |V| - 1$ (nombre d'arêtes = nombre de sommets $-$ 1)
+    \item Il existe \textcolor{titrebleu}{\textbf{exactement une chaîne}} entre tout couple de sommets
+    \item C'est un graphe \textcolor{defvert}{\textbf{connexe minimal}} : supprimer n'importe quelle arête le déconnecte
+    \item C'est un graphe \textcolor{algoviolet}{\textbf{sans cycle maximal}} : ajouter n'importe quelle arête crée un cycle
+\end{enumerate}
+\end{important}
+
+\begin{notecours}
+\textbf{Terminologie pour les arbres :}
+\begin{itemize}
+    \item \textbf{Racine} : sommet distingué dans un arbre enraciné
+    \item \textbf{Feuille} : sommet de degré 1
+    \item \textbf{Nœud interne} : sommet qui n'est pas une feuille
+    \item \textbf{Profondeur} : distance depuis la racine
+    \item \textbf{Hauteur} : profondeur maximale
+\end{itemize}
+\end{notecours}
+
+\begin{exemple}
+\textbf{Exemple d'arbre :}
+
+Soit un arbre à 6 sommets $\{1, 2, 3, 4, 5, 6\}$ avec arêtes $\{(1,2), (1,3), (2,4), (2,5), (3,6)\}$
+
+Propriétés vérifiées :
+\begin{itemize}
+    \item $|E| = 5 = 6 - 1 = |V| - 1$ (verifie)
+    \item Connexe : on peut aller de n'importe quel sommet à n'importe quel autre (verifie)
+    \item Sans cycle : aucune chaîne fermée (verifie)
+    \item Entre 1 et 6 : une seule chaîne $1 - 3 - 6$ (verifie)
+\end{itemize}
+
+Feuilles : sommets 4, 5, 6 (degré 1)
+\end{exemple}
+
+\begin{astuce}
+\textbf{Applications des arbres :}
+\begin{itemize}
+    \item Arbres de recouvrement de coût minimum (MST)
+    \item Arbres de décision
+    \item Hiérarchies et taxonomies
+    \item Structures de données (arbres binaires, B-arbres)
+    \item Réseaux minimaux de télécommunication
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Réseaux : Définitions et Notations}
+
+\subsection{Notion de réseau}
+
+\begin{definition}
+Un \textcolor{titrebleu}{\textbf{réseau}} est un graphe orienté $G = (V, E)$ dont les arcs ou les nœuds sont munis d'une ou plusieurs valeurs (coûts, capacités, demandes).
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsection{Notations et paramètres}
+
+\begin{definition}
+Dans la suite, nous utiliserons les notations suivantes :
+
+\textbf{Pour les sommets ($\forall i \in V$) :}
+\begin{itemize}
+    \item $b_i < 0$ : le sommet $i$ a une \textcolor{importantrouge}{\textbf{demande}} (puits, destination)
+    \item $b_i > 0$ : le sommet $i$ a une \textcolor{defvert}{\textbf{offre}} (source, origine)
+    \item $b_i = 0$ : le sommet $i$ est un \textcolor{titrebleu}{\textbf{nœud de transit}} (intermédiaire)
+\end{itemize}
+
+\textbf{Pour les arcs ($\forall (i,j) \in E$) :}
+\begin{itemize}
+    \item $c_{ij}$ : \textcolor{algoviolet}{\textbf{coût unitaire}} pour traverser l'arc $(i,j)$ (notation : $c_{ij} < C$)
+    \item $u_{ij}$ : \textcolor{exempleorange}{\textbf{capacité supérieure}} de l'arc $(i,j)$ (notation : $u_{ij} < U$)
+    \item $l_{ij}$ : \textcolor{defvert}{\textbf{capacité inférieure}} de l'arc $(i,j)$ (notation : $l_{ij} < L$)
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Conservation du flot :}
+
+Dans un réseau de flot, on a généralement la contrainte :
+$$\sum_{i \in V} b_i = 0$$
+
+C'est-à-dire que la somme totale des offres égale la somme totale des demandes. Ce qui entre dans le réseau doit en sortir.
+\end{notecours}
+
+\begin{exemple}
+\textbf{Exemple de réseau :}
+
+Réseau de distribution d'eau avec :
+\begin{itemize}
+    \item Sommet 1 (source) : $b_1 = +100$ (station de pompage)
+    \item Sommets 2, 3 (transit) : $b_2 = b_3 = 0$ (stations intermédiaires)
+    \item Sommets 4, 5 (puits) : $b_4 = -60$, $b_5 = -40$ (villes à alimenter)
+    \item Arc $(1,2)$ : $c_{12} = 2$ €/m³, $u_{12} = 70$ m³/h, $l_{12} = 10$ m³/h
+\end{itemize}
+
+Vérification : $100 + 0 + 0 + (-60) + (-40) = 0$ (verifie)
+\end{exemple}
+
+\newpage
+\section{Complexité d'un Algorithme}
+
+\subsection{Définition}
+
+\begin{definition}
+La \textcolor{titrebleu}{\textbf{complexité temps}} d'un algorithme est une fonction du nombre d'opérations élémentaires effectuées dans l'algorithme.
+
+On utilise la notation \textcolor{defvert}{\textbf{$O$}} (grand O) pour donner un ordre de grandeur de la complexité.
+\end{definition}
+
+\begin{definition}
+Un algorithme a une complexité $O(f(n))$ s'il existe des constantes $c$ et $n_0$ tels que le temps pris par l'algorithme dans le pire des cas est au plus $c \cdot f(n)$ pour $n \geq n_0$.
+\end{definition}
+
+\begin{notecours}
+\textbf{Classes de complexité courantes :}
+
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Notation} & \textbf{Nom} & \textbf{Exemple} \\
+\hline
+$O(1)$ & Constante & Accès à un élément d'un tableau \\
+$O(\log n)$ & Logarithmique & Recherche dichotomique \\
+$O(n)$ & Linéaire & Parcours d'une liste \\
+$O(n \log n)$ & Linéarithmique & Tri fusion, tri rapide \\
+$O(n^2)$ & Quadratique & Tri à bulles, parcours de matrice \\
+$O(n^3)$ & Cubique & Produit de matrices naïf \\
+$O(2^n)$ & Exponentielle & Ensemble des parties, problème du sac à dos \\
+$O(n!)$ & Factorielle & Problème du voyageur de commerce (force brute) \\
+\hline
+\end{tabular}
+\end{notecours}
+
+\begin{astuce}
+\textbf{Algorithmes polynomiaux vs exponentiels :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{\textbf{Polynomial}} ($O(n^k)$) : considérés comme \textit{efficaces} et \textit{résolubles}
+    \item \textcolor{importantrouge}{\textbf{Exponentiel}} ($O(2^n)$, $O(n!)$) : rapidement \textit{impraticables} pour grandes instances
+\end{itemize}
+
+Pour $n = 50$ :
+\begin{itemize}
+    \item $O(n^2) = 2\,500$ opérations
+    \item $O(2^n) \approx 10^{15}$ opérations (plusieurs jours de calcul)
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Problèmes de Base dans les Réseaux}
+
+\begin{important}
+Les trois problèmes fondamentaux d'optimisation dans les réseaux sont :
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Problème du plus court chemin}}
+    \item \textcolor{defvert}{\textbf{Problème du flot maximum}}
+    \item \textcolor{algoviolet}{\textbf{Problème du flot de coût minimum}}
+\end{enumerate}
+\end{important}
+
+\subsection{Problème du Plus Court Chemin}
+
+\needspace{10\baselineskip}
+\subsubsection{Description du problème}
+
+\begin{definition}
+\textbf{Problème :} Il s'agit de trouver la façon la plus économique (en temps, distance, difficulté, coût, etc.) de passer d'un nœud d'un réseau à un autre.
+
+\textbf{Données :}
+\begin{itemize}
+    \item $G = (V, E)$ : graphe orienté
+    \item $s \in V$ : nœud origine (source)
+    \item $p \in V$ : nœud destination (puits)
+    \item $c_{ij}$ : coût unitaire pour chaque arc $(i,j) \in E$
+\end{itemize}
+
+\textbf{Objectif :} Trouver un chemin de $s$ à $p$ de coût total minimum.
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsubsection{Formulation linéaire}
+
+\begin{definition}
+\textbf{Variables de décision :}
+$$x_{ij} = \begin{cases}
+1 & \text{si l'arc } (i,j) \text{ est choisi dans le chemin}\\
+0 & \text{sinon}
+\end{cases}$$
+
+\textbf{Contraintes (conservation du flot) :}
+$$\sum_{j \in V} x_{ij} - \sum_{j \in V} x_{ji} = \begin{cases}
++1 & \text{si } i = s \text{ (origine)}\\
+-1 & \text{si } i = p \text{ (destination)}\\
+0 & \text{sinon (nœud de transit)}
+\end{cases}$$
+
+\textbf{Fonction objectif :}
+$$\min \sum_{(i,j) \in E} c_{ij} x_{ij}$$
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation des contraintes :}
+
+\begin{itemize}
+    \item Au nœud source $s$ : on sort (+1), on n'entre pas
+    \item Au nœud destination $p$ : on entre (-1), on ne sort pas
+    \item Aux nœuds de transit : ce qui entre = ce qui sort (conservation)
+\end{itemize}
+
+Ces contraintes garantissent qu'on construit bien un chemin de $s$ à $p$.
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsubsection{Remarques importantes}
+
+\begin{important}
+\textbf{1. Circuits négatifs :}
+
+L'objectif est \textcolor{importantrouge}{\textbf{infini}} (ou non borné) en présence de circuits négatifs.
+
+Un circuit négatif est un cycle dont la somme des coûts des arcs est négative. On pourrait le parcourir indéfiniment pour réduire le coût à $-\infty$.
+
+\textbf{2. Relaxation linéaire :}
+
+La relaxation linéaire du problème donne une solution \textcolor{defvert}{\textbf{entière}}.
+
+Cela signifie qu'on peut résoudre le problème en autorisant $x_{ij} \in [0,1]$ (programmation linéaire), et la solution optimale aura automatiquement des valeurs entières ($x_{ij} \in \{0,1\}$).
+
+\textbf{Raison :} La matrice des contraintes est la matrice d'incidence du graphe, qui est \textit{totalement unimodulaire}.
+\end{important}
+
+\needspace{12\baselineskip}
+\subsubsection{Algorithmes de résolution}
+
+\begin{algorithme}
+\textbf{Algorithme de Bellman :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Contexte :} Graphe sans circuits (DAG - Directed Acyclic Graph)
+    \item \textcolor{defvert}{Complexité :} $O(|V| + |E|)$
+    \item \textcolor{algoviolet}{Principe :} Traitement des sommets par ordre topologique
+\end{itemize}
+
+\textbf{Algorithme de Dijkstra :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Contexte :} Poids (coûts) positifs ou nuls
+    \item \textcolor{defvert}{Complexité :} $O(|E| + |V| \log |V|)$ avec tas de Fibonacci
+    \item \textcolor{algoviolet}{Principe :} Sélection gloutonne du sommet de distance minimale
+\end{itemize}
+
+\textbf{Algorithme de Bellman-Ford :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Contexte :} Cas général (poids négatifs autorisés)
+    \item \textcolor{defvert}{Complexité :} $O(|V| \cdot |E|)$
+    \item \textcolor{algoviolet}{Principe :} Relaxation itérative de toutes les arêtes
+    \item \textcolor{importantrouge}{Bonus :} Détecte les circuits négatifs
+\end{itemize}
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple numérique :}
+
+Graphe avec 4 sommets, source = 1, destination = 4.
+
+Arcs et coûts : $(1,2): 3$, $(1,3): 5$, $(2,3): 1$, $(2,4): 7$, $(3,4): 2$
+
+\textbf{Plus court chemin :} $1 \to 2 \to 3 \to 4$
+
+\textbf{Coût total :} $3 + 1 + 2 = 6$
+
+Autres chemins :
+\begin{itemize}
+    \item $1 \to 2 \to 4$ : coût = $3 + 7 = 10$
+    \item $1 \to 3 \to 4$ : coût = $5 + 2 = 7$
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Problème du Flot Maximum}
+
+\needspace{10\baselineskip}
+\subsubsection{Description du problème}
+
+\begin{definition}
+\textbf{Problème :} Il s'agit d'envoyer la plus grande valeur de flot (quantité, volume, usagers, etc.) à travers un réseau entre deux points en tenant compte d'une capacité limitative.
+
+\textbf{Données :}
+\begin{itemize}
+    \item $G = (V, E)$ : graphe orienté
+    \item $s \in V$ : nœud source (origine du flot)
+    \item $t \in V$ : nœud puits (destination du flot)
+    \item $u_{ij}$ : capacité de l'arc $(i,j)$ avec $0 \leq u_{ij} \leq U$
+\end{itemize}
+
+\textbf{Objectif :} Maximiser le flot envoyé de $s$ à $t$.
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsubsection{Formulation linéaire}
+
+\begin{definition}
+\textbf{Variables de décision :}
+$$x_{ij} = \text{valeur du flot sur l'arc } (i,j)$$
+
+\textbf{Contraintes :}
+
+1. \textit{Conservation du flot aux nœuds :}
+$$\sum_{j \in V} x_{ij} - \sum_{j \in V} x_{ji} = \begin{cases}
++v & \text{si } i = s \text{ (source)}\\
+-v & \text{si } i = t \text{ (puits)}\\
+0 & \text{sinon (nœuds intermédiaires)}
+\end{cases}$$
+
+2. \textit{Contraintes de capacité :}
+$$0 \leq x_{ij} \leq u_{ij}, \quad \forall (i,j) \in E$$
+
+\textbf{Fonction objectif :}
+$$\max \; v$$
+où $v$ est la valeur du flot total (quantité sortant de $s$ = quantité entrant dans $t$).
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation physique :}
+
+Imaginez un réseau de tuyaux :
+\begin{itemize}
+    \item La source $s$ injecte $v$ unités de liquide
+    \item Le puits $t$ reçoit $v$ unités de liquide
+    \item Chaque tuyau (arc) a une capacité maximale $u_{ij}$
+    \item Le liquide est conservé : ce qui entre dans un nœud intermédiaire en ressort
+\end{itemize}
+
+On cherche à maximiser $v$ (débit total).
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsubsection{Algorithmes de résolution}
+
+\begin{algorithme}
+\textbf{Algorithme de Ford-Fulkerson :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Principe :} Recherche itérative de chemins augmentants
+    \item \textcolor{defvert}{Complexité :} $O(|E| \cdot f^*)$ où $f^*$ est la valeur du flot maximum
+    \item \textcolor{algoviolet}{Propriété :} Peut ne pas converger si les capacités sont irrationnelles
+\end{itemize}
+
+\textbf{Algorithme d'Edmonds-Karp :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Principe :} Variante de Ford-Fulkerson utilisant BFS pour trouver les chemins
+    \item \textcolor{defvert}{Complexité :} $O(|V| \cdot |E|^2)$
+    \item \textcolor{algoviolet}{Avantage :} Convergence garantie en temps polynomial
+\end{itemize}
+
+\textbf{Algorithme Push-Relabel :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Principe :} Approche locale par préflot (peut violer temporairement la conservation)
+    \item \textcolor{defvert}{Complexité :} $O(|V|^2 \cdot |E|)$ version de base, $O(|V|^3)$ améliorée
+    \item \textcolor{algoviolet}{Avantage :} Efficace en pratique, parallélisable
+\end{itemize}
+\end{algorithme}
+
+\begin{astuce}
+\textbf{Théorème Flot-Max/Coupe-Min :}
+
+La valeur du flot maximum de $s$ à $t$ est égale à la capacité de la coupe minimum séparant $s$ et $t$.
+
+$$\max \{\text{valeur du flot}\} = \min \{\text{capacité d'une coupe}\}$$
+
+Une \textit{coupe} $(S, T)$ sépare $s$ (dans $S$) et $t$ (dans $T$), et sa capacité est :
+$$\text{cap}(S,T) = \sum_{i \in S, j \in T, (i,j) \in E} u_{ij}$$
+\end{astuce}
+
+\begin{exemple}
+\textbf{Exemple numérique :}
+
+Réseau avec source = 1, puits = 4.
+
+Capacités : $(1,2): 10$, $(1,3): 5$, $(2,3): 15$, $(2,4): 10$, $(3,4): 10$
+
+\textbf{Flot maximum possible :} $v = 15$
+
+Répartition :
+\begin{itemize}
+    \item Arc $(1,2)$ : flot = 10 (saturé)
+    \item Arc $(1,3)$ : flot = 5 (saturé)
+    \item Arc $(2,3)$ : flot = 0
+    \item Arc $(2,4)$ : flot = 10 (saturé)
+    \item Arc $(3,4)$ : flot = 5
+\end{itemize}
+
+Vérification : sortie de 1 = $10 + 5 = 15$, entrée dans 4 = $10 + 5 = 15$ (verifie)
+\end{exemple}
+
+\newpage
+\subsection{Problème du Flot de Coût Minimum}
+
+\needspace{10\baselineskip}
+\subsubsection{Description du problème}
+
+\begin{definition}
+\textbf{Problème :} Il s'agit d'envoyer du flot à travers un réseau entre plusieurs points en tenant compte de capacités limitatives et en minimisant le coût global de circulation.
+
+\textbf{Données :}
+\begin{itemize}
+    \item $G = (V, E)$ : graphe orienté
+    \item Plusieurs nœuds sources et destinations
+    \item $b_i$ : demande ($b_i < 0$) ou offre ($b_i > 0$) au nœud $i$
+    \item $b_i = 0$ aux nœuds intermédiaires
+    \item $l_{ij}$ : capacité inférieure avec $0 \leq l_{ij} \leq L$
+    \item $u_{ij}$ : capacité supérieure avec $0 \leq u_{ij} \leq U$
+    \item $c_{ij}$ : coût unitaire par arc $(i,j)$
+\end{itemize}
+
+\textbf{Objectif :} Satisfaire toutes les demandes au coût minimum.
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsubsection{Formulation linéaire}
+
+\begin{definition}
+\textbf{Variables de décision :}
+$$x_{ij} = \text{valeur du flot sur l'arc } (i,j)$$
+
+\textbf{Contraintes :}
+
+1. \textit{Conservation du flot :}
+$$\sum_{j \in V} x_{ij} - \sum_{j \in V} x_{ji} = b_i, \quad \forall i \in V$$
+
+2. \textit{Contraintes de capacité :}
+$$l_{ij} \leq x_{ij} \leq u_{ij}, \quad \forall (i,j) \in E$$
+
+\textbf{Fonction objectif :}
+$$\min \sum_{(i,j) \in E} c_{ij} x_{ij}$$
+\end{definition}
+
+\begin{notecours}
+\textbf{Condition de faisabilité :}
+
+Pour qu'une solution existe, il faut que :
+$$\sum_{i \in V} b_i = 0$$
+
+C'est-à-dire que la somme des offres égale la somme des demandes (en valeur absolue).
+\end{notecours}
+
+\begin{important}
+\textbf{Généralisation des problèmes précédents :}
+
+Le problème du flot de coût minimum \textcolor{titrebleu}{\textbf{généralise}} :
+\begin{itemize}
+    \item Le problème du plus court chemin (avec $b_s = 1$, $b_t = -1$, autres = 0)
+    \item Le problème du flot maximum (en ajoutant un arc de retour $(t,s)$ de capacité infinie et coût $-1$)
+\end{itemize}
+\end{important}
+
+\needspace{12\baselineskip}
+\subsubsection{Algorithmes de résolution}
+
+\begin{algorithme}
+\textbf{Principaux algorithmes :}
+
+\textbf{1. Algorithme du Simplexe sur Réseau :}
+\begin{itemize}
+    \item Variante spécialisée du simplexe pour les réseaux
+    \item Très efficace en pratique
+    \item Complexité polynomiale dans certains cas
+\end{itemize}
+
+\textbf{2. Algorithme des Chemins Augmentants :}
+\begin{itemize}
+    \item Extension de l'algorithme de Ford-Fulkerson
+    \item Recherche de chemins augmentants de coût négatif
+\end{itemize}
+
+\textbf{3. Algorithme Primal-Dual :}
+\begin{itemize}
+    \item Maintient simultanément une solution primale et duale
+    \item Converge vers l'optimum primal et dual
+\end{itemize}
+
+\textbf{4. Algorithme du Scaling de Capacité :}
+\begin{itemize}
+    \item Traite les arcs par ordre de capacité
+    \item Complexité polynomiale forte
+\end{itemize}
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple : Problème de transport}
+
+3 usines (offres) et 2 entrepôts (demandes).
+
+\textbf{Offres :}
+\begin{itemize}
+    \item Usine 1 : $b_1 = +50$
+    \item Usine 2 : $b_2 = +70$
+    \item Usine 3 : $b_3 = +30$
+\end{itemize}
+
+\textbf{Demandes :}
+\begin{itemize}
+    \item Entrepôt A : $b_A = -80$
+    \item Entrepôt B : $b_B = -70$
+\end{itemize}
+
+\textbf{Coûts de transport} (en €/unité) :
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+ & Entrepôt A & Entrepôt B \\
+\hline
+Usine 1 & 8 & 6 \\
+Usine 2 & 10 & 7 \\
+Usine 3 & 5 & 9 \\
+\hline
+\end{tabular}
+\end{center}
+
+Vérification : $50 + 70 + 30 = 150 = 80 + 70$ (verifie)
+
+\textbf{Objectif :} Minimiser le coût total de transport tout en satisfaisant toutes les demandes.
+\end{exemple}
+
+\newpage
+\section{Connexité dans les Réseaux de Télécommunications}
+
+\subsection{Problèmes généraux sur la connexité}
+
+\begin{definition}
+Les problèmes de connexité étudient :
+
+\textbf{1. Chaînes/chemins k-arêtes (ou sommets) disjointes :}
+Chercher $k$ chaînes entre deux sommets qui ne partagent aucune arête (ou aucun sommet).
+
+\textbf{2. Bornes sur chemins et cycles :}
+Étudier les propriétés des chemins et cycles dans un graphe.
+
+\textbf{3. Point d'articulation :}
+Un sommet $v$ est un point d'articulation si sa suppression augmente le nombre de composantes connexes : $(G - v) \nearrow$ composantes.
+
+\textbf{4. Ensemble d'articulation :}
+Un ensemble $W \subset V$ est un ensemble d'articulation si $(G \setminus W) \nearrow$ composantes.
+\end{definition}
+
+\begin{notecours}
+\textbf{Importance en télécommunications :}
+
+La connexité est cruciale pour la \textcolor{importantrouge}{\textbf{robustesse}} et la \textcolor{defvert}{\textbf{fiabilité}} des réseaux :
+\begin{itemize}
+    \item Résister aux pannes de câbles ou d'équipements
+    \item Garantir la continuité de service
+    \item Permettre le reroutage du trafic
+\end{itemize}
+\end{notecours}
+
+\newpage
+\subsection{Architecture des Réseaux de Télécommunications}
+
+\subsubsection{Les trois niveaux de traitement}
+
+\begin{definition}
+Les réseaux de télécommunications sont structurés en trois niveaux :
+
+\textbf{1. Longue distance :}
+\begin{itemize}
+    \item Connection ville à ville
+    \item Nœuds "barrière" (backbone nodes)
+    \item Infrastructure nationale/internationale
+\end{itemize}
+
+\textbf{2. Moyenne distance :}
+\begin{itemize}
+    \item Centres d'échange à l'intérieur des villes
+    \item Connections barrières $\leftrightarrow$ centres
+    \item Clusters de clients
+\end{itemize}
+
+\textbf{3. Faible distance :}
+\begin{itemize}
+    \item Accès locaux
+    \item Clients dans des clusters
+    \item Liaison au centre d'échange local
+\end{itemize}
+\end{definition}
+
+\begin{astuce}
+À chaque niveau correspond un \textcolor{titrebleu}{\textbf{critère d'installation différent}} :
+\begin{itemize}
+    \item Longue distance : robustesse maximale
+    \item Moyenne distance : équilibre coût/fiabilité
+    \item Faible distance : coût minimal
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Problèmes de Longue Distance}
+
+\subsubsection{Le long terme (> 10 années)}
+
+\begin{definition}
+\textbf{Contexte :}
+\begin{itemize}
+    \item Durée : supérieure à 10 années
+    \item Seule la \textcolor{titrebleu}{\textbf{topologie}} est traitée
+    \item La demande n'est pas assez fiable pour le dimensionnement détaillé
+\end{itemize}
+
+\textbf{Objectif principal :}
+
+Déterminer l'ensemble des câbles connectant tous les nœuds sous certaines contraintes de sécurité et au moindre coût.
+\end{definition}
+
+\begin{notecours}
+\textbf{Impact de la technologie :}
+
+Le développement de la technologie de la \textcolor{defvert}{\textbf{fibre optique}} a permis :
+\begin{itemize}
+    \item L'utilisation de composants de faibles coûts
+    \item Une capacité presque illimitée
+    \item Trafic très élevé possible
+\end{itemize}
+
+\textbf{Conséquence :} Deux problèmes majeurs émergent :
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Économique}} : Minimiser les coûts de construction
+    \item \textcolor{importantrouge}{\textbf{Sécuritaire}} : Restauration (ou prévision) des liens en cas de panne
+\end{enumerate}
+\end{notecours}
+
+\needspace{12\baselineskip}
+\subsubsection{Le moyen terme (< 5 années)}
+
+\begin{definition}
+\textbf{Contexte :}
+\begin{itemize}
+    \item Durée : inférieure à 5 années
+    \item \textcolor{titrebleu}{\textbf{Dimensionnement}} des capacités
+\end{itemize}
+
+\textbf{Entrée :}
+\begin{itemize}
+    \item Une matrice de demandes
+    \item La topologie actuelle du réseau
+\end{itemize}
+
+\textbf{Sortie :}
+\begin{itemize}
+    \item Réaliser le routage en fonction de la capacité des câbles
+    \item L'ajout d'arêtes est autorisé
+\end{itemize}
+\end{definition}
+
+\newpage
+\subsection{Solutions pour les Longues Distances}
+
+\subsubsection{Solution de base : les arbres}
+
+\begin{definition}
+\textbf{Avantages des arbres :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Connexité assurée}} : tous les nœuds sont connectés
+    \item \textcolor{defvert}{\textbf{Moindre coût}} : nombre minimum d'arêtes ($|V| - 1$)
+    \item \textcolor{algoviolet}{\textbf{Construction facile}} : algorithmes efficaces (Kruskal, Prim)
+\end{itemize}
+
+\textbf{Algorithmes de construction :}
+\begin{itemize}
+    \item Algorithme de Kruskal : $O(|E| \log |E|)$
+    \item Algorithme de Prim : $O(|E| \log |V|)$
+\end{itemize}
+\end{definition}
+
+\needspace{18\baselineskip}
+\subsubsection{Modèle linéaire pour l'arbre de poids minimum}
+
+\begin{definition}
+\textbf{Variables de décision :}
+$$x_e = \begin{cases}
+1 & \text{si l'arête } e \text{ est choisie}\\
+0 & \text{sinon}
+\end{cases}$$
+
+\textbf{Contraintes :}
+
+1. \textit{Nombre d'arêtes :}
+$$\sum_{e \in E} x_e = |V| - 1$$
+
+2. \textit{Connexité (contraintes de coupe) :}
+$$\sum_{e \in \delta(W)} x_e \geq 1, \quad \forall W \subset V, W \neq \emptyset$$
+
+\textbf{Fonction objectif :}
+$$\min \sum_{e \in E} c_e x_e$$
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation des contraintes de coupe :}
+
+Pour tout sous-ensemble non vide $W$ de sommets, il doit y avoir au moins une arête reliant $W$ à $V \setminus W$. Cela garantit que le graphe est connexe.
+
+Le nombre de contraintes de coupe est exponentiel ($2^{|V|} - 2$), mais on peut les ajouter dynamiquement (génération de coupes).
+\end{notecours}
+
+\begin{important}
+\textbf{Problème des arbres :}
+
+Une arête supprimée (câble coupé) $\Rightarrow$ perte de connexité $\Rightarrow$ au moins deux composantes connexes (réseau coupé !).
+
+\textbf{Solution :} Rechercher des topologies plus robustes → \textcolor{importantrouge}{\textbf{réseaux k-connexes}}
+\end{important}
+
+\newpage
+\subsection{Réseaux k-Connexes}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Un réseau \textcolor{titrebleu}{\textbf{k-connexe}} a la propriété suivante :
+
+\textbf{Possibilité pour un réseau de résister à la destruction d'au plus $k-1$ câbles entre deux points.}
+
+Autrement dit :
+\begin{itemize}
+    \item Il existe $k$ chaînes arêtes-disjointes entre toute paire de sommets
+    \item La suppression de moins de $k$ arêtes ne déconnecte pas le réseau
+\end{itemize}
+\end{definition}
+
+\begin{astuce}
+\textbf{Niveaux de robustesse :}
+\begin{itemize}
+    \item \textcolor{defvert}{1-connexe} : connexe simple (arbre suffisant)
+    \item \textcolor{titrebleu}{2-connexe} : résiste à la panne d'un câble
+    \item \textcolor{algoviolet}{k-connexe} : résiste à la panne de $k-1$ câbles
+\end{itemize}
+
+Plus $k$ est grand, plus le réseau est robuste, mais plus il est coûteux.
+\end{astuce}
+
+\needspace{15\baselineskip}
+\subsubsection{Types de nœuds selon les requêtes}
+
+\begin{definition}
+Chaque nœud $j$ est caractérisé par une \textcolor{titrebleu}{\textbf{requête}} $r_j \in \{0, 1, 2\}$ indiquant le niveau de fiabilité souhaité.
+
+Entre deux nœuds $i$ et $j$, il faut $\min\{r_i, r_j\}$ chaînes disjointes.
+
+\textbf{Trois types de nœuds :}
+
+\textbf{1. Nœuds spéciaux ($r_i = 2$) :}
+\begin{itemize}
+    \item Haut degré de sûreté nécessaire
+    \item Centres critiques, hôpitaux, services d'urgence
+    \item Requièrent 2 chemins disjoints avec tout autre nœud spécial
+\end{itemize}
+
+\textbf{2. Nœuds ordinaires ($r_i = 1$) :}
+\begin{itemize}
+    \item Doivent simplement être connectés
+    \item Services standards
+\end{itemize}
+
+\textbf{3. Nœuds optionnels ($r_i = 0$) :}
+\begin{itemize}
+    \item Peuvent ne pas être dans le réseau final
+    \item Connexion si économiquement viable
+\end{itemize}
+\end{definition}
+
+\needspace{12\baselineskip}
+\subsubsection{Contraintes de robustesse}
+
+\begin{important}
+\textbf{Contraintes principales :}
+
+\textbf{1. Résistance aux pannes de liens :}
+
+La destruction d'un lien ne doit pas déconnecter le réseau entre deux nœuds spéciaux.
+
+$\Rightarrow$ Au moins \textcolor{titrebleu}{\textbf{deux chaînes arêtes-disjointes}} entre nœuds spéciaux.
+
+\textbf{2. Résistance aux pannes de nœuds :}
+
+La destruction d'un nœud ne doit pas déconnecter le réseau.
+
+$\Rightarrow$ Au moins \textcolor{defvert}{\textbf{deux chaînes sommets-disjointes}} entre toute paire de nœuds.
+\end{important}
+
+\newpage
+\subsection{Cas Particuliers et Complexité}
+
+\begin{definition}
+Soit $G = (V, E)$ un graphe. Selon les valeurs de $r_i$, on obtient différents problèmes :
+
+\begin{enumerate}
+    \item \textcolor{defvert}{$r_i = 1, \forall i \in V$}
+    
+    $\Rightarrow$ \textbf{Arbre couvrant} (Minimum Spanning Tree)
+    
+    Complexité : \textit{Polynomial} ($O(|E| \log |V|)$)
+    
+    \item \textcolor{defvert}{$r_s = r_t = 1$, $r_i = 0$ pour tous les autres}
+    
+    $\Rightarrow$ \textbf{Plus court chemin} de $s$ à $t$
+    
+    Complexité : \textit{Polynomial} ($O(|E| + |V| \log |V|)$)
+    
+    \item \textcolor{titrebleu}{$r_s = r_t = k$ (avec $k \geq 2$), $r_i = 0$ pour tous les autres}
+    
+    $\Rightarrow$ \textbf{k plus courts chemins arêtes-disjoints} de $s$ à $t$
+    
+    Complexité : \textit{Polynomial} ($O(k \cdot |E| \log |V|)$)
+    
+    \item \textcolor{importantrouge}{$r_i \in \{0, 1\}, \forall i \in V$}
+    
+    $\Rightarrow$ \textbf{Arbre de Steiner}
+    
+    Complexité : \textit{NP-difficile}
+    
+    \item \textcolor{importantrouge}{$r_i = 2, \forall i \in V$}
+    
+    $\Rightarrow$ \textbf{Réseau 2-connexe de coût minimum}
+    
+    Complexité : \textit{NP-difficile}
+\end{enumerate}
+\end{definition}
+
+\begin{notecours}
+\textbf{Remarques sur la complexité :}
+
+\begin{itemize}
+    \item Les problèmes avec connectivité simple (arbres, chemins) sont \textcolor{defvert}{\textbf{polynomiaux}}
+    \item Les problèmes avec choix de sommets (Steiner) ou double connectivité sont \textcolor{importantrouge}{\textbf{NP-difficiles}}
+    \item Pour les problèmes NP-difficiles, on utilise :
+    \begin{itemize}
+        \item Des heuristiques
+        \item Des algorithmes d'approximation
+        \item Des méthodes exactes (Branch \& Cut) pour instances petites/moyennes
+    \end{itemize}
+\end{itemize}
+\end{notecours}
+
+\newpage
+\subsection{Approche de Résolution : Réseau 2-Connexe}
+
+\subsubsection{Modèle linéaire entier pour $r_i = 2, \forall i \in V$}
+
+\begin{definition}
+\textbf{Variables de décision :}
+$$x_e = \begin{cases}
+1 & \text{si l'arête } e \text{ est choisie}\\
+0 & \text{sinon}
+\end{cases}$$
+
+\textbf{Contraintes (coupes 2-connexes) :}
+$$\sum_{e \in \delta(W)} x_e \geq 2, \quad \forall W \subset V, W \neq \emptyset, W \neq V$$
+
+\textbf{Fonction objectif :}
+$$\min \sum_{e \in E} c_e x_e$$
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation :}
+
+Pour tout sous-ensemble propre $W$ de sommets, il doit y avoir au moins \textcolor{titrebleu}{\textbf{deux arêtes}} reliant $W$ à $V \setminus W$.
+
+Cela garantit qu'on ne peut pas déconnecter le graphe en supprimant une seule arête.
+\end{notecours}
+
+\needspace{12\baselineskip}
+\subsubsection{Méthode de résolution : Branch \& Cut}
+
+\begin{algorithme}
+\textbf{Relaxation linéaire + Branch \& Cut :}
+
+\textbf{Étape 1 : Relaxation}
+\begin{itemize}
+    \item On relaxe $x_e \in \{0,1\}$ en $x_e \in [0,1]$
+    \item On résout le programme linéaire
+\end{itemize}
+
+\textbf{Étape 2 : Génération de coupes}
+\begin{itemize}
+    \item Si la solution n'est pas entière, on cherche des contraintes violées
+    \item On ajoute dynamiquement les contraintes de coupe nécessaires
+    \item Algorithme de séparation : recherche de coupe minimale
+\end{itemize}
+
+\textbf{Étape 3 : Branchement}
+\begin{itemize}
+    \item Si la solution n'est toujours pas entière, on branche
+    \item Exploration de l'arbre de recherche (Branch \& Bound)
+\end{itemize}
+\end{algorithme}
+
+\begin{astuce}
+\textbf{Efficacité en pratique :}
+
+Bien que NP-difficile en théorie, le Branch \& Cut résout efficacement des instances de plusieurs centaines de nœuds grâce à :
+\begin{itemize}
+    \item La structure particulière du problème
+    \item Les techniques de prétraitement
+    \item Les heuristiques de recherche intelligentes
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Théorème de Menger (1927)}
+
+\subsubsection{Énoncé pour les réseaux (version arcs)}
+
+\begin{definition}
+Soit $R = (V, E, c)$ un réseau avec :
+\begin{itemize}
+    \item $c$ : capacité unitaire sur les arcs
+    \item $s \in V$ : source
+    \item $t \in V$ : puits
+\end{itemize}
+
+\textbf{Théorème de Menger (version flot-coupe) :}
+
+\textbf{(a)} La valeur d'un flot maximum dans $R$ est égale au nombre maximum de $st$-chemins arcs-disjoints.
+
+\textbf{(b)} La capacité d'une coupe minimum dans $R$ est égale au nombre minimum d'arcs dont la suppression détruit tous les $st$-chemins de $R$.
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsubsection{Énoncé pour les graphes non orientés}
+
+\begin{definition}
+\textbf{Théorème de Menger (version graphes) :}
+
+Soit $G = (V,E)$ un graphe non orienté avec deux sommets non adjacents $s$ et $t$, et soit $k$ un entier.
+
+Il existe $k$ chaînes de $s$ à $t$ \textcolor{titrebleu}{\textbf{sommets-disjointes}} (resp. \textcolor{defvert}{\textbf{arêtes-disjointes}}) si et seulement si $t$ reste connecté à $s$ après suppression de $k-1$ sommets différents de $s$ et $t$ (resp. arêtes) quelconques.
+\end{definition}
+
+\begin{notecours}
+\textbf{Interprétation :}
+
+Le nombre maximum de chemins disjoints entre $s$ et $t$ est égal au nombre minimum d'arêtes (ou sommets) qu'il faut supprimer pour séparer $s$ de $t$.
+
+C'est une généralisation du théorème Flot-Max/Coupe-Min.
+\end{notecours}
+
+\needspace{12\baselineskip}
+\subsubsection{Conséquence : Théorème de Whitney (1932)}
+
+\begin{important}
+\textbf{Caractérisation de la k-connexité :}
+
+Un graphe non orienté $G$ ayant au moins 2 sommets est \textcolor{titrebleu}{\textbf{k-arête-connexe}} si et seulement si pour chaque paire $s, t \in V(G)$ avec $s \neq t$, il existe $k$ chaînes de $s$ à $t$ arêtes-disjointes.
+
+Un graphe non orienté $G$ ayant au moins $k+1$ sommets est \textcolor{defvert}{\textbf{k-connexe}} (ou k-sommet-connexe) si et seulement si pour chaque paire $s, t \in V(G)$ avec $s \neq t$, il existe $k$ chaînes de $s$ à $t$ sommets-disjointes.
+\end{important}
+
+\begin{astuce}
+\textbf{Application pratique :}
+
+Pour vérifier qu'un réseau est 2-connexe :
+\begin{itemize}
+    \item Vérifier que pour toute paire de nœuds, il existe 2 chemins sommet-disjoints
+    \item Équivalent : vérifier qu'il n'existe aucun point d'articulation
+    \item Équivalent : vérifier que la suppression de tout nœud laisse le graphe connexe
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Exemple d'Application : Réseau Belge Belgacom}
+
+\subsubsection{Contexte}
+
+\begin{exemple}
+\textbf{Problème initial :}
+
+Le réseau Belgacom connectait 52 centres via un \textcolor{titrebleu}{\textbf{cycle hamiltonien}} (un cycle passant par tous les sommets exactement une fois).
+
+\textbf{Problème rencontré :}
+
+Une panne sur ce cycle $\Rightarrow$ Reroutage $\Rightarrow$ Nouvelle route chargée en arêtes !!
+
+Le trafic devait emprunter un très long détour, surchargeant certains liens.
+\end{exemple}
+
+\needspace{12\baselineskip}
+\subsubsection{Solution proposée}
+
+\begin{definition}
+\textbf{Idée :} Rechercher des topologies \textcolor{defvert}{\textbf{2-arêtes connexes}} avec des \textcolor{algoviolet}{\textbf{cycles bornés}}.
+
+\textbf{Contraintes :}
+\begin{itemize}
+    \item Cycles de longueur 3 à 6 arêtes
+    \item L'union de ces cycles doit être couvrante (tous les sommets inclus)
+    \item Minimiser le coût total
+\end{itemize}
+
+\textbf{Avantages :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Robustesse} : en cas de panne, reroutage local dans un petit cycle
+    \item \textcolor{defvert}{Efficacité} : les détours restent courts
+    \item \textcolor{algoviolet}{Modularité} : structure en cycles facilite la maintenance
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Référence :}
+
+Projet de recherche détaillé disponible sur :
+
+\url{https://mathopt.be/comex.ulb.ac.be/}
+
+Ce projet illustre l'application concrète des concepts de connexité et d'optimisation de réseaux à un problème réel de grande échelle.
+\end{notecours}
+
+\begin{astuce}
+\textbf{Leçon générale :}
+
+Dans la conception de réseaux robustes, il ne suffit pas d'assurer la 2-connexité globale. Il faut aussi considérer la \textcolor{importantrouge}{\textbf{longueur des chemins alternatifs}} pour garantir une bonne qualité de service même en cas de panne.
+\end{astuce}
+
+\newpage
+\section{Résumé et Points Essentiels}
+
+\subsection{Structures de graphes}
+
+\begin{astuce}
+\textbf{Concepts fondamentaux :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Graphe}} : structure $(V, E)$ avec sommets et arêtes/arcs
+    \item \textcolor{defvert}{\textbf{Matrice d'adjacence}} : représente les connexions entre sommets
+    \item \textcolor{algoviolet}{\textbf{Matrice d'incidence}} : relie sommets et arêtes/arcs
+    \item \textcolor{exempleorange}{\textbf{Degré}} : nombre d'arêtes incidentes à un sommet
+    \item \textcolor{titrebleu}{\textbf{Chaîne/Chemin}} : suite alternée de sommets et arêtes/arcs
+    \item \textcolor{defvert}{\textbf{Cycle/Circuit}} : chaîne/chemin fermé
+    \item \textcolor{algoviolet}{\textbf{Connexité}} : existence de chaînes entre tous sommets
+    \item \textcolor{exempleorange}{\textbf{Arbre}} : graphe connexe sans cycle
+\end{itemize}
+\end{astuce}
+
+\subsection{Problèmes d'optimisation}
+
+\begin{important}
+\textbf{Trois problèmes fondamentaux :}
+
+\textbf{1. Plus Court Chemin :}
+\begin{itemize}
+    \item Minimiser le coût total d'un chemin de $s$ à $t$
+    \item Algorithmes : Bellman, Dijkstra, Bellman-Ford
+    \item Complexité polynomiale
+\end{itemize}
+
+\textbf{2. Flot Maximum :}
+\begin{itemize}
+    \item Maximiser le flot envoyé de $s$ à $t$
+    \item Algorithmes : Ford-Fulkerson, Edmonds-Karp, Push-Relabel
+    \item Théorème Flot-Max = Coupe-Min
+\end{itemize}
+
+\textbf{3. Flot de Coût Minimum :}
+\begin{itemize}
+    \item Minimiser le coût total de circulation du flot
+    \item Généralise les deux problèmes précédents
+    \item Algorithme du simplexe sur réseau
+\end{itemize}
+\end{important}
+
+\subsection{Connexité et robustesse}
+
+\begin{astuce}
+\textbf{Niveaux de connexité :}
+\begin{itemize}
+    \item \textcolor{defvert}{1-connexe} : connexe (arbre suffisant)
+    \item \textcolor{titrebleu}{2-connexe} : résiste à une panne d'arête
+    \item \textcolor{algoviolet}{k-connexe} : résiste à $k-1$ pannes
+\end{itemize}
+
+\textbf{Théorèmes clés :}
+\begin{itemize}
+    \item Théorème de Menger : caractérisation par chemins disjoints
+    \item Théorème de Whitney : caractérisation de la k-connexité
+\end{itemize}
+\end{astuce}
+
+\subsection{Applications pratiques}
+
+\begin{notecours}
+\textbf{Domaines d'application :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Télécommunications} : topologie, routage, fiabilité
+    \item \textcolor{defvert}{Transports} : logistique, livraisons, trafic
+    \item \textcolor{algoviolet}{Énergie} : distribution électrique, réseau de gaz
+    \item \textcolor{exempleorange}{Informatique} : réseaux, flux de données, internet
+\end{itemize}
+
+\textbf{Critères de conception :}
+\begin{enumerate}
+    \item Minimiser les coûts
+    \item Garantir la robustesse
+    \item Optimiser les performances
+    \item Faciliter la maintenance
+\end{enumerate}
+\end{notecours}
+
+\newpage
+\section{Conclusion}
+
+\begin{important}
+L'optimisation dans les réseaux est un domaine riche et fondamental de la recherche opérationnelle, avec des applications concrètes dans de nombreux secteurs.
+
+\textbf{Points clés à retenir :}
+\begin{enumerate}
+    \item Les \textcolor{titrebleu}{\textbf{graphes}} sont des modèles puissants pour représenter des réseaux
+    
+    \item Les \textcolor{defvert}{\textbf{problèmes classiques}} (plus court chemin, flot maximum, flot de coût minimum) ont des algorithmes efficaces bien établis
+    
+    \item La \textcolor{algoviolet}{\textbf{connexité}} est cruciale pour la robustesse des réseaux
+    
+    \item Le \textcolor{exempleorange}{\textbf{compromis coût-fiabilité}} guide la conception de réseaux réels
+    
+    \item Les \textcolor{importantrouge}{\textbf{méthodes exactes et heuristiques}} permettent de résoudre des problèmes de grande taille
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Pour approfondir :}
+
+\begin{itemize}
+    \item Étudier les algorithmes en détail (TD)
+    \item Pratiquer sur des exemples concrets
+    \item Explorer les variantes et extensions des problèmes de base
+    \item S'intéresser aux applications dans votre domaine d'intérêt
+    \item Consulter les ressources du livre blanc de la Roadef
+\end{itemize}
+\end{astuce}
+
+\begin{notecours}
+\textbf{Perspectives :}
+
+Les défis actuels et futurs incluent :
+\begin{itemize}
+    \item Réseaux dynamiques et adaptatifs
+    \item Optimisation multi-objectifs
+    \item Prise en compte de l'incertitude
+    \item Réseaux intelligents (smart grids, IoT)
+    \item Optimisation en temps réel
+    \item Intelligence artificielle et apprentissage pour l'optimisation
+\end{itemize}
+\end{notecours}
+
+\newpage
+\section*{Bibliographie}
+
+\begin{enumerate}
+    \item Association Roadef (2019). \textit{Le livre blanc de la recherche opérationnelle}. \\
+    \url{http://www.roadef.org/roadef-livre-blanc}
+    
+    \item Applegate, D. L., Bixby, R. E., Chvátal, V., Cook, W. J. (2006). \\
+    \textit{The Traveling Salesman Problem}. Chapitre 1.
+    
+    \item Cormen, T. H., Leiserson, C. E., Rivest, R. L., Stein, C. (1990). \\
+    \textit{Introduction to Algorithms}. MIT Press.
+    
+    \item Simplot-Ryl, D., Fleury, E. (2009). \\
+    \textit{Réseaux de capteurs - Théorie et modélisation}. Éditions Lavoisier.
+    
+    \item Ahuja, R. K., Magnanti, T. L., Orlin, J. B. (1993). \\
+    \textit{Network Flows: Theory, Algorithms, and Applications}. Prentice Hall.
+    
+    \item Schrijver, A. (2003). \\
+    \textit{Combinatorial Optimization: Polyhedra and Efficiency}. Springer.
+\end{enumerate}
+
+\vspace{2em}
+
+\begin{center}
+\textcolor{titrebleu}{\Large\textbf{Fin de la partie principale}}
+\end{center}
+
+\newpage
+\section*{Annexes : Compléments de Cours}
+
+\subsection*{A. Algorithmes Détaillés}
+
+\subsubsection*{A.1 Algorithme de Dijkstra (Plus Court Chemin)}
+
+\begin{algorithme}
+\textbf{Données :} Graphe $G = (V, E)$, source $s$, poids positifs $c_{ij} \geq 0$
+
+\textbf{Initialisation :}
+\begin{itemize}
+    \item $d[s] \leftarrow 0$ (distance de $s$ à $s$)
+    \item $d[v] \leftarrow +\infty$ pour tout $v \in V \setminus \{s\}$
+    \item $S \leftarrow \emptyset$ (ensemble des sommets traités)
+    \item $Q \leftarrow V$ (file de priorité)
+\end{itemize}
+
+\textbf{Tant que} $Q \neq \emptyset$ :
+\begin{enumerate}
+    \item Extraire $u$ de $Q$ avec $d[u]$ minimal
+    \item Ajouter $u$ à $S$
+    \item \textbf{Pour chaque} voisin $v$ de $u$ :
+    \begin{itemize}
+        \item Si $d[u] + c_{uv} < d[v]$ :
+        \begin{itemize}
+            \item $d[v] \leftarrow d[u] + c_{uv}$
+            \item $\text{pred}[v] \leftarrow u$
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Retourner :} tableau $d$ des distances et $\text{pred}$ des prédécesseurs
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Complexité :}
+\begin{itemize}
+    \item Avec tableau simple : $O(|V|^2)$
+    \item Avec tas binaire : $O((|V| + |E|) \log |V|)$
+    \item Avec tas de Fibonacci : $O(|E| + |V| \log |V|)$
+\end{itemize}
+
+\textbf{Invariant :} À chaque itération, pour tout sommet $u \in S$, $d[u]$ est la distance minimale de $s$ à $u$.
+\end{notecours}
+
+\newpage
+\subsubsection*{A.2 Algorithme de Bellman-Ford}
+
+\begin{algorithme}
+\textbf{Données :} Graphe $G = (V, E)$, source $s$, poids $c_{ij}$ (peuvent être négatifs)
+
+\textbf{Initialisation :}
+\begin{itemize}
+    \item $d[s] \leftarrow 0$
+    \item $d[v] \leftarrow +\infty$ pour tout $v \in V \setminus \{s\}$
+\end{itemize}
+
+\textbf{Répéter} $|V| - 1$ fois :
+\begin{itemize}
+    \item \textbf{Pour chaque} arc $(u,v) \in E$ :
+    \begin{itemize}
+        \item Si $d[u] + c_{uv} < d[v]$ :
+        \begin{itemize}
+            \item $d[v] \leftarrow d[u] + c_{uv}$
+            \item $\text{pred}[v] \leftarrow u$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\textbf{Détection de circuit négatif :}
+\begin{itemize}
+    \item \textbf{Pour chaque} arc $(u,v) \in E$ :
+    \begin{itemize}
+        \item Si $d[u] + c_{uv} < d[v]$ :
+        \begin{itemize}
+            \item \textbf{Retourner} "Circuit négatif détecté"
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\textbf{Retourner :} tableau $d$ des distances et $\text{pred}$ des prédécesseurs
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple avec circuit négatif :}
+
+Graphe : $(1,2): -1$, $(2,3): -2$, $(3,1): -3$
+
+Somme du cycle : $-1 + (-2) + (-3) = -6 < 0$
+
+L'algorithme détecte ce circuit et s'arrête.
+\end{exemple}
+
+\newpage
+\subsubsection*{A.3 Algorithme de Ford-Fulkerson}
+
+\begin{algorithme}
+\textbf{Données :} Réseau $G = (V, E)$, source $s$, puits $t$, capacités $u_{ij}$
+
+\textbf{Initialisation :}
+\begin{itemize}
+    \item $f_{ij} \leftarrow 0$ pour tout $(i,j) \in E$ (flot initial nul)
+\end{itemize}
+
+\textbf{Tant que} il existe un chemin augmentant de $s$ à $t$ dans le graphe résiduel :
+\begin{enumerate}
+    \item Trouver un chemin augmentant $P$ de $s$ à $t$
+    \item Calculer la capacité résiduelle du chemin :
+    $$\delta = \min\{u_{ij} - f_{ij} : (i,j) \in P\}$$
+    \item \textbf{Pour chaque} arc $(i,j)$ du chemin $P$ :
+    \begin{itemize}
+        \item $f_{ij} \leftarrow f_{ij} + \delta$ (augmenter le flot)
+        \item $f_{ji} \leftarrow f_{ji} - \delta$ (arc retour)
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Retourner :} flot $f$ et sa valeur $\sum_{(s,v) \in E} f_{sv}$
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Graphe résiduel :}
+
+Pour chaque arc $(i,j)$ avec flot $f_{ij}$ et capacité $u_{ij}$ :
+\begin{itemize}
+    \item Capacité résiduelle avant : $r_{ij} = u_{ij} - f_{ij}$
+    \item Capacité résiduelle arrière : $r_{ji} = f_{ij}$
+\end{itemize}
+
+Un chemin est augmentant s'il existe un chemin de $s$ à $t$ dans le graphe résiduel avec $r_{ij} > 0$ sur tous les arcs.
+\end{notecours}
+
+\newpage
+\subsubsection*{A.4 Algorithme de Kruskal (Arbre Couvrant Minimal)}
+
+\begin{algorithme}
+\textbf{Données :} Graphe $G = (V, E)$, poids $c_e$ pour chaque arête $e$
+
+\textbf{Initialisation :}
+\begin{itemize}
+    \item $T \leftarrow \emptyset$ (ensemble des arêtes de l'arbre)
+    \item Trier les arêtes par ordre croissant de poids
+    \item Initialiser une structure Union-Find pour $V$
+\end{itemize}
+
+\textbf{Pour chaque} arête $e = (u,v)$ dans l'ordre croissant :
+\begin{itemize}
+    \item Si $u$ et $v$ sont dans des composantes différentes :
+    \begin{itemize}
+        \item Ajouter $e$ à $T$
+        \item Unir les composantes de $u$ et $v$
+    \end{itemize}
+    \item Si $|T| = |V| - 1$ : \textbf{Arrêter}
+\end{itemize}
+
+\textbf{Retourner :} arbre $T$
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple :}
+
+Graphe avec arêtes et poids :
+\begin{itemize}
+    \item $(1,2): 1$, $(2,3): 2$, $(1,3): 4$, $(3,4): 3$, $(2,4): 5$
+\end{itemize}
+
+\textbf{Étapes :}
+\begin{enumerate}
+    \item Ajouter $(1,2)$ : coût = 1, $T = \{(1,2)\}$
+    \item Ajouter $(2,3)$ : coût = 2, $T = \{(1,2), (2,3)\}$
+    \item Ignorer $(1,3)$ : créerait un cycle
+    \item Ajouter $(3,4)$ : coût = 3, $T = \{(1,2), (2,3), (3,4)\}$
+\end{enumerate}
+
+\textbf{Arbre final :} coût total = $1 + 2 + 3 = 6$
+\end{exemple}
+
+\newpage
+\subsection*{B. Exercices et Problèmes}
+
+\subsubsection*{Exercice 1 : Plus Court Chemin}
+
+\begin{exemple}
+Soit le graphe orienté suivant avec les coûts :
+
+Sommets : $\{A, B, C, D, E\}$
+
+Arcs et coûts :
+\begin{itemize}
+    \item $(A,B): 4$, $(A,C): 2$
+    \item $(B,C): 1$, $(B,D): 5$
+    \item $(C,D): 8$, $(C,E): 10$
+    \item $(D,E): 2$
+\end{itemize}
+
+\textbf{Questions :}
+\begin{enumerate}
+    \item Appliquer l'algorithme de Dijkstra pour trouver le plus court chemin de $A$ à $E$
+    \item Donner la distance minimale et le chemin correspondant
+\end{enumerate}
+
+\textbf{Solution :}
+
+\textit{Initialisation :}
+\begin{itemize}
+    \item $d[A] = 0$
+    \item $d[B] = d[C] = d[D] = d[E] = +\infty$
+\end{itemize}
+
+\textit{Itération 1 :} Traiter $A$
+\begin{itemize}
+    \item $d[B] = \min(\infty, 0 + 4) = 4$
+    \item $d[C] = \min(\infty, 0 + 2) = 2$
+\end{itemize}
+
+\textit{Itération 2 :} Traiter $C$ (distance minimale = 2)
+\begin{itemize}
+    \item $d[B] = \min(4, 2 + 1) = 3$
+    \item $d[D] = \min(\infty, 2 + 8) = 10$
+    \item $d[E] = \min(\infty, 2 + 10) = 12$
+\end{itemize}
+
+\textit{Itération 3 :} Traiter $B$ (distance = 3)
+\begin{itemize}
+    \item $d[D] = \min(10, 3 + 5) = 8$
+\end{itemize}
+
+\textit{Itération 4 :} Traiter $D$ (distance = 8)
+\begin{itemize}
+    \item $d[E] = \min(12, 8 + 2) = 10$
+\end{itemize}
+
+\textbf{Résultat :}
+\begin{itemize}
+    \item Plus court chemin : $A \to C \to B \to D \to E$
+    \item Distance minimale : 10
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsubsection*{Exercice 2 : Flot Maximum}
+
+\begin{exemple}
+Soit le réseau suivant :
+
+Sommets : source $s$, puits $t$, nœuds intermédiaires $\{1, 2, 3\}$
+
+Capacités :
+\begin{itemize}
+    \item $(s,1): 10$, $(s,2): 8$
+    \item $(1,2): 2$, $(1,3): 9$
+    \item $(2,3): 7$
+    \item $(3,t): 10$, $(1,t): 5$
+\end{itemize}
+
+\textbf{Question :} Calculer le flot maximum de $s$ à $t$.
+
+\textbf{Solution par Ford-Fulkerson :}
+
+\textit{Chemin augmentant 1 :} $s \to 1 \to 3 \to t$
+\begin{itemize}
+    \item Capacité résiduelle : $\min(10, 9, 10) = 9$
+    \item Flot ajouté : 9
+\end{itemize}
+
+\textit{Chemin augmentant 2 :} $s \to 2 \to 3 \to t$
+\begin{itemize}
+    \item Capacité résiduelle : $\min(8, 7, 10-9) = 1$
+    \item Flot ajouté : 1
+\end{itemize}
+
+\textit{Chemin augmentant 3 :} $s \to 1 \to t$
+\begin{itemize}
+    \item Capacité résiduelle : $\min(10-9, 5) = 1$
+    \item Flot ajouté : 1
+\end{itemize}
+
+\textit{Chemin augmentant 4 :} $s \to 2 \to 1 \to t$ (utilise arc retour)
+\begin{itemize}
+    \item Capacité résiduelle : $\min(8-1, 2, 5-1) = 2$
+    \item Flot ajouté : 2
+\end{itemize}
+
+\textbf{Flot maximum total :} $9 + 1 + 1 + 2 = 13$
+
+\textbf{Vérification par coupe minimale :}
+
+Coupe $S = \{s, 1, 2\}$, $T = \{3, t\}$
+
+Capacité : $(1,3) + (2,3) = 9 + 7 = 16$ (incorrect)
+
+Coupe $S = \{s\}$, $T = \{1, 2, 3, t\}$
+
+Capacité : $(s,1) + (s,2) = 10 + 8 = 18$ (incorrect)
+
+Coupe optimale $S = \{s, 2\}$, $T = \{1, 3, t\}$
+
+Capacité : $(s,1) + (2,3) + (2,1) = 10 + 7 - 4 = 13$ (correct)
+\end{exemple}
+
+\newpage
+\subsection*{C. Propriétés Avancées des Graphes}
+
+\subsubsection*{C.1 Graphes Eulériens et Hamiltoniens}
+
+\begin{definition}
+\textbf{Graphe Eulérien :}
+
+Un graphe possède un \textcolor{titrebleu}{\textbf{cycle eulérien}} (qui passe par chaque arête exactement une fois) si et seulement si :
+\begin{itemize}
+    \item Le graphe est connexe
+    \item Tous les sommets ont un degré pair
+\end{itemize}
+
+Un graphe possède une \textcolor{defvert}{\textbf{chaîne eulérienne}} s'il a exactement deux sommets de degré impair.
+
+\textbf{Graphe Hamiltonien :}
+
+Un graphe possède un \textcolor{algoviolet}{\textbf{cycle hamiltonien}} (qui passe par chaque sommet exactement une fois) si... il n'existe pas de caractérisation simple !
+
+Le problème de l'existence d'un cycle hamiltonien est NP-complet.
+\end{definition}
+
+\begin{exemple}
+\textbf{Graphe Eulérien :}
+
+Le graphe $K_4$ (complet à 4 sommets) :
+\begin{itemize}
+    \item Chaque sommet a degré 3 (impair)
+    \item Il existe une chaîne eulérienne mais pas de cycle eulérien
+\end{itemize}
+
+Le graphe $K_5$ :
+\begin{itemize}
+    \item Chaque sommet a degré 4 (pair)
+    \item Il existe un cycle eulérien
+\end{itemize}
+
+\textbf{Problème des sept ponts de Königsberg :}
+
+Question historique d'Euler : peut-on traverser tous les ponts exactement une fois ?
+
+Réponse : Non, car le graphe correspondant a 4 sommets de degré impair.
+\end{exemple}
+
+\newpage
+\subsubsection*{C.2 Coloration de Graphes}
+
+\begin{definition}
+Une \textcolor{titrebleu}{\textbf{k-coloration}} d'un graphe est une affectation de $k$ couleurs aux sommets telle que deux sommets adjacents ont des couleurs différentes.
+
+Le \textcolor{defvert}{\textbf{nombre chromatique}} $\chi(G)$ est le nombre minimum de couleurs nécessaires pour colorer $G$.
+\end{definition}
+
+\begin{astuce}
+\textbf{Propriétés :}
+\begin{itemize}
+    \item $\chi(K_n) = n$ (graphe complet)
+    \item $\chi(G) \leq \Delta(G) + 1$ (théorème de Brooks)
+    \item $\chi(G) = 2$ si et seulement si $G$ est biparti
+    \item Déterminer $\chi(G)$ est un problème NP-difficile
+\end{itemize}
+\end{astuce}
+
+\begin{exemple}
+\textbf{Applications :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{Planification} : attribution de créneaux horaires sans conflit
+    \item \textcolor{defvert}{Allocation de fréquences} : réseaux de télécommunication
+    \item \textcolor{algoviolet}{Allocation de registres} : compilation de programmes
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection*{D. Tableaux Récapitulatifs}
+
+\subsubsection*{D.1 Complexités des Algorithmes}
+
+\begin{notecours}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Algorithme} & \textbf{Problème} & \textbf{Complexité} \\
+\hline
+\hline
+Dijkstra & Plus court chemin (poids $\geq 0$) & $O(|E| + |V| \log |V|)$ \\
+\hline
+Bellman-Ford & Plus court chemin (général) & $O(|V| \cdot |E|)$ \\
+\hline
+Bellman & Plus court chemin (DAG) & $O(|V| + |E|)$ \\
+\hline
+Floyd-Warshall & Tous les plus courts chemins & $O(|V|^3)$ \\
+\hline
+\hline
+Ford-Fulkerson & Flot maximum & $O(|E| \cdot f^*)$ \\
+\hline
+Edmonds-Karp & Flot maximum & $O(|V| \cdot |E|^2)$ \\
+\hline
+Push-Relabel & Flot maximum & $O(|V|^2 \cdot |E|)$ \\
+\hline
+\hline
+Kruskal & Arbre couvrant minimal & $O(|E| \log |E|)$ \\
+\hline
+Prim & Arbre couvrant minimal & $O(|E| \log |V|)$ \\
+\hline
+\hline
+Simplexe réseau & Flot de coût minimum & Polynomial (pratique) \\
+\hline
+\end{tabular}
+\end{center}
+
+Note : $f^*$ désigne la valeur du flot maximum
+\end{notecours}
+
+\newpage
+\subsubsection*{D.2 Classes de Complexité des Problèmes}
+
+\begin{important}
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Problème} & \textbf{Classe} & \textbf{Remarque} \\
+\hline
+\hline
+Plus court chemin & P & Polynomial \\
+\hline
+Arbre couvrant minimal & P & Polynomial \\
+\hline
+Flot maximum & P & Polynomial \\
+\hline
+Flot de coût minimum & P & Polynomial \\
+\hline
+Couplage maximum & P & Polynomial \\
+\hline
+\hline
+Cycle hamiltonien & NP-complet & Très difficile \\
+\hline
+Voyageur de commerce & NP-difficile & Optimisation \\
+\hline
+Arbre de Steiner & NP-difficile & Optimisation \\
+\hline
+Réseau k-connexe (k $\geq$ 2) & NP-difficile & Optimisation \\
+\hline
+Coloration minimale & NP-difficile & Optimisation \\
+\hline
+\end{tabular}
+\end{center}
+\end{important}
+
+\newpage
+\subsection*{E. Formules et Théorèmes Importants}
+
+\begin{astuce}
+\textbf{Formule d'Euler pour les graphes planaires :}
+
+Pour un graphe planaire connexe :
+$$|V| - |E| + |F| = 2$$
+où $|F|$ est le nombre de faces (régions).
+
+\textbf{Lemme des poignées de main :}
+$$\sum_{v \in V} d(v) = 2|E|$$
+
+\textbf{Inégalité pour les graphes planaires :}
+
+Si $G$ est planaire simple avec $|V| \geq 3$ :
+$$|E| \leq 3|V| - 6$$
+
+\textbf{Théorème de Cayley :}
+
+Le nombre d'arbres couvrants différents d'un graphe complet $K_n$ est :
+$$n^{n-2}$$
+
+Par exemple, $K_4$ a $4^2 = 16$ arbres couvrants différents.
+\end{astuce}
+
+\newpage
+\subsection*{F. Conseils pour la Résolution de Problèmes}
+
+\begin{notecours}
+\textbf{Méthodologie générale :}
+
+\textbf{1. Modélisation}
+\begin{itemize}
+    \item Identifier les sommets et les arcs/arêtes
+    \item Déterminer les poids, capacités, coûts
+    \item Choisir le type de graphe (orienté/non orienté)
+\end{itemize}
+
+\textbf{2. Choix de l'algorithme}
+\begin{itemize}
+    \item Plus court chemin → vérifier si poids négatifs
+    \item Flot → identifier source et puits
+    \item Connexité → déterminer le niveau requis
+\end{itemize}
+
+\textbf{3. Application}
+\begin{itemize}
+    \item Initialiser correctement les structures
+    \item Respecter les étapes de l'algorithme
+    \item Vérifier les invariants à chaque itération
+\end{itemize}
+
+\textbf{4. Vérification}
+\begin{itemize}
+    \item Tester sur des cas simples
+    \item Vérifier les contraintes
+    \item Comparer avec les bornes théoriques
+\end{itemize}
+\end{notecours}
+
+\begin{important}
+\textbf{Pièges courants à éviter :}
+\begin{itemize}
+    \item Ne pas confondre chaîne et chemin (graphe orienté)
+    \item Oublier de tester l'existence de circuits négatifs
+    \item Mal initialiser les distances à l'infini
+    \item Confondre flot et capacité
+    \item Oublier la conservation du flot aux nœuds intermédiaires
+\end{itemize}
+\end{important}
+
+\newpage
+\section{Structures et Algorithmes dans les Réseaux Sans Fil}
+
+\begin{notecours}
+\textbf{Introduction aux réseaux sans fil :}
+
+Ce chapitre traite des problématiques spécifiques aux réseaux sans fil et aux réseaux de capteurs, où les contraintes énergétiques et la nature distribuée des communications imposent des approches particulières d'optimisation.
+\end{notecours}
+
+\subsection{Généralités sur les Réseaux Sans Fil}
+
+\needspace{12\baselineskip}
+\subsubsection{Réseaux multisauts}
+
+\begin{definition}
+\textbf{Réseau multisauts (Multi-hop network) :}
+
+Un réseau où les communications entre deux nœuds distants passent par des nœuds intermédiaires qui relaient les messages.
+
+\textbf{Cas particulier : Réseaux de capteurs}
+
+\begin{itemize}
+    \item Ce sont des réseaux de communication virtuels à "simplifier"
+    \item L'ensemble des nœuds du réseau = l'ensemble des capteurs
+    \item Un capteur est une unité électronique munie d'une batterie
+    \item \textcolor{importantrouge}{\textbf{Son énergie est limitée}} (contrainte majeure)
+\end{itemize}
+\end{definition}
+
+\begin{important}
+\textbf{Caractéristiques d'un capteur :}
+\begin{itemize}
+    \item Batterie de capacité limitée (durée de vie critique)
+    \item Capacité de calcul limitée
+    \item Mémoire restreinte
+    \item Communication sans fil avec portée limitée
+    \item Capteur de données environnementales (température, humidité, mouvement, etc.)
+\end{itemize}
+\end{important}
+
+\needspace{15\baselineskip}
+\subsubsection{Structure du réseau virtuel}
+
+\begin{definition}
+\textbf{Arêtes du réseau :}
+
+Deux capteurs $i$ et $j$ sont \textcolor{titrebleu}{\textbf{virtuellement voisins}} selon la portée d'émission de chacun.
+
+\textbf{Problème :}
+
+Chaque nœud peut avoir un \textcolor{importantrouge}{\textbf{très grand nombre de voisins}} $\Rightarrow$ beaucoup de communications, perte d'informations et conflits.
+
+\textbf{Solution :}
+
+\textcolor{defvert}{\textbf{Nécessité d'ignorer certains liens}} pour optimiser les communications et économiser l'énergie.
+\end{definition}
+
+\begin{notecours}
+\textbf{Notations :}
+
+Soit $G = (V, E)$ le réseau :
+\begin{itemize}
+    \item $V$ : ensemble des capteurs (nœuds)
+    \item $E$ : ensemble des liens de communication potentiels (arêtes virtuelles)
+    \item Pour tout $u \in V$ :
+    \begin{itemize}
+        \item $N(u)$ : ensemble des voisins de $u$
+        \item $N[u] = \{u\} \cup N(u)$ : voisinage fermé
+    \end{itemize}
+\end{itemize}
+
+Le voisinage d'un nœud est obtenu par \textcolor{algoviolet}{\textbf{échange de messages}} et dépend de la \textcolor{titrebleu}{\textbf{distance}} entre deux nœuds.
+\end{notecours}
+
+\newpage
+\subsection{Découverte de Voisinage et Élimination}
+
+\needspace{10\baselineskip}
+\subsubsection{Filtrage du voisinage}
+
+\begin{definition}
+\textbf{Filtrage dans le voisinage :}
+
+Suppression d'arêtes du graphe $G = (V, E)$ initial virtuel.
+
+$\Rightarrow$ On obtient un graphe partiel $G' = (V, E')$ avec $E' \subset E$.
+
+\textbf{Objectif principal :}
+
+Avoir moins de liens tout en conservant les propriétés essentielles du réseau.
+\end{definition}
+
+\begin{important}
+\textbf{Avantages de l'élimination de liens :}
+
+\begin{enumerate}
+    \item \textcolor{defvert}{\textbf{Efficacité des échanges}} : moins de messages à gérer
+    \item \textcolor{titrebleu}{\textbf{Économie d'énergie}} : moins de transmissions
+    \item \textcolor{algoviolet}{\textbf{Durée de vie prolongée}} : batteries préservées
+\end{enumerate}
+
+\textbf{Contraintes à respecter :}
+
+\begin{itemize}
+    \item Minimiser $|E'|$ (nombre d'arêtes)
+    \item $G'$ doit être \textcolor{importantrouge}{\textbf{connexe}}
+    \item $G'$ doit être \textcolor{exempleorange}{\textbf{planaire}}
+\end{itemize}
+\end{important}
+
+\newpage
+\subsection{Contrôle de Topologie}
+
+\needspace{12\baselineskip}
+\subsubsection{Types d'algorithmes}
+
+\begin{definition}
+\textbf{Algorithmes d'affectation de puissances :}
+
+\textbf{1. Algorithmes centralisés :}
+\begin{itemize}
+    \item Nécessitent la connaissance globale du réseau
+    \item Un nœud central prend toutes les décisions
+    \item \textcolor{defvert}{Avantage} : solution optimale possible
+    \item \textcolor{importantrouge}{Inconvénient} : nécessite communication globale coûteuse
+\end{itemize}
+
+\textbf{2. Algorithmes locaux :}
+\begin{itemize}
+    \item Chaque nœud prend sa décision à partir d'informations locales
+    \item Décisions distribuées
+    \item \textcolor{defvert}{Avantage} : passage à l'échelle, robustesse
+    \item \textcolor{importantrouge}{Inconvénient} : peut-être sous-optimal
+\end{itemize}
+\end{definition}
+
+\needspace{12\baselineskip}
+\subsubsection{Types de contrôle de l'énergie}
+
+\begin{definition}
+\textbf{Deux approches principales :}
+
+\textbf{1. Organisation de l'affectation de puissances de diffusion}
+\begin{itemize}
+    \item Ajuster la puissance d'émission de chaque nœud
+    \item Compromis entre portée et consommation
+\end{itemize}
+
+\textbf{2. Diminution du nombre de retransmissions}
+\begin{itemize}
+    \item Sélection de nœuds relais
+    \item Éviter les retransmissions redondantes
+\end{itemize}
+\end{definition}
+
+\newpage
+\subsection{Algorithmes Centralisés}
+
+\needspace{10\baselineskip}
+\subsubsection{Algorithme 1 : Arbre couvrant minimum (MST)}
+
+\begin{algorithme}
+\textbf{Structure recherchée :} Arbre couvrant minimum (Minimum Spanning Tree)
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item Appliquer Prim ou Kruskal sur le graphe $G = (V, E)$
+    \item Affecter aux nœuds une puissance correspondant aux arêtes de cet arbre
+\end{enumerate}
+
+\textbf{Avantages :}
+\begin{itemize}
+    \item \textcolor{defvert}{++} Graphe connexe garanti
+    \item \textcolor{defvert}{++} Graphe planaire
+    \item \textcolor{defvert}{++} Nombre minimal d'arêtes : $|V| - 1$
+\end{itemize}
+
+\textbf{Inconvénients :}
+\begin{itemize}
+    \item \textcolor{importantrouge}{--} Solution approchée pour la consommation totale
+    \item \textcolor{importantrouge}{--} Certains nœuds peuvent avoir une puissance élevée
+\end{itemize}
+\end{algorithme}
+
+\needspace{18\baselineskip}
+\subsubsection{Algorithme 2 : BIP (Broadcast Incremental Power)}
+
+\begin{algorithme}
+\textbf{Broadcast Incremental Power Protocol}
+
+\textbf{Données :} 
+\begin{itemize}
+    \item Graphe $G = (V, E)$
+    \item Racine $s$ (nœud source)
+    \item Fonction de coût $C : E \to \mathbb{R}$ (coût des arcs)
+\end{itemize}
+
+\textbf{Résultat :} Un arbre $G'$
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $\forall u \in V$, $p(u) \leftarrow 0$ (initialisation des puissances)
+    \item Marquer le nœud racine $s$
+    \item \textit{Un nœud marqué appartient à l'arbre BIP}
+    \item \textbf{Tant que} il existe un nœud non marqué \textbf{faire}
+    \begin{itemize}
+        \item Choisir l'arc $(u, v)$ avec $u$ marqué, $v$ non marqué
+        \item et qui minimise $C(u, v) - p(u)$
+        \item $p(u) \leftarrow C(u, v)$
+        \item Marquer $v$
+    \end{itemize}
+    \item \textbf{Fin Tant que}
+\end{enumerate}
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Principe de BIP :}
+
+L'algorithme exploite le fait qu'augmenter légèrement la puissance d'un nœud déjà émetteur coûte moins cher que d'activer un nouveau nœud.
+
+À chaque étape, on choisit l'extension la plus économique de l'arbre en cours de construction.
+\end{notecours}
+
+\needspace{18\baselineskip}
+\subsubsection{BIP Adapté (Version Bidirectionnelle)}
+
+\begin{algorithme}
+\textbf{BIP Adapté (pour communications bidirectionnelles)}
+
+\textbf{Données :} 
+\begin{itemize}
+    \item Graphe $G = (V, E)$
+    \item Racine $s$
+    \item Fonction de coût $C : E \to \mathbb{R}$
+\end{itemize}
+
+\textbf{Résultat :} Un arbre $G'$
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $\forall u \in V$, $p(u) \leftarrow 0$
+    \item Marquer le nœud racine $s$
+    \item \textbf{Tant que} il existe un nœud non marqué \textbf{faire}
+    \begin{itemize}
+        \item Choisir l'arête $(u, v)$ avec $u$ marqué, $v$ non marqué
+        \item et qui minimise $a_u + a_v$ où :
+        \begin{itemize}
+            \item $a_u = \max\{C(u, v) - p(u), 0\}$
+            \item $a_v = \max\{C(u, v) - p(v), 0\}$
+        \end{itemize}
+        \item $p(u) \leftarrow p(u) + a_u$
+        \item $p(v) \leftarrow p(v) + a_v$
+        \item Marquer $v$
+    \end{itemize}
+    \item \textbf{Fin Tant que}
+\end{enumerate}
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Différence avec BIP classique :}
+
+Dans BIP adapté, on prend en compte le coût pour \textcolor{titrebleu}{\textbf{les deux nœuds}} de l'arête, car dans les réseaux sans fil, la communication est souvent bidirectionnelle.
+
+Les deux nœuds doivent avoir une puissance suffisante pour communiquer.
+\end{notecours}
+
+\newpage
+\subsection{Algorithmes Locaux}
+
+\needspace{12\baselineskip}
+\subsubsection{LMST (Local Minimum Spanning Tree)}
+
+\begin{algorithme}
+\textbf{Arbre couvrant minimum local}
+
+\textbf{Principe :} Chaque nœud construit un MST local sur son voisinage.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $\text{LMST} \leftarrow \emptyset$
+    \item \textbf{Pour} $u \in V$ \textbf{faire}
+    \begin{itemize}
+        \item $G' \leftarrow \text{MST}(N[u])$ 
+        
+        \textit{(Calcul du MST sur le voisinage fermé de $u$)}
+        
+        \textit{Note : nécessite une connaissance à 2 sauts, car il faut connaître les arêtes entre voisins}
+        \item \textbf{Pour} $v \in N_{G'}(u)$ \textbf{faire}
+        \begin{itemize}
+            \item $\text{LMST} \leftarrow \text{LMST} \cup \{(u, v)\}$
+        \end{itemize}
+        \item \textbf{Fin Pour}
+    \end{itemize}
+    \item \textbf{Fin Pour}
+\end{enumerate}
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Connaissance requise :}
+
+Pour qu'un nœud $u$ puisse calculer $\text{MST}(N[u])$, il doit connaître :
+\begin{itemize}
+    \item Ses voisins directs (à 1 saut)
+    \item Les arêtes entre ses voisins (à 2 sauts)
+\end{itemize}
+
+Cette information est obtenue par échange de messages de découverte de voisinage.
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsubsection{RNG (Relative Neighborhood Graph)}
+
+\begin{definition}
+\textbf{Graphe de voisinage relatif}
+
+Soit $G = (V, E)$ un graphe avec fonction de poids $p : E \to \mathbb{R}$.
+
+Le graphe de voisinage relatif est $\text{RNG}(G) = (V, E_{\text{RNG}})$ où :
+
+$$E_{\text{RNG}} = \{(u, v) \in E : \nexists w \in N(u) \cap N(v) \text{ tel que}$$
+$$p(u,w) < p(u, v) \text{ et } p(v,w) < p(u, v)\}$$
+
+\textbf{Interprétation géométrique :}
+
+Une arête $(u,v)$ est dans le RNG s'il n'existe pas de nœud $w$ qui soit \textcolor{titrebleu}{\textbf{plus proche}} à la fois de $u$ et de $v$ que $u$ et $v$ ne le sont l'un de l'autre.
+\end{definition}
+
+\begin{important}
+\textbf{Propriété d'inclusion :}
+
+$$\text{MST}(G) \subseteq \text{LMST}(G) \subseteq \text{RNG}(G)$$
+
+\textbf{Conséquences :}
+\begin{itemize}
+    \item Le RNG contient toujours un arbre couvrant
+    \item Le RNG est connexe si $G$ est connexe
+    \item Le LMST est un compromis entre MST (optimal global) et RNG (construction locale)
+\end{itemize}
+\end{important}
+
+\begin{exemple}
+\textbf{Exemple de RNG :}
+
+Considérons trois nœuds $u$, $v$, $w$ avec distances :
+\begin{itemize}
+    \item $p(u,v) = 10$
+    \item $p(u,w) = 6$
+    \item $p(v,w) = 7$
+\end{itemize}
+
+L'arête $(u,v)$ n'est \textcolor{importantrouge}{\textbf{pas}} dans le RNG car :
+\begin{itemize}
+    \item $w \in N(u) \cap N(v)$
+    \item $p(u,w) = 6 < 10 = p(u,v)$ \checkmark
+    \item $p(v,w) = 7 < 10 = p(u,v)$ \checkmark
+\end{itemize}
+
+Le nœud $w$ est "témoin" que $(u,v)$ ne devrait pas être dans le graphe.
+\end{exemple}
+
+\newpage
+\subsection{Structuration du Réseau : Organisation des Échanges}
+
+\needspace{12\baselineskip}
+\subsubsection{Protocoles de routage}
+
+\begin{definition}
+\textbf{Protocoles de routage dans les réseaux sans fil :}
+
+\textbf{1. Protocoles proactifs :}
+\begin{itemize}
+    \item Les routes sont établies et maintenues en permanence sur chaque nœud
+    \item \textcolor{defvert}{Avantage (++)} : Un nœud connaît la route vers une destination au besoin (pas de délai)
+    \item \textcolor{importantrouge}{Inconvénient (-{}-)} : Taille importante des tables de routage, trafic de mise à jour important
+\end{itemize}
+
+\textbf{2. Protocoles réactifs :}
+\begin{itemize}
+    \item Les routes sont recherchées à la demande
+    \item \textcolor{defvert}{Avantage (++)} : Économie de place mémoire et de trafic de contrôle
+    \item \textcolor{importantrouge}{Inconvénient (-{}-)} : Chemins potentiellement longs et inondation du réseau par des messages redondants lors de la découverte
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Organisation du réseau en mode réactif :}
+
+Pour limiter les inconvénients des protocoles réactifs, on utilise des structures de \textcolor{algoviolet}{\textbf{"Dominants"}} (ou ensembles dominants).
+
+Ces structures permettent de limiter le nombre de nœuds participant au routage.
+\end{notecours}
+
+\newpage
+\subsection{Dominants et Clustering}
+
+\needspace{15\baselineskip}
+\subsubsection{Définitions}
+
+\begin{definition}
+\textbf{Dominant (Dominating Set)}
+
+Soit $G = (V, E)$ un graphe.
+
+$D \subset V$ est un \textcolor{titrebleu}{\textbf{dominant}} si $\forall u \in V \setminus D$, $\exists v \in D$ tel que $u \in N(v)$.
+
+\textbf{Autrement dit :} Tout nœud est soit dans $D$, soit voisin d'un nœud de $D$.
+
+\textbf{Dominant connexe :}
+
+Le sous-graphe induit par $D$ est connexe.
+
+\textbf{Dominant stable (Independent Set) :}
+
+Le sous-graphe induit par $D$ est vide d'arêtes (aucun arc entre nœuds de $D$).
+\end{definition}
+
+\begin{important}
+\textbf{Problème d'optimisation :}
+
+Trouver un dominant de \textcolor{importantrouge}{\textbf{cardinalité minimum}} est un problème \textcolor{importantrouge}{\textbf{NP-Complet}}.
+
+\textbf{Conséquence :} On utilise des heuristiques et des algorithmes d'approximation.
+\end{important}
+
+\needspace{15\baselineskip}
+\subsubsection{Clustering (Partitionnement en groupes)}
+
+\begin{definition}
+\textbf{Topologie par dominant = Clustering}
+
+Découpage virtuel du réseau en groupes (clusters).
+
+\textbf{Structure d'un groupe :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{1 nœud chef}} (cluster head) : coordonne le groupe
+    \item \textcolor{defvert}{\textbf{Points relais}} (gateways) : assurent la communication inter-groupes
+    \item \textcolor{algoviolet}{\textbf{Nœuds ordinaires}} (members) : communiquent via le chef
+\end{itemize}
+\end{definition}
+
+\begin{astuce}
+\textbf{Avantages du clustering :}
+
+\begin{enumerate}
+    \item \textcolor{defvert}{++} Taille économique des tables de routage
+    \begin{itemize}
+        \item Seuls les chefs maintiennent des routes complètes
+        \item Les membres ne connaissent que leur chef
+    \end{itemize}
+    
+    \item \textcolor{defvert}{++} Ressources partagées et stabilité
+    \begin{itemize}
+        \item Allocation de ressources au niveau du cluster
+        \item Moins sensible à la mobilité locale
+    \end{itemize}
+    
+    \item \textcolor{defvert}{++} Hiérarchie facilite la gestion
+    \begin{itemize}
+        \item Agrégation de données au niveau du chef
+        \item Communication inter-clusters simplifiée
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Inconvénients :}
+
+\begin{itemize}
+    \item \textcolor{importantrouge}{--} Choix de la métrique pour la division en groupes
+    \begin{itemize}
+        \item Distance ? Énergie ? Connectivité ?
+        \item Compromis à trouver selon l'application
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{--} Surcharge des chefs de cluster
+    \begin{itemize}
+        \item Consommation d'énergie plus élevée
+        \item Nécessité de rotation des rôles
+    \end{itemize}
+\end{itemize}
+\end{astuce}
+
+\begin{exemple}
+\textbf{Exemple d'application : LEACH}
+
+\textbf{Low-Energy Adaptive Clustering Hierarchy} est un protocole célèbre qui :
+\begin{itemize}
+    \item Forme des clusters dynamiquement
+    \item Alterne les rôles de chef pour équilibrer l'énergie
+    \item Utilise une communication hiérarchique :
+    \begin{itemize}
+        \item Intra-cluster : membres $\to$ chef
+        \item Inter-cluster : chef $\to$ station de base
+    \end{itemize}
+    \item Prolonge significativement la durée de vie du réseau
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Algorithmes de Diffusion}
+
+\begin{notecours}
+\textbf{Problématique de la diffusion (Broadcast) :}
+
+Dans un réseau sans fil, lorsqu'un nœud émet, tous ses voisins reçoivent le message.
+
+\textbf{Problème :} Si tous les nœuds retransmettent, on a une \textcolor{importantrouge}{\textbf{tempête de diffusion}} (broadcast storm) :
+\begin{itemize}
+    \item Collisions multiples
+    \item Congestion du réseau
+    \item Gaspillage d'énergie
+\end{itemize}
+
+\textbf{Solution :} Sélectionner un sous-ensemble de nœuds qui retransmettent (ensemble dominant connexe).
+\end{notecours}
+
+\begin{algorithme}
+\textbf{Approches pour la diffusion efficace :}
+
+\textbf{1. Diffusion basée sur dominant connexe :}
+\begin{itemize}
+    \item Calculer un dominant connexe $D$
+    \item Seuls les nœuds de $D$ retransmettent
+    \item Garantit que tous les nœuds reçoivent le message
+\end{itemize}
+
+\textbf{2. Diffusion probabiliste :}
+\begin{itemize}
+    \item Chaque nœud retransmet avec probabilité $p$
+    \item Simple mais pas de garantie de couverture
+\end{itemize}
+
+\textbf{3. Diffusion basée sur compteur :}
+\begin{itemize}
+    \item Un nœud compte combien de fois il reçoit le message
+    \item Retransmet seulement si le compteur est faible
+    \item Indique qu'il a peu de voisins qui ont retransmis
+\end{itemize}
+
+\textbf{4. Diffusion basée sur la distance :}
+\begin{itemize}
+    \item Retransmettre seulement si on ajoute une "nouvelle" couverture
+    \item Nécessite connaissance de la position ou des distances
+\end{itemize}
+\end{algorithme}
+
+\newpage
+\subsection{Synthèse : Réseaux Sans Fil}
+
+\begin{important}
+\textbf{Points clés à retenir :}
+
+\textbf{1. Contraintes spécifiques :}
+\begin{itemize}
+    \item \textcolor{importantrouge}{Énergie limitée} : batteries non rechargeables
+    \item \textcolor{titrebleu}{Communications coûteuses} : la radio consomme beaucoup
+    \item \textcolor{defvert}{Topologie dynamique} : pannes, mobilité
+\end{itemize}
+
+\textbf{2. Contrôle de topologie :}
+\begin{itemize}
+    \item Réduire le nombre de liens tout en gardant la connexité
+    \item MST, LMST, RNG : compromis local/global
+    \item BIP : minimiser la puissance totale
+\end{itemize}
+
+\textbf{3. Organisation du réseau :}
+\begin{itemize}
+    \item Protocoles réactifs vs proactifs
+    \item Clustering et dominants
+    \item Hiérarchie pour l'efficacité
+\end{itemize}
+
+\textbf{4. Diffusion efficace :}
+\begin{itemize}
+    \item Éviter la tempête de diffusion
+    \item Sélection intelligente des relais
+    \item Ensemble dominant connexe
+\end{itemize}
+\end{important}
+
+\begin{astuce}
+\textbf{Applications pratiques :}
+
+Les concepts étudiés s'appliquent à :
+\begin{itemize}
+    \item Réseaux de capteurs environnementaux
+    \item Internet des objets (IoT)
+    \item Réseaux ad hoc mobiles (MANET)
+    \item Réseaux de véhicules (VANET)
+    \item Smart cities et bâtiments intelligents
+\end{itemize}
+\end{astuce}
+
+\newpage
+\begin{center}
+\textcolor{titrebleu}{\Huge\textbf{Fin du Cours Complet}}
+
+\vspace{2em}
+
+\textcolor{defvert}{\Large Optimisation dans les Réseaux}
+
+\vspace{0.5em}
+
+\textcolor{algoviolet}{\large Réseaux Filaires et Sans Fil}
+
+\vspace{1em}
+
+\textit{Bon courage pour vos études et examens !}
+
+\vspace{2em}
+
+\rule{0.5\textwidth}{0.4pt}
+
+\vspace{1em}
+
+\small
+\textit{Ce document est une compilation enrichie des cours de F. Bendali-Mailfert}\\
+\textit{avec exemples, exercices et compléments théoriques}\\
+\textit{incluant les réseaux filaires, sans fil et les réseaux de capteurs}
+
+\vspace{1em}
+
+Version 2025 - Document pédagogique complet et enrichi
+\end{center}
+
+\end{document}

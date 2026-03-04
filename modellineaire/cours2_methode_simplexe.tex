@@ -1,0 +1,1570 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning,matrix}
+\geometry{margin=2.5cm}
+
+% Command for circled numbers
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+% Définition des couleurs personnalisées
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Boîtes colorées
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Definition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=A savoir,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Methode,
+    arc=3mm
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Note de Cours,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}La Methode du Simplexe}\\[0.5em]
+\large\color{defvert}Comment Fonctionne la Methode du Simplexe ?\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Prof. Herve KERIVIN, PhD\\
+\small Universite Clermont Auvergne\\
+Clermont Auvergne INP - ISIMA\\
+LIMOS UMR 6158 CNRS}
+\date{\large Version 2024-2025 - Cours 2}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\needspace{10\baselineskip}
+\subsection{Historique}
+
+\begin{notecours}
+\textbf{Naissance de la programmation lineaire :}
+
+La programmation lineaire est relativement \textcolor{titrebleu}{\textbf{recente}}.
+
+Elle a commence en \textcolor{importantrouge}{\textbf{1947}} lorsque \textcolor{defvert}{\textbf{George B. Dantzig}} a concu la \textbf{``Methode du Simplexe''} pour resoudre des problemes de planification de la Force Aerienne americaine (U.S. Air Force) formules en programmation lineaire.
+\end{notecours}
+
+\begin{astuce}
+\textbf{Importance historique :}
+
+\begin{itemize}
+    \item La methode du simplexe est l'un des algorithmes les plus utilises et les plus importants du 20e siecle
+    \item Elle reste la methode de reference pour resoudre des problemes de PL en pratique
+    \item Bien qu'elle ne soit pas polynomiale dans le pire cas, elle est extremement efficace en pratique
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Motivation : Un Premier Exemple}
+
+\needspace{10\baselineskip}
+\subsection{Enonce du Probleme}
+
+\begin{exemple}
+\textbf{Considerons le programme lineaire suivant :}
+
+\begin{align*}
+\text{maximiser} \quad & z = -x_1 - 2x_2\\
+\text{sujet a} \quad & x_1 + x_2 \leq 3\\
+& 3x_1 - x_2 \leq 5\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+\end{exemple}
+
+\begin{astuce}
+\textbf{Solution evidente :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{\textbf{Solution realisable evidente :}} $x_1 = 0$, $x_2 = 0$
+    \item \textcolor{titrebleu}{\textbf{Cette solution est optimale !}}
+    \item \textbf{Pourquoi ?} Augmenter soit $x_1$ soit $x_2$ diminuerait la valeur de $z$
+\end{itemize}
+
+\textbf{Valeur de l'objectif :} $z = 0$
+\end{astuce}
+
+\begin{notecours}
+\textbf{Observation importante :}
+
+Dans cet exemple simple, la solution a l'origine $(0,0)$ est optimale car les coefficients de la fonction objectif sont tous \textcolor{importantrouge}{\textbf{negatifs}}.
+
+Mais comment proceder dans le cas general ?
+\end{notecours}
+
+\newpage
+\section{Variables d'Ecart (Slack Variables)}
+
+\needspace{10\baselineskip}
+\subsection{Concept de Variable d'Ecart}
+
+\begin{definition}
+\textbf{Variable d'ecart (Slack variable) :}
+
+Considerons l'inegalite $x_1 + x_2 \leq 3$.
+
+Pour toute solution realisable $x_1, x_2$, le membre gauche de cette contrainte est au plus egal a la valeur du membre droit ; souvent, il peut y avoir un \textcolor{defvert}{\textbf{ecart}} entre les deux valeurs.
+
+Notons $x_3$ l'ecart, c'est-a-dire :
+$$x_3 = 3 - x_1 - x_2$$
+
+Avec cette notation, l'inegalite $x_1 + x_2 \leq 3$ peut maintenant etre ecrite comme $x_3 \geq 0$.
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemples numeriques :}
+
+\begin{itemize}
+    \item Si $x_1 = 1$ et $x_2 = 1$, alors $x_3 = 3 - 1 - 1 = 1$ (il reste un ecart de 1)
+    \item Si $x_1 = 2$ et $x_2 = 1$, alors $x_3 = 3 - 2 - 1 = 0$ (la contrainte est \textit{saturee})
+    \item Si $x_1 = 0$ et $x_2 = 0$, alors $x_3 = 3$ (ecart maximal)
+\end{itemize}
+\end{exemple}
+
+\newpage
+\subsection{Transformation en Systeme d'Equations}
+
+\begin{methode}
+\textbf{Transformation des contraintes :}
+
+On transforme les contraintes d'un probleme de PL (ecrit sous forme standard) en un systeme d'equations lineaires en ajoutant des variables d'ecart.
+
+\textbf{Forme originale :}
+\begin{align*}
+a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n &\leq b_1\\
+a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n &\leq b_2\\
+&\vdots\\
+a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n &\leq b_m\\
+x_1, x_2, \ldots, x_n &\geq 0
+\end{align*}
+
+\textbf{Avec variables d'ecart :}
+\begin{align*}
+a_{11}x_1 + a_{12}x_2 + \cdots + a_{1n}x_n + x_{n+1} &= b_1\\
+a_{21}x_1 + a_{22}x_2 + \cdots + a_{2n}x_n + x_{n+2} &= b_2\\
+&\vdots\\
+a_{m1}x_1 + a_{m2}x_2 + \cdots + a_{mn}x_n + x_{n+m} &= b_m\\
+x_1, x_2, \ldots, x_n, x_{n+1}, \ldots, x_{n+m} &\geq 0
+\end{align*}
+\end{methode}
+
+\begin{important}
+\textbf{Remarque cruciale :}
+
+Les variables d'ecart sont \textcolor{importantrouge}{\textbf{non negatives}} (c'est-a-dire $x_{n+1} \geq 0$, $x_{n+2} \geq 0$, \ldots, $x_{n+m} \geq 0$).
+\end{important}
+
+\newpage
+\subsection{Premier Exemple avec Variables d'Ecart}
+
+\begin{exemple}
+\textbf{Programme lineaire :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 4x_2 + 3x_3\\
+\text{sujet a} \quad & 2x_1 + 3x_2 + x_3 \leq 5\\
+& 4x_1 + x_2 + 2x_3 \leq 11\\
+& 3x_1 + 4x_2 + 2x_3 \leq 8\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\textbf{Solutions realisables evidentes :}
+\begin{itemize}
+    \item $x_1 = 0, x_2 = 0, x_3 = 0$ est realisable
+    \item $x_1 = \frac{5}{2}, x_2 = 0, x_3 = 0$ est realisable
+\end{itemize}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Avec variables d'ecart :}
+
+Definissons :
+\begin{align*}
+x_4 &= 5 - 2x_1 - 3x_2 - x_3\\
+x_5 &= 11 - 4x_1 - x_2 - 2x_3\\
+x_6 &= 8 - 3x_1 - 4x_2 - 2x_3\\
+z &= 5x_1 + 4x_2 + 3x_3
+\end{align*}
+
+ou $x_4$, $x_5$ et $x_6$ sont les variables d'ecart pour les premiere, deuxieme et troisieme inegalites, respectivement.
+
+Le probleme devient :
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 4x_2 + 3x_3\\
+\text{sujet a} \quad & x_4 = 5 - 2x_1 - 3x_2 - x_3\\
+& x_5 = 11 - 4x_1 - x_2 - 2x_3\\
+& x_6 = 8 - 3x_1 - 4x_2 - 2x_3\\
+& x_1, x_2, x_3, x_4, x_5, x_6 \geq 0
+\end{align*}
+
+\textbf{Solutions correspondantes :}
+\begin{itemize}
+    \item $x_1 = 0, x_2 = 0, x_3 = 0, x_4 = 5, x_5 = 11, x_6 = 8$
+    \item $x_1 = \frac{5}{2}, x_2 = 0, x_3 = 0, x_4 = 0, x_5 = 1, x_6 = \frac{1}{2}$
+\end{itemize}
+\end{exemple}
+
+\newpage
+\section{Dictionnaires}
+
+\needspace{10\baselineskip}
+\subsection{Dictionnaire Initial}
+
+\begin{definition}
+\textbf{Dictionnaire initial :}
+
+Etant donne un programme lineaire ecrit sous forme standard :
+
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+On introduit les variables d'ecart $x_{n+1}, x_{n+2}, \ldots, x_{n+m} \geq 0$.
+
+Le \textcolor{defvert}{\textbf{dictionnaire initial}} est :
+
+\begin{align*}
+x_{n+i} &= b_i - \sum_{j=1}^{n} a_{ij}x_j \quad \text{pour } i = 1, 2, \ldots, m\\
+z &= \sum_{j=1}^{n} c_jx_j
+\end{align*}
+\end{definition}
+
+\begin{exemple}
+\textbf{Dictionnaire initial pour notre exemple :}
+
+\begin{align*}
+x_4 &= 5 - 2x_1 - 3x_2 - x_3\\
+x_5 &= 11 - 4x_1 - x_2 - 2x_3\\
+x_6 &= 8 - 3x_1 - 4x_2 - 2x_3\\
+z &= 0 + 5x_1 + 4x_2 + 3x_3
+\end{align*}
+\end{exemple}
+
+\newpage
+\subsection{Variables de Base et Hors-Base}
+
+\begin{definition}
+\textbf{Variables de base et hors-base :}
+
+Les equations de chaque dictionnaire doivent exprimer $m$ des variables $x_1, x_2, \ldots, x_{n+m}$ (appelees \textcolor{titrebleu}{\textbf{variables de base}}) et la fonction objectif $z$ en termes des $n$ variables restantes (appelees \textcolor{defvert}{\textbf{variables hors-base}}).
+
+\textbf{Dans le dictionnaire initial :}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Variables de base :}} $x_4, x_5, x_6$ (variables d'ecart)
+    \item \textcolor{defvert}{\textbf{Variables hors-base :}} $x_1, x_2, x_3$ (variables de decision)
+\end{itemize}
+\end{definition}
+
+\begin{definition}
+\textbf{Base :}
+
+Les variables de base constituent une \textcolor{algoviolet}{\textbf{base}}.
+
+\textbf{Dans le dictionnaire initial :} la base est $B = \{4, 5, 6\}$ (ou $\{x_4, x_5, x_6\}$).
+\end{definition}
+
+\begin{notecours}
+\textbf{Notation importante :}
+
+Pour un dictionnaire associe a une base $B$ :
+\begin{itemize}
+    \item $i \in B$ signifie que $x_i$ est une variable de base
+    \item $j \notin B$ (ou $j \in N$) signifie que $x_j$ est une variable hors-base
+    \item $N$ designe l'ensemble des indices des variables hors-base
+\end{itemize}
+\end{notecours}
+
+\newpage
+\subsection{Dictionnaire General}
+
+\begin{definition}
+\textbf{Dictionnaire associe a une base $B$ :}
+
+Soit $B$ l'ensemble des indices des $m$ variables de base du PL. Le dictionnaire associe a $B$ est :
+
+\begin{align*}
+x_i &= \bar{b}_i - \sum_{j \notin B} \bar{a}_{ij}x_j \quad \text{pour tout } i \in B\\
+z &= \bar{z} + \sum_{j \notin B} \bar{c}_j x_j
+\end{align*}
+
+ou :
+\begin{itemize}
+    \item $\bar{b}_i$ : valeur de la variable de base $x_i$ lorsque les variables hors-base sont nulles
+    \item $\bar{a}_{ij}$ : coefficients des variables hors-base dans les equations
+    \item $\bar{z}$ : valeur de l'objectif lorsque les variables hors-base sont nulles
+    \item $\bar{c}_j$ : coefficients des variables hors-base dans l'objectif
+\end{itemize}
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple de dictionnaire different :}
+
+Base $B = \{1, 3, 5\}$ :
+
+\begin{align*}
+x_1 &= 2 - 2x_2 - 2x_4 + x_6\\
+x_3 &= 1 + x_2 + 3x_4 - 2x_6\\
+x_5 &= 1 + 5x_2 + 2x_4\\
+z &= 13 - 3x_2 - x_4 - x_6
+\end{align*}
+
+Variables hors-base : $x_2, x_4, x_6$
+\end{exemple}
+
+\newpage
+\section{Dictionnaires Realisables}
+
+\needspace{10\baselineskip}
+\subsection{Definition}
+
+\begin{definition}
+\textbf{Dictionnaire realisable :}
+
+Si, lorsqu'on :
+\begin{enumerate}
+    \item Fixe les $n$ variables du membre droit a zero, et
+    \item Evalue les $m$ variables du membre gauche,
+\end{enumerate}
+
+on arrive a une solution realisable, alors le dictionnaire est appele un \textcolor{defvert}{\textbf{dictionnaire realisable}}.
+\end{definition}
+
+\begin{exemple}
+\textbf{Verification de la realisabilite :}
+
+\textbf{Dictionnaire initial :}
+\begin{align*}
+x_4 &= 5 - 2x_1 - 3x_2 - x_3\\
+x_5 &= 11 - 4x_1 - x_2 - 2x_3\\
+x_6 &= 8 - 3x_1 - 4x_2 - 2x_3\\
+z &= 0 + 5x_1 + 4x_2 + 3x_3
+\end{align*}
+
+\textbf{Mise a zero des variables hors-base :} $x_1 = x_2 = x_3 = 0$
+
+\textbf{Evaluation des variables de base :} $x_4 = 5$, $x_5 = 11$, $x_6 = 8$
+
+\textbf{Toutes sont non negatives !} $\Rightarrow$ \textcolor{defvert}{\textbf{Dictionnaire realisable}}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Autre dictionnaire realisable :}
+
+\begin{align*}
+x_1 &= 2 - 2x_2 - 2x_4 + x_6\\
+x_3 &= 1 + x_2 + 3x_4 - 2x_6\\
+x_5 &= 1 + 5x_2 + 2x_4\\
+z &= 13 - 3x_2 - x_4 - x_6
+\end{align*}
+
+\textbf{Variables hors-base a zero :} $x_2 = x_4 = x_6 = 0$
+
+\textbf{Variables de base :} $x_1 = 2$, $x_3 = 1$, $x_5 = 1$
+
+\textcolor{defvert}{\textbf{Toutes non negatives $\Rightarrow$ Realisable}}
+\end{exemple}
+
+\newpage
+\subsection{Solutions de Base}
+
+\begin{definition}
+\textbf{Propositions importantes :}
+
+\textbf{Proposition 1 :} Chaque dictionnaire realisable decrit une solution realisable.
+
+\textbf{Proposition 2 :} Toute solution realisable n'est pas necessairement decrite par un dictionnaire realisable.
+\end{definition}
+
+\begin{exemple}
+\textbf{Contre-exemple pour la Proposition 2 :}
+
+Solution realisable : $x_1 = 1, x_2 = 0, x_3 = 1, x_4 = 2, x_5 = 5, x_6 = 3$
+
+Cette solution a \textcolor{importantrouge}{\textbf{cinq variables non nulles}}.
+
+Or, dans un dictionnaire realisable, on a au plus \textcolor{defvert}{\textbf{trois variables non nulles}} (les variables de base, car $m = 3$).
+
+Donc cette solution \textcolor{importantrouge}{\textbf{ne peut pas}} etre decrite par un dictionnaire.
+\end{exemple}
+
+\begin{definition}
+\textbf{Solutions de base :}
+
+Les solutions realisables qui peuvent etre decrites par des dictionnaires sont appelees \textcolor{algoviolet}{\textbf{solutions de base}} (ou \textbf{solutions de base realisables}).
+\end{definition}
+
+\begin{astuce}
+\textbf{Caracteristique d'une solution de base :}
+
+Une solution de base a \textcolor{titrebleu}{\textbf{au plus $m$ variables non nulles}} (les variables de base).
+
+Les $n$ autres variables (hors-base) sont nulles.
+\end{astuce}
+
+\newpage
+\subsection{Origine Realisable}
+
+\begin{definition}
+\textbf{Origine et origine realisable :}
+
+Dans le dictionnaire initial :
+\begin{itemize}
+    \item Les variables d'ecart $(x_{n+1}, x_{n+2}, \ldots, x_{n+m})$ sont de base
+    \item Les variables de decision $(x_1, x_2, \ldots, x_n)$ sont hors-base
+\end{itemize}
+
+La solution associee au dictionnaire initial est :
+\begin{align*}
+x_1 = x_2 = \cdots = x_n &= 0\\
+x_{n+i} = b_i &\quad \text{pour } i = 1, 2, \ldots, m
+\end{align*}
+
+L'ensemble des valeurs nulles pour les variables de decision est parfois appele l'\textcolor{defvert}{\textbf{origine}}.
+\end{definition}
+
+\begin{important}
+\textbf{Proposition 3 :}
+
+Le dictionnaire initial est realisable \textcolor{importantrouge}{\textbf{si et seulement si}} chaque membre droit $b_i$ est non negatif.
+\end{important}
+
+\begin{definition}
+\textbf{Origine realisable :}
+
+Les problemes de PL avec chaque membre droit $b_i$ non negatif sont appeles des problemes avec \textcolor{titrebleu}{\textbf{origine realisable}}.
+\end{definition}
+
+\begin{notecours}
+\textbf{Remarque pratique :}
+
+Dans ce cours, nous supposons generalement que nous avons une origine realisable (c'est-a-dire $b_i \geq 0$ pour tout $i$).
+
+Si ce n'est pas le cas, des techniques speciales (comme la \textit{methode du simplexe a deux phases}) sont necessaires.
+\end{notecours}
+
+\newpage
+\section{Strategie de la Methode du Simplexe}
+
+\needspace{10\baselineskip}
+\subsection{Idee Principale}
+
+\begin{important}
+\textbf{Strategie generale :}
+
+La methode du simplexe travaille \textcolor{importantrouge}{\textbf{exclusivement}} avec des solutions de base realisables (c'est-a-dire des dictionnaires realisables) et ignore toutes les autres solutions realisables.
+
+La grande strategie de la methode du simplexe est celle des \textcolor{defvert}{\textbf{ameliorations successives}} :
+
+\begin{enumerate}
+    \item Ayant trouve une solution de base realisable $x_1, x_2, \ldots, x_{n+m}$
+    
+    \item Essayer de passer a une autre solution de base realisable $\bar{x}_1, \bar{x}_2, \ldots, \bar{x}_{n+m}$ qui est \textcolor{titrebleu}{\textbf{meilleure}} au sens ou :
+    $$\sum_{j=1}^{n} c_j\bar{x}_j > \sum_{j=1}^{n} c_jx_j$$
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{En termes de dictionnaires :}
+
+\begin{enumerate}
+    \item On part d'un dictionnaire realisable
+    \item On transforme ce dictionnaire en un nouveau dictionnaire realisable
+    \item Le nouveau dictionnaire doit donner une valeur de $z$ \textcolor{defvert}{\textbf{strictement superieure}}
+    \item On repete jusqu'a ne plus pouvoir ameliorer
+\end{enumerate}
+\end{astuce}
+
+\newpage
+\section{Un Deuxieme Exemple Detaille}
+
+\needspace{10\baselineskip}
+\subsection{Enonce du Probleme}
+
+\begin{exemple}
+\textbf{Programme lineaire sous forme standard :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 5x_2 + 3x_3\\
+\text{sujet a} \quad & x_1 + 3x_2 + x_3 \leq 3\\
+& -x_1 + 3x_3 \leq 2\\
+& 2x_1 - x_2 + 2x_3 \leq 4\\
+& 2x_1 + 3x_2 - x_3 \leq 2\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\textbf{Dictionnaire initial realisable :}
+
+\begin{align*}
+x_4 &= 3 - x_1 - 3x_2 - x_3\\
+x_5 &= 2 + x_1 - 3x_3\\
+x_6 &= 4 - 2x_1 + x_2 - 2x_3\\
+x_7 &= 2 - 2x_1 - 3x_2 + x_3\\
+z &= 0 + 5x_1 + 5x_2 + 3x_3
+\end{align*}
+
+Base initiale : $B = \{4, 5, 6, 7\}$ (variables d'ecart)
+\end{exemple}
+
+\newpage
+\subsection{Premiere Iteration : Amelioration}
+
+\begin{methode}
+\textbf{Comment ameliorer la solution ?}
+
+Dictionnaire actuel :
+\begin{align*}
+x_4 &= 3 - x_1 - 3x_2 - x_3\\
+x_5 &= 2 + x_1 - 3x_3\\
+x_6 &= 4 - 2x_1 + x_2 - 2x_3\\
+x_7 &= 2 - 2x_1 - 3x_2 + x_3\\
+z &= 0 + 5x_1 + 5x_2 + 3x_3
+\end{align*}
+
+\textbf{Solution actuelle :} $x_1 = x_2 = x_3 = 0$, $z = 0$
+
+\textbf{Idee :} Chercher une solution realisable qui donne une valeur de $z$ plus elevee.
+
+\textbf{Strategie :}
+\begin{itemize}
+    \item Garder $x_2 = 0$ et $x_3 = 0$
+    \item \textcolor{defvert}{\textbf{Augmenter}} la valeur de $x_1$
+\end{itemize}
+
+\textbf{Effet :} $z = 5x_1 > 0$ (amelioration !)
+\end{methode}
+
+\begin{exemple}
+\textbf{Tests de valeurs :}
+
+Si $x_1 = 1$ (en gardant $x_2 = x_3 = 0$) :
+\begin{itemize}
+    \item $x_4 = 3 - 1 = 2 \geq 0$ \checkmark
+    \item $x_5 = 2 + 1 = 3 \geq 0$ \checkmark
+    \item $x_6 = 4 - 2 = 2 \geq 0$ \checkmark
+    \item $x_7 = 2 - 2 = 0 \geq 0$ \checkmark
+    \item $z = 5$ \textcolor{defvert}{(realisable et meilleur !)}
+\end{itemize}
+
+Si $x_1 = 2$ (en gardant $x_2 = x_3 = 0$) :
+\begin{itemize}
+    \item $x_4 = 3 - 2 = 1 \geq 0$ \checkmark
+    \item $x_5 = 2 + 2 = 4 \geq 0$ \checkmark
+    \item $x_6 = 4 - 4 = 0 \geq 0$ \checkmark
+    \item $x_7 = 2 - 4 = -2 < 0$ \textcolor{importantrouge}{\ding{55} (non realisable !)}
+    \item $z = 10$
+\end{itemize}
+
+\textbf{Conclusion :} On ne peut pas augmenter $x_1$ trop.
+\end{exemple}
+
+\newpage
+\subsection{Determination de la Borne Superieure}
+
+\begin{methode}
+\textbf{Question :} De combien peut-on augmenter $x_1$ (en gardant $x_2 = x_3 = 0$) tout en maintenant la realisabilite ?
+
+\textbf{Analyse des contraintes :}
+
+\begin{align*}
+x_4 = 3 - x_1 \geq 0 &\Rightarrow x_1 \leq 3\\
+x_5 = 2 + x_1 \geq 0 &\Rightarrow x_1 \geq -2 \text{ (toujours satisfait)}\\
+x_6 = 4 - 2x_1 \geq 0 &\Rightarrow x_1 \leq 2\\
+x_7 = 2 - 2x_1 \geq 0 &\Rightarrow x_1 \leq 1
+\end{align*}
+
+\textbf{Contrainte la plus stringente :} $x_1 \leq 1$
+
+\textbf{Donc :} On peut augmenter $x_1$ jusqu'a $x_1 = 1$.
+\end{methode}
+
+\begin{important}
+\textbf{Nouvelle solution :}
+
+En posant $x_1 = 1$ (et $x_2 = x_3 = 0$) :
+\begin{align*}
+x_1 &= 1\\
+x_2 &= 0\\
+x_3 &= 0\\
+x_4 &= 2\\
+x_5 &= 3\\
+x_6 &= 2\\
+x_7 &= 0\\
+z &= 5
+\end{align*}
+
+\textbf{Observations :}
+\begin{itemize}
+    \item $x_1 = 1 > 0$ : $x_1$ est devenue une \textcolor{titrebleu}{\textbf{variable de base}}
+    \item $x_7 = 0$ : $x_7$ est devenue une \textcolor{defvert}{\textbf{variable hors-base}}
+\end{itemize}
+\end{important}
+
+\newpage
+\subsection{Construction du Nouveau Dictionnaire}
+
+\begin{methode}
+\textbf{Pivotage :}
+
+On veut deplacer $x_1$ vers le membre gauche et $x_7$ vers le membre droit.
+
+\textbf{Etape 1 :} Exprimer $x_1$ en fonction de $x_7$ (et des autres variables hors-base)
+
+De la quatrieme equation du dictionnaire initial :
+$$x_7 = 2 - 2x_1 - 3x_2 + x_3$$
+
+On resout pour $x_1$ :
+$$2x_1 = 2 - 3x_2 + x_3 - x_7$$
+$$x_1 = 1 - \frac{3}{2}x_2 + \frac{1}{2}x_3 - \frac{1}{2}x_7$$
+
+\textbf{Etape 2 :} Substituer cette expression dans les trois premieres equations et dans $z$
+
+\textbf{Nouveau dictionnaire :}
+\begin{align*}
+x_1 &= 1 - \frac{3}{2}x_2 + \frac{1}{2}x_3 - \frac{1}{2}x_7\\
+x_4 &= 2 - \frac{3}{2}x_2 - \frac{3}{2}x_3 + \frac{1}{2}x_7\\
+x_5 &= 3 - \frac{3}{2}x_2 - \frac{5}{2}x_3 - \frac{1}{2}x_7\\
+x_6 &= 2 + 4x_2 - 3x_3 + x_7\\
+z &= 5 - \frac{5}{2}x_2 + \frac{11}{2}x_3 - \frac{5}{2}x_7
+\end{align*}
+
+\textbf{Nouvelle base :} $B = \{1, 4, 5, 6\}$
+\end{methode}
+
+\begin{astuce}
+\textbf{Verification :}
+
+En posant $x_2 = x_3 = x_7 = 0$ :
+\begin{itemize}
+    \item $x_1 = 1, x_4 = 2, x_5 = 3, x_6 = 2$ (toutes $\geq 0$) \checkmark
+    \item $z = 5$ \checkmark
+\end{itemize}
+
+Le nouveau dictionnaire est \textcolor{defvert}{\textbf{realisable}} et donne une \textcolor{titrebleu}{\textbf{meilleure}} valeur de $z$ !
+\end{astuce}
+
+\newpage
+\section{Une Iteration de la Methode du Simplexe}
+
+\needspace{10\baselineskip}
+\subsection{Structure Generale}
+
+\begin{important}
+\textbf{Iteration de la methode du simplexe :}
+
+A chaque iteration, nous essayons d'augmenter la valeur de $z$ en rendant :
+\begin{itemize}
+    \item Une des variables du membre droit \textcolor{defvert}{\textbf{positive}} (variable entrante)
+    \item Une des variables du membre gauche \textcolor{importantrouge}{\textbf{nulle}} (variable sortante)
+\end{itemize}
+
+tout en gardant les autres variables non negatives.
+
+\textbf{En d'autres termes :}
+
+Etant donne un dictionnaire realisable :
+\begin{enumerate}
+    \item Selectionner une \textcolor{defvert}{\textbf{variable entrante}}
+    \item Trouver une \textcolor{importantrouge}{\textbf{variable sortante}}
+    \item Construire le dictionnaire suivant par \textcolor{algoviolet}{\textbf{pivotage}}
+\end{enumerate}
+\end{important}
+
+\newpage
+\subsection{Choix de la Variable Entrante}
+
+\begin{definition}
+\textbf{Variable entrante :}
+
+Une variable hors-base qui, lorsqu'elle devient positive, augmente la valeur de $z$, choisie pour entrer dans la base, est appelee la \textcolor{defvert}{\textbf{variable entrante}}.
+\end{definition}
+
+\begin{methode}
+\textbf{Selection de la variable entrante :}
+
+La variable entrante est une variable hors-base $x_j$ avec un coefficient \textcolor{titrebleu}{\textbf{positif}} $\bar{c}_j$ dans la derniere ligne du dictionnaire actuel :
+
+$$z = z^* + \sum_{j \in N} \bar{c}_j x_j$$
+
+ou $N$ est l'ensemble des indices des variables hors-base.
+
+\textbf{Regles de choix :}
+\begin{itemize}
+    \item S'il y a plus d'un candidat pour entrer dans la base, \textcolor{defvert}{\textbf{n'importe lequel}} peut servir
+    \item \textcolor{algoviolet}{\textbf{Pratique courante :}} choisir la variable ayant le plus grand coefficient $\bar{c}_j$
+    \item Si $\bar{c}_j \leq 0$ pour tout $j \in N$, alors la solution actuelle est \textcolor{importantrouge}{\textbf{optimale}}
+\end{itemize}
+\end{methode}
+
+\begin{astuce}
+\textbf{Pourquoi le dictionnaire est optimal si tous les $\bar{c}_j \leq 0$ ?}
+
+Car :
+\begin{itemize}
+    \item Toute solution realisable $x_1, x_2, \ldots, x_{n+m}$ satisfait $x_j \geq 0$ pour tout $j$
+    \item Les variables hors-base sont fixees a zero dans la solution de base actuelle
+    \item Si $\bar{c}_j \leq 0$ pour tout $j \in N$, augmenter une variable hors-base \textcolor{importantrouge}{\textbf{diminuerait}} $z$
+    \item Donc la solution actuelle est optimale
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Choix de la Variable Sortante}
+
+\begin{definition}
+\textbf{Variable sortante :}
+
+La variable de base dont la non-negativite impose la borne superieure la plus stringente sur l'augmentation de la variable entrante est appelee la \textcolor{importantrouge}{\textbf{variable sortante}}.
+\end{definition}
+
+\begin{methode}
+\textbf{Selection de la variable sortante :}
+
+Supposons que $x_e$ soit la variable entrante (avec coefficient $\bar{c}_e > 0$).
+
+Pour chaque variable de base $x_i$ (avec $i \in B$), si le coefficient de $x_e$ dans l'equation de $x_i$ est negatif (disons $-\bar{a}_{ie}$ avec $\bar{a}_{ie} > 0$), alors :
+
+$$x_i = \bar{b}_i - \bar{a}_{ie}x_e - \cdots \geq 0$$
+
+implique :
+$$x_e \leq \frac{\bar{b}_i}{\bar{a}_{ie}}$$
+
+\textbf{La variable sortante est celle qui donne le \textcolor{importantrouge}{plus petit} ratio} :
+
+$$\min_{i \in B, \bar{a}_{ie} > 0} \frac{\bar{b}_i}{\bar{a}_{ie}}$$
+
+\textbf{Regles supplementaires :}
+\begin{itemize}
+    \item S'il y a plus d'un candidat pour sortir, \textcolor{defvert}{\textbf{n'importe lequel}} peut servir
+    \item S'il n'y a \textcolor{importantrouge}{\textbf{aucun candidat}} (tous les coefficients $\bar{a}_{ie} \leq 0$), le probleme est \textcolor{importantrouge}{\textbf{non borne}}
+\end{itemize}
+\end{methode}
+
+\begin{important}
+\textbf{Probleme non borne :}
+
+S'il n'y a aucun candidat pour sortir de la base :
+\begin{itemize}
+    \item On peut rendre la variable entrante \textcolor{titrebleu}{\textbf{aussi grande qu'on veut}}
+    \item La solution obtenue reste \textcolor{defvert}{\textbf{realisable}}
+    \item Aucune valeur de variable de base n'a diminue
+    \item La valeur de $z$ a augmente
+    \item Plus la variable entrante augmente, plus $z$ augmente
+    \item Comme la variable entrante n'a pas de borne superieure, $z$ n'a pas de borne superieure
+    \item Le probleme de PL est \textcolor{importantrouge}{\textbf{non borne}}
+\end{itemize}
+\end{important}
+
+\newpage
+\subsection{Pivotage}
+
+\begin{definition}
+\textbf{Pivotage :}
+
+Le nouveau dictionnaire est obtenu en :
+\begin{enumerate}
+    \item Faisant passer la variable entrante du membre droit au membre gauche, tandis que la variable sortante passe dans la direction opposee (sur la \textcolor{algoviolet}{\textbf{ligne du pivot}})
+    
+    \item Substituant la variable entrante de la ligne du pivot dans les lignes restantes du dictionnaire
+\end{enumerate}
+
+Le processus de calcul pour construire le nouveau dictionnaire est appele \textcolor{algoviolet}{\textbf{pivotage}}.
+\end{definition}
+
+\begin{methode}
+\textbf{Etapes du pivotage :}
+
+Supposons que $x_e$ entre et $x_s$ sorte.
+
+\textbf{Etape 1 : Ligne du pivot}
+
+Trouver l'equation de $x_s$ dans le dictionnaire actuel :
+$$x_s = \bar{b}_s - \bar{a}_{se}x_e - \sum_{j \in N \setminus \{e\}} \bar{a}_{sj}x_j$$
+
+Resoudre pour $x_e$ :
+$$x_e = \frac{\bar{b}_s}{\bar{a}_{se}} - \frac{1}{\bar{a}_{se}}x_s - \sum_{j \in N \setminus \{e\}} \frac{\bar{a}_{sj}}{\bar{a}_{se}}x_j$$
+
+\textbf{Etape 2 : Autres lignes}
+
+Pour chaque autre variable de base $x_i$ ($i \in B \setminus \{s\}$), substituer l'expression de $x_e$ :
+$$x_i = \bar{b}_i - \bar{a}_{ie}x_e - \cdots$$
+
+devient :
+$$x_i = \left(\bar{b}_i - \bar{a}_{ie} \cdot \frac{\bar{b}_s}{\bar{a}_{se}}\right) - \left(-\bar{a}_{ie} \cdot \frac{1}{\bar{a}_{se}}\right)x_s - \cdots$$
+
+\textbf{Etape 3 : Fonction objectif}
+
+Substituer $x_e$ dans l'expression de $z$ de maniere similaire.
+\end{methode}
+
+\begin{important}
+\textbf{Proprietes apres pivotage :}
+
+Une fois le pivotage termine :
+\begin{itemize}
+    \item Les $m$ variables de base doivent avoir des valeurs \textcolor{defvert}{\textbf{non negatives}}
+    \item La valeur de la fonction objectif ne peut pas avoir \textcolor{titrebleu}{\textbf{diminue}}
+\end{itemize}
+\end{important}
+
+\newpage
+\section{Exemple Complet : Suite des Iterations}
+
+\needspace{10\baselineskip}
+\subsection{Deuxieme Iteration}
+
+\begin{exemple}
+\textbf{Dictionnaire ameliore (apres premiere iteration) :}
+
+\begin{align*}
+x_1 &= 1 - \frac{3}{2}x_2 + \frac{1}{2}x_3 - \frac{1}{2}x_7\\
+x_4 &= 2 - \frac{3}{2}x_2 - \frac{3}{2}x_3 + \frac{1}{2}x_7\\
+x_5 &= 3 - \frac{3}{2}x_2 - \frac{5}{2}x_3 - \frac{1}{2}x_7\\
+x_6 &= 2 + 4x_2 - 3x_3 + x_7\\
+z &= 5 - \frac{5}{2}x_2 + \frac{11}{2}x_3 - \frac{5}{2}x_7
+\end{align*}
+
+\textbf{Solution actuelle :} $x_1 = 1, x_2 = 0, x_3 = 0, x_4 = 2, x_5 = 3, x_6 = 2, x_7 = 0$, $z = 5$
+\end{exemple}
+
+\begin{methode}
+\textbf{Selection de la variable entrante :}
+
+Dans l'equation de $z$ : $z = 5 - \frac{5}{2}x_2 + \frac{11}{2}x_3 - \frac{5}{2}x_7$
+
+\textbf{Coefficients des variables hors-base :}
+\begin{itemize}
+    \item $\bar{c}_2 = -\frac{5}{2} < 0$ (ne peut pas entrer)
+    \item $\bar{c}_3 = \frac{11}{2} > 0$ \textcolor{defvert}{(peut entrer)}
+    \item $\bar{c}_7 = -\frac{5}{2} < 0$ (ne peut pas entrer)
+\end{itemize}
+
+\textbf{Variable entrante :} $x_3$ (seule variable avec coefficient positif)
+\end{methode}
+
+\begin{methode}
+\textbf{Selection de la variable sortante :}
+
+Coefficient de $x_3$ dans chaque equation :
+
+\begin{align*}
+x_1 &: +\frac{1}{2} \quad (\text{positif, pas de borne})\\
+x_4 &: -\frac{3}{2} \quad \Rightarrow x_3 \leq \frac{2}{3/2} = \frac{4}{3}\\
+x_5 &: -\frac{5}{2} \quad \Rightarrow x_3 \leq \frac{3}{5/2} = \frac{6}{5}\\
+x_6 &: -3 \quad \Rightarrow x_3 \leq \frac{2}{3}
+\end{align*}
+
+\textbf{Borne la plus stringente :} $x_3 \leq \frac{2}{3}$ (imposee par $x_6$)
+
+\textbf{Variable sortante :} $x_6$
+\end{methode}
+
+\newpage
+\subsection{Troisieme Dictionnaire}
+
+\begin{methode}
+\textbf{Pivotage :}
+
+De l'equation de $x_6$ :
+$$x_6 = 2 + 4x_2 - 3x_3 + x_7$$
+
+On resout pour $x_3$ :
+$$3x_3 = 2 + 4x_2 + x_7 - x_6$$
+$$x_3 = \frac{2}{3} + \frac{4}{3}x_2 + \frac{1}{3}x_7 - \frac{1}{3}x_6$$
+
+Substitution dans les autres equations...
+\end{methode}
+
+\begin{exemple}
+\textbf{Troisieme dictionnaire :}
+
+\begin{align*}
+x_3 &= \frac{2}{3} + \frac{4}{3}x_2 + \frac{1}{3}x_7 - \frac{1}{3}x_6\\
+x_1 &= \frac{4}{3} - \frac{5}{6}x_2 - \frac{1}{3}x_7 - \frac{1}{6}x_6\\
+x_4 &= 1 - \frac{7}{2}x_2 + \frac{1}{2}x_6\\
+x_5 &= \frac{4}{3} - \frac{29}{6}x_2 - \frac{4}{3}x_7 + \frac{5}{6}x_6\\
+z &= \frac{26}{3} + \frac{29}{6}x_2 - \frac{2}{3}x_7 - \frac{11}{6}x_6
+\end{align*}
+
+\textbf{Solution amelioree :} 
+$$x_1 = \frac{4}{3}, x_2 = 0, x_3 = \frac{2}{3}, x_4 = 1, x_5 = \frac{4}{3}, x_6 = 0, x_7 = 0$$
+$$z = \frac{26}{3} \approx 8.67$$
+\end{exemple}
+
+\newpage
+\subsection{Troisieme Iteration}
+
+\begin{methode}
+\textbf{Variable entrante :}
+
+Dans $z = \frac{26}{3} + \frac{29}{6}x_2 - \frac{2}{3}x_7 - \frac{11}{6}x_6$
+
+Seul coefficient positif : $\bar{c}_2 = \frac{29}{6} > 0$
+
+\textbf{Variable entrante :} $x_2$
+\end{methode}
+
+\begin{methode}
+\textbf{Variable sortante :}
+
+Ratios :
+\begin{align*}
+x_3 &: +\frac{4}{3} \quad (\text{pas de borne})\\
+x_1 &: -\frac{5}{6} \quad \Rightarrow x_2 \leq \frac{4/3}{5/6} = \frac{8}{5}\\
+x_4 &: -\frac{7}{2} \quad \Rightarrow x_2 \leq \frac{1}{7/2} = \frac{2}{7}\\
+x_5 &: -\frac{29}{6} \quad \Rightarrow x_2 \leq \frac{4/3}{29/6} = \frac{8}{29}
+\end{align*}
+
+\textbf{Minimum :} $\frac{8}{29}$ (impose par $x_5$)
+
+\textbf{Variable sortante :} $x_5$
+\end{methode}
+
+\newpage
+\subsection{Dictionnaire Final (Optimal)}
+
+\begin{exemple}
+\textbf{Quatrieme dictionnaire (apres pivotage) :}
+
+\begin{align*}
+x_2 &= \frac{8}{29} - \frac{8}{29}x_7 + \frac{5}{29}x_6 - \frac{6}{29}x_5\\
+x_3 &= \frac{30}{29} - \frac{1}{29}x_7 - \frac{3}{29}x_6 - \frac{8}{29}x_5\\
+x_1 &= \frac{32}{29} - \frac{3}{29}x_7 - \frac{9}{29}x_6 + \frac{5}{29}x_5\\
+x_4 &= \frac{1}{29} + \frac{28}{29}x_7 - \frac{3}{29}x_6 + \frac{21}{29}x_5\\
+z &= 10 - 2x_7 - x_6 - x_5
+\end{align*}
+
+\textbf{Solution optimale :}
+$$x_1 = \frac{32}{29}, \quad x_2 = \frac{8}{29}, \quad x_3 = \frac{30}{29}$$
+$$x_4 = \frac{1}{29}, \quad x_5 = 0, \quad x_6 = 0, \quad x_7 = 0$$
+
+\textbf{Valeur optimale :} $z = 10$
+\end{exemple}
+
+\begin{important}
+\textbf{Critere d'optimalite :}
+
+Dans l'equation de $z$ : $z = 10 - 2x_7 - x_6 - x_5$
+
+\textcolor{importantrouge}{\textbf{Tous les coefficients sont negatifs ou nuls !}}
+
+Aucune variable hors-base ne peut entrer dans la base sans faire diminuer $z$.
+
+\textcolor{defvert}{\textbf{Le dictionnaire actuel decrit une solution optimale.}}
+\end{important}
+
+\newpage
+\section{Critere d'Arret et Solutions Optimales}
+
+\needspace{10\baselineskip}
+\subsection{Critere d'Arret}
+
+\begin{definition}
+\textbf{Critere d'arret de la methode du simplexe :}
+
+Repeter le processus jusqu'a ce qu'aucune variable hors-base ne puisse entrer dans la base sans faire diminuer la valeur de $z$.
+
+La solution realisable associee au dictionnaire actuel est une \textcolor{defvert}{\textbf{solution optimale}}.
+
+\textbf{Formellement :} Si $\bar{c}_j \leq 0$ pour tout $j \in N$ (variables hors-base), alors \textcolor{importantrouge}{\textbf{STOP}} - solution optimale trouvee.
+\end{definition}
+
+\begin{astuce}
+\textbf{Resume de l'algorithme :}
+
+\begin{enumerate}
+    \item \textbf{Initialisation :} Partir d'un dictionnaire realisable (souvent le dictionnaire initial si origine realisable)
+    
+    \item \textbf{Test d'optimalite :} Si tous les coefficients $\bar{c}_j \leq 0$ dans l'equation de $z$, \textcolor{defvert}{STOP} (optimal)
+    
+    \item \textbf{Choix variable entrante :} Choisir $x_e$ avec $\bar{c}_e > 0$
+    
+    \item \textbf{Test de non-borne :} Si aucun coefficient $\bar{a}_{ie} > 0$ pour $i \in B$, \textcolor{importantrouge}{STOP} (non borne)
+    
+    \item \textbf{Choix variable sortante :} Calculer $\min_{i \in B, \bar{a}_{ie} > 0} \frac{\bar{b}_i}{\bar{a}_{ie}}$ pour determiner $x_s$
+    
+    \item \textbf{Pivotage :} Construire le nouveau dictionnaire
+    
+    \item \textbf{Retour a l'etape 2}
+\end{enumerate}
+\end{astuce}
+
+\newpage
+\subsection{Unicite de la Solution Optimale}
+
+\begin{exemple}
+\textbf{Exemple avec solution optimale unique :}
+
+Rappelons notre premier exemple :
+
+\textbf{Dictionnaire final :}
+\begin{align*}
+x_3 &= 1 + x_2 + 3x_4 - 2x_6\\
+x_1 &= 2 - 2x_2 - 2x_4 + x_6\\
+x_5 &= 1 + 5x_2 + 2x_4\\
+z &= 13 - 3x_2 - x_4 - x_6
+\end{align*}
+
+La derniere ligne montre que toute solution realisable avec $z = 13$ doit satisfaire :
+$$x_2 = x_4 = x_6 = 0$$
+
+Le reste du dictionnaire montre que toute telle solution doit satisfaire :
+$$x_1 = 2, \quad x_3 = 1, \quad x_5 = 1$$
+
+\textcolor{defvert}{\textbf{Il n'y a donc qu'une seule solution optimale.}}
+\end{exemple}
+
+\newpage
+\subsection{Solutions Optimales Multiples}
+
+\begin{definition}
+\textbf{Detection de solutions optimales multiples :}
+
+Considerons le dictionnaire suivant :
+
+\begin{align*}
+x_4 &= 3 + x_2 - 2x_5 + 7x_3\\
+x_1 &= 1 - 5x_2 + 6x_5 - 8x_3\\
+x_6 &= 4 + 9x_2 + 2x_5 - x_3\\
+z &= 8 - x_3
+\end{align*}
+
+La derniere ligne montre que toute solution optimale satisfait $x_3 = 0$, mais \textcolor{importantrouge}{\textbf{pas necessairement}} $x_2 = 0$ et $x_5 = 0$.
+\end{definition}
+
+\begin{exemple}
+\textbf{Caracterisation des solutions optimales :}
+
+Pour les solutions avec $x_3 = 0$, le reste du dictionnaire implique :
+
+\begin{align*}
+x_4 &= 3 + x_2 - 2x_5\\
+x_1 &= 1 - 5x_2 + 6x_5\\
+x_6 &= 4 + 9x_2 + 2x_5
+\end{align*}
+
+Toute solution optimale provient de valeurs de $x_2$ et $x_5$ telles que :
+
+\begin{align*}
+-x_2 + 2x_5 &\leq 3\\
+5x_2 - 6x_5 &\leq 1\\
+-9x_2 - 2x_5 &\leq 4\\
+x_2, x_5 &\geq 0
+\end{align*}
+
+\textcolor{titrebleu}{\textbf{Il existe une infinite de solutions optimales !}}
+
+Ce sont tous les points du polyedre defini ci-dessus.
+\end{exemple}
+
+\begin{astuce}
+\textbf{Comment detecter des solutions optimales multiples ?}
+
+Dans un dictionnaire optimal, si une variable hors-base a un coefficient \textcolor{defvert}{\textbf{nul}} (pas strictement negatif) dans l'equation de $z$, alors il existe \textcolor{titrebleu}{\textbf{plusieurs solutions optimales}}.
+
+Dans l'exemple ci-dessus : $\bar{c}_2 = 0$ et $\bar{c}_5 = 0$.
+\end{astuce}
+
+\newpage
+\section{Format Tableau}
+
+\needspace{10\baselineskip}
+\subsection{Introduction au Tableau}
+
+\begin{notecours}
+\textbf{Une autre facon de presenter la methode du simplexe :}
+
+Le format \textcolor{algoviolet}{\textbf{tableau}} est probablement plus populaire, bien que moins direct que le format dictionnaire.
+
+Il consiste a enregistrer uniquement les \textcolor{titrebleu}{\textbf{coefficients}} des variables, ainsi que les membres droits, sous forme de tableau (matrice augmentee).
+\end{notecours}
+
+\begin{exemple}
+\textbf{Dictionnaire (forme modifiee) pour notre premier exemple :}
+
+\begin{align*}
+2x_1 + 3x_2 + x_3 + x_4 &= 5\\
+4x_1 + x_2 + 2x_3 + x_5 &= 11\\
+3x_1 + 4x_2 + 2x_3 + x_6 &= 8\\
+-z + 5x_1 + 4x_2 + 3x_3 &= 0
+\end{align*}
+
+\textbf{Tableau correspondant :}
+
+\begin{center}
+\begin{tabular}{ccccccc|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS \\
+\midrule
+2 & 3 & 1 & 1 & 0 & 0 & 0 & 5 \\
+4 & 1 & 2 & 0 & 1 & 0 & 0 & 11 \\
+3 & 4 & 2 & 0 & 0 & 1 & 0 & 8 \\
+\midrule
+5 & 4 & 3 & 0 & 0 & 0 & -1 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+RHS = Right-Hand Side (membre droit)
+\end{exemple}
+
+\newpage
+\subsection{Operations sur le Tableau}
+
+\begin{methode}
+\textbf{Selection de la variable entrante :}
+
+\begin{center}
+\begin{tabular}{ccccccc|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS \\
+\midrule
+2 & 3 & 1 & 1 & 0 & 0 & 0 & 5 \\
+4 & 1 & 2 & 0 & 1 & 0 & 0 & 11 \\
+3 & 4 & 2 & 0 & 0 & 1 & 0 & 8 \\
+\midrule
+\textcolor{defvert}{5} & \textcolor{defvert}{4} & \textcolor{defvert}{3} & 0 & 0 & 0 & -1 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Regles :}
+\begin{itemize}
+    \item Examiner tous les nombres (sauf le plus a droite) dans la \textcolor{algoviolet}{\textbf{derniere ligne}}
+    \item S'ils sont \textcolor{defvert}{\textbf{tous non positifs}} : le tableau decrit une solution optimale
+    \item Sinon : choisir une colonne avec un nombre \textcolor{titrebleu}{\textbf{positif}} dans la derniere ligne (\textcolor{importantrouge}{\textbf{colonne pivot}} $\to$ variable entrante)
+\end{itemize}
+
+\textbf{Choix :} Colonne de $x_1$ (coefficient = 5)
+\end{methode}
+
+\begin{methode}
+\textbf{Selection de la variable sortante :}
+
+\begin{center}
+\begin{tabular}{ccccccc|c|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS & Ratio \\
+\midrule
+\textcolor{defvert}{2} & 3 & 1 & 1 & 0 & 0 & 0 & 5 & $5/2 = 2.5$ \\
+\textcolor{defvert}{4} & 1 & 2 & 0 & 1 & 0 & 0 & 11 & $11/4 = 2.75$ \\
+\textcolor{defvert}{3} & 4 & 2 & 0 & 0 & 1 & 0 & 8 & $8/3 \approx 2.67$ \\
+\midrule
+5 & 4 & 3 & 0 & 0 & 0 & -1 & 0 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Regles :}
+\begin{itemize}
+    \item Pour chaque ligne dont l'entree $r$ dans la colonne pivot est \textcolor{titrebleu}{\textbf{positive}}, calculer le ratio $s/r$ ou $s$ est l'entree dans la colonne la plus a droite
+    \item Si toutes les entrees de la colonne pivot sont non positives : le probleme de PL est \textcolor{importantrouge}{\textbf{non borne}}
+    \item La ligne avec le \textcolor{defvert}{\textbf{plus petit ratio}} est la \textcolor{importantrouge}{\textbf{ligne pivot}} ($\to$ variable sortante)
+\end{itemize}
+
+\textbf{Choix :} Ligne 1 (ratio = 2.5, le plus petit)
+
+\textbf{Element pivot :} L'entree a l'intersection de la colonne pivot et de la ligne pivot (\circled{2})
+\end{methode}
+
+\newpage
+\subsection{Pivotage sur le Tableau}
+
+\begin{methode}
+\textbf{Operations de pivotage :}
+
+\textbf{Tableau initial :}
+\begin{center}
+\begin{tabular}{ccccccc|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS \\
+\midrule
+\circled{2} & 3 & 1 & 1 & 0 & 0 & 0 & 5 \\
+4 & 1 & 2 & 0 & 1 & 0 & 0 & 11 \\
+3 & 4 & 2 & 0 & 0 & 1 & 0 & 8 \\
+\midrule
+5 & 4 & 3 & 0 & 0 & 0 & -1 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Etape 1 :} Diviser chaque entree de la ligne pivot par l'element pivot
+
+$$\text{Ligne 1 nouvelle} = \text{Ligne 1 ancienne} / 2$$
+
+\begin{center}
+\begin{tabular}{ccccccc|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS \\
+\midrule
+\textcolor{defvert}{1} & \textcolor{defvert}{3/2} & \textcolor{defvert}{1/2} & \textcolor{defvert}{1/2} & 0 & 0 & 0 & \textcolor{defvert}{5/2} \\
+4 & 1 & 2 & 0 & 1 & 0 & 0 & 11 \\
+3 & 4 & 2 & 0 & 0 & 1 & 0 & 8 \\
+\midrule
+5 & 4 & 3 & 0 & 0 & 0 & -1 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Etape 2 :} Pour chaque ligne restante, soustraire un multiple approprie de la nouvelle ligne pivot
+
+\textbf{Objectif :} Rendre toutes les entrees de la colonne pivot (sauf l'element pivot) egales a zero
+
+$$\text{Ligne 2 nouvelle} = \text{Ligne 2 ancienne} - 4 \times \text{Ligne 1 nouvelle}$$
+$$\text{Ligne 3 nouvelle} = \text{Ligne 3 ancienne} - 3 \times \text{Ligne 1 nouvelle}$$
+$$\text{Ligne 4 nouvelle} = \text{Ligne 4 ancienne} - 5 \times \text{Ligne 1 nouvelle}$$
+\end{methode}
+
+\begin{exemple}
+\textbf{Tableau apres pivotage :}
+
+\begin{center}
+\begin{tabular}{ccccccc|c}
+\toprule
+$x_1$ & $x_2$ & $x_3$ & $x_4$ & $x_5$ & $x_6$ & $z$ & RHS \\
+\midrule
+1 & 3/2 & 1/2 & 1/2 & 0 & 0 & 0 & 5/2 \\
+0 & -5 & 0 & -2 & 1 & 0 & 0 & 1 \\
+0 & -1/2 & 1/2 & -3/2 & 0 & 1 & 0 & 1/2 \\
+\midrule
+0 & -7/2 & 1/2 & -5/2 & 0 & 0 & -1 & -25/2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Interpretation :}
+\begin{itemize}
+    \item Variables de base : $x_1, x_5, x_6$ (colonnes avec un seul 1 et des 0 ailleurs)
+    \item Variables hors-base : $x_2, x_3, x_4$
+    \item Solution : $x_1 = 5/2$, $x_5 = 1$, $x_6 = 1/2$ ; autres variables = 0
+    \item Valeur de $z$ : $25/2 = 12.5$ (attention au signe !)
+\end{itemize}
+
+\textbf{Note :} Dans la derniere ligne, $z$ a un coefficient de -1, donc la valeur de $z$ est $-(-25/2) = 25/2$.
+\end{exemple}
+
+\newpage
+\section{Resume et Conseils Pratiques}
+
+\needspace{10\baselineskip}
+\subsection{Algorithme du Simplexe - Resume}
+
+\begin{important}
+\textbf{Algorithme du simplexe (version dictionnaire) :}
+
+\textbf{Entree :} Probleme de PL sous forme standard avec origine realisable
+
+\textbf{Sortie :} Solution optimale ou indication que le probleme est non borne
+
+\textbf{Etapes :}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Initialisation :}}
+    \begin{itemize}
+        \item Former le dictionnaire initial avec les variables d'ecart
+        \item Verifier qu'il est realisable ($b_i \geq 0$ pour tout $i$)
+    \end{itemize}
+    
+    \item \textcolor{defvert}{\textbf{Test d'optimalite :}}
+    \begin{itemize}
+        \item Si tous les coefficients dans l'equation de $z$ sont $\leq 0$ : \textbf{STOP} (optimal)
+    \end{itemize}
+    
+    \item \textcolor{algoviolet}{\textbf{Choix de la variable entrante :}}
+    \begin{itemize}
+        \item Choisir une variable hors-base avec coefficient positif dans $z$
+    \end{itemize}
+    
+    \item \textcolor{exempleorange}{\textbf{Test de borne :}}
+    \begin{itemize}
+        \item Si aucun coefficient de la variable entrante n'est positif : \textbf{STOP} (non borne)
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Choix de la variable sortante :}}
+    \begin{itemize}
+        \item Calculer les ratios $\bar{b}_i / \bar{a}_{ie}$ pour $\bar{a}_{ie} > 0$
+        \item Choisir le minimum
+    \end{itemize}
+    
+    \item \textcolor{titrebleu}{\textbf{Pivotage :}}
+    \begin{itemize}
+        \item Construire le nouveau dictionnaire
+        \item Retourner a l'etape 2
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\newpage
+\subsection{Conseils et Pieges Courants}
+
+\begin{astuce}
+\textbf{Conseils pratiques :}
+
+\begin{enumerate}
+    \item \textbf{Verification de la realisabilite :}
+    \begin{itemize}
+        \item Toujours verifier que les valeurs des variables de base sont $\geq 0$
+        \item Si une valeur devient negative, il y a une erreur de calcul
+    \end{itemize}
+    
+    \item \textbf{Amelioration de $z$ :}
+    \begin{itemize}
+        \item A chaque iteration, $z$ doit augmenter (ou au moins ne pas diminuer)
+        \item Si $z$ diminue, il y a une erreur
+    \end{itemize}
+    
+    \item \textbf{Choix de la variable entrante :}
+    \begin{itemize}
+        \item N'importe quelle variable avec coefficient positif peut entrer
+        \item Le choix du plus grand coefficient (regle de Dantzig) est souvent efficace
+        \item Mais d'autres regles existent (regle de Bland, etc.)
+    \end{itemize}
+    
+    \item \textbf{Calcul des ratios :}
+    \begin{itemize}
+        \item Ne considerer que les coefficients \textcolor{importantrouge}{\textbf{strictement positifs}}
+        \item Un coefficient nul ou negatif n'impose pas de borne
+    \end{itemize}
+    
+    \item \textbf{Pivotage :}
+    \begin{itemize}
+        \item Bien identifier l'element pivot
+        \item Verifier les calculs (facile de faire des erreurs arithmetiques)
+        \item Garder les fractions si possible (plus precis que les decimales)
+    \end{itemize}
+\end{enumerate}
+\end{astuce}
+
+\begin{important}
+\textbf{Pieges courants :}
+
+\begin{itemize}
+    \item \textcolor{importantrouge}{\textbf{Oublier le signe}} dans l'equation de $z$ (dans le format tableau, $z$ a un coefficient de -1)
+    
+    \item \textcolor{importantrouge}{\textbf{Confondre}} variables de base et hors-base
+    
+    \item \textcolor{importantrouge}{\textbf{Ne pas verifier}} la realisabilite du dictionnaire initial
+    
+    \item \textcolor{importantrouge}{\textbf{Calculer le mauvais ratio}} (numerateur/denominateur inverses)
+    
+    \item \textcolor{importantrouge}{\textbf{Ne pas tester}} le critere d'arret a chaque iteration
+    
+    \item \textcolor{importantrouge}{\textbf{Croire}} qu'il y a toujours une solution optimale unique
+\end{itemize}
+\end{important}
+
+\newpage
+\section{Exercices}
+
+\begin{exemple}
+\textbf{Exercice 1 : Application directe}
+
+Resolvez par la methode du simplexe :
+
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2\\
+\text{sujet a} \quad & x_1 + x_2 \leq 4\\
+& 2x_1 + x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{Questions :}
+\begin{enumerate}
+    \item Ecrire le dictionnaire initial
+    \item Effectuer les iterations du simplexe
+    \item Donner la solution optimale et la valeur optimale
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 : Detection de cas particuliers}
+
+Pour chacun des dictionnaires suivants, determiner :
+\begin{itemize}
+    \item S'il est realisable
+    \item S'il est optimal
+    \item S'il y a des solutions optimales multiples
+    \item S'il indique un probleme non borne
+\end{itemize}
+
+\textbf{a)} 
+\begin{align*}
+x_3 &= 5 - 2x_1 + x_2\\
+x_4 &= 3 + x_1 - x_2\\
+z &= 10 + 2x_1 - 3x_2
+\end{align*}
+
+\textbf{b)} 
+\begin{align*}
+x_3 &= 2 + x_1 + x_2\\
+x_4 &= 1 + 2x_1 + 3x_2\\
+z &= 8 - x_1 - 2x_2
+\end{align*}
+
+\textbf{c)} 
+\begin{align*}
+x_1 &= 4 - x_3 + 2x_4\\
+x_2 &= 3 + 2x_3 - x_4\\
+z &= 15 - 0x_3 - x_4
+\end{align*}
+\end{exemple}
+
+\newpage
+\begin{exemple}
+\textbf{Exercice 3 : Format tableau}
+
+Convertissez le dictionnaire suivant en format tableau :
+
+\begin{align*}
+x_1 &= 3 - 2x_3 + x_5\\
+x_2 &= 2 + x_3 - 2x_5\\
+x_4 &= 1 - x_3 + x_5\\
+z &= 7 - 3x_3 + 2x_5
+\end{align*}
+
+Puis effectuez une iteration du simplexe en utilisant le format tableau.
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 4 : Probleme complet}
+
+Une entreprise fabrique deux types de produits A et B. La production de A necessite 2 heures sur la machine M1 et 1 heure sur la machine M2. La production de B necessite 1 heure sur M1 et 2 heures sur M2. Les machines M1 et M2 sont disponibles respectivement 100 et 80 heures par semaine. Les profits unitaires sont de 30€ pour A et 40€ pour B.
+
+\textbf{Questions :}
+\begin{enumerate}
+    \item Formuler ce probleme en PL
+    \item Le resoudre par la methode du simplexe
+    \item Interpreter la solution optimale
+\end{enumerate}
+\end{exemple}
+
+\newpage
+\section{Conclusion du Chapitre}
+
+\begin{important}
+\textbf{Points cles a retenir :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Variables d'ecart :}}
+    \begin{itemize}
+        \item Transforment les inegalites en egalites
+        \item Permettent de travailler avec un systeme d'equations
+    \end{itemize}
+    
+    \item \textcolor{defvert}{\textbf{Dictionnaires :}}
+    \begin{itemize}
+        \item Representent les solutions de base
+        \item Variables de base (membre gauche) et hors-base (membre droit)
+        \item Dictionnaire realisable : valeurs de base $\geq 0$
+    \end{itemize}
+    
+    \item \textcolor{algoviolet}{\textbf{Methode du simplexe :}}
+    \begin{itemize}
+        \item Ameliorations successives de solutions de base
+        \item Variable entrante (coefficient positif dans $z$)
+        \item Variable sortante (ratio minimum)
+        \item Pivotage pour obtenir nouveau dictionnaire
+    \end{itemize}
+    
+    \item \textcolor{exempleorange}{\textbf{Criteres d'arret :}}
+    \begin{itemize}
+        \item Optimal : tous coefficients $\leq 0$ dans $z$
+        \item Non borne : aucun coefficient positif pour variable entrante
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Formats :}}
+    \begin{itemize}
+        \item Dictionnaire (plus intuitif)
+        \item Tableau (plus compact, plus utilise en pratique)
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Prochaines etapes :}
+
+Dans les prochains chapitres, nous etudierons :
+\begin{itemize}
+    \item La methode du simplexe a deux phases (cas sans origine realisable)
+    \item La theorie de la dualite
+    \item Le simplexe revise
+    \item L'analyse de sensibilite
+    \item La degenerescence et le cyclage
+\end{itemize}
+\end{astuce}
+
+\end{document}

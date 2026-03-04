@@ -1,0 +1,956 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{array}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+
+% Boîtes colorées
+\newtcolorbox{exercice}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exercice,
+    arc=3mm
+}
+
+\newtcolorbox{solution}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Solution,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Methode,
+    arc=3mm
+}
+
+\newtcolorbox{remarque}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Remarque,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\LARGE\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\Large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Corrections des Exercices}\\[0.5em]
+\large\color{defvert}Architecture des Systèmes\\
+Chapitre 1 : Fonctionnement d'un ordinateur}
+\author{\large Alexandre Guitton}
+\date{\large Version 2024-2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Représentation des Valeurs - Entiers Positifs}
+
+\subsection{Exercice 1 : Conversions vers la base 10}
+
+\begin{exercice}
+\textbf{Question 1 :} Combien vaut $100_8$ en base 10 ?
+
+\textbf{Question 2 :} Combien vaut $3B4_{12}$ en base 10 ?
+\end{exercice}
+
+\begin{methode}
+\textbf{Formule générale :}
+
+Pour convertir un nombre $(a_{n-1}a_{n-2}...a_1a_0)_b$ de la base $b$ vers la base 10 :
+$$\text{Valeur} = \sum_{i=0}^{n-1} a_i \times b^i$$
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : $100_8$ en base 10}
+
+$$100_8 = 1 \times 8^2 + 0 \times 8^1 + 0 \times 8^0$$
+$$= 1 \times 64 + 0 + 0 = 64$$
+
+\textcolor{importantrouge}{\textbf{Réponse : }} $100_8 = 64_{10}$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : $3B4_{12}$ en base 10}
+
+En base 12, les chiffres vont de 0 à 11, où A = 10 et B = 11.
+
+$$3B4_{12} = 3 \times 12^2 + 11 \times 12^1 + 4 \times 12^0$$
+$$= 3 \times 144 + 11 \times 12 + 4 \times 1$$
+$$= 432 + 132 + 4 = 568$$
+
+\textcolor{importantrouge}{\textbf{Réponse : }} $3B4_{12} = 568_{10}$
+\end{solution}
+
+\newpage
+\subsection{Exercice 2 : Conversion en base 2}
+
+\begin{exercice}
+\textbf{Question :} Quelle est la valeur en base 2 du nombre 1792 ?
+\end{exercice}
+
+\begin{methode}
+\textbf{Méthode par divisions successives :}
+
+\begin{enumerate}
+    \item Diviser le nombre par 2
+    \item Le reste est le chiffre binaire (de droite à gauche)
+    \item Le quotient devient le nouveau nombre
+    \item Répéter jusqu'à obtenir un quotient de 0
+\end{enumerate}
+
+\textbf{Méthode par puissances de 2 :}
+\begin{enumerate}
+    \item Écrire les puissances de 2
+    \item Trouver la plus grande puissance $\leq$ au nombre
+    \item Soustraire et recommencer
+\end{enumerate}
+\end{methode}
+
+\begin{solution}
+\textbf{Méthode par divisions successives :}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Division} & \textbf{Quotient} & \textbf{Reste} \\
+\hline
+1792 ÷ 2 & 896 & 0 \\
+896 ÷ 2 & 448 & 0 \\
+448 ÷ 2 & 224 & 0 \\
+224 ÷ 2 & 112 & 0 \\
+112 ÷ 2 & 56 & 0 \\
+56 ÷ 2 & 28 & 0 \\
+28 ÷ 2 & 14 & 0 \\
+14 ÷ 2 & 7 & 0 \\
+7 ÷ 2 & 3 & 1 \\
+3 ÷ 2 & 1 & 1 \\
+1 ÷ 2 & 0 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+En lisant les restes de bas en haut : $11100000000_2$
+
+\textbf{Verification :} $1792 = 1024 + 512 + 256 = 2^{10} + 2^{9} + 2^{8}$
+
+$1792_{10} = \textcolor{importantrouge}{\textbf{11100000000}_2}$
+\end{solution}
+
+\newpage
+\subsection{Exercice 3 : Conversion en base 5}
+
+\begin{exercice}
+\textbf{Question :} Quelle est la valeur en base 5 du nombre 59 ?
+\end{exercice}
+
+\begin{solution}
+\textbf{Méthode par divisions successives :}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Division} & \textbf{Quotient} & \textbf{Reste} \\
+\hline
+59 ÷ 5 & 11 & 4 \\
+11 ÷ 5 & 2 & 1 \\
+2 ÷ 5 & 0 & 2 \\
+\hline
+\end{tabular}
+\end{center}
+
+En lisant les restes de bas en haut : $214_5$
+
+\textbf{Verification :}
+$214_5 = 2 \times 5^2 + 1 \times 5^1 + 4 \times 5^0 = 50 + 5 + 4 = 59$
+
+\textcolor{importantrouge}{\textbf{Reponse : }} $59_{10} = 214_5$
+\end{solution}
+
+\newpage
+\subsection{Exercice 4 : Conversions binaire - hexadécimal}
+
+\begin{exercice}
+\textbf{Question :} Écrire $AF4_{16}$ en base 2, ensuite en base 4.
+\end{exercice}
+
+\begin{methode}
+\textbf{Conversion hexadécimal → binaire :} Chaque chiffre hexadécimal = 4 bits (car $16 = 2^4$)
+
+\textbf{Conversion binaire → base 4 :} Regrouper par blocs de 2 bits (car $4 = 2^2$)
+\end{methode}
+
+\begin{solution}
+\textbf{Étape 1 : Conversion hexadécimal → binaire}
+
+\begin{itemize}
+    \item A$_{16}$ = 10$_{10}$ = 1010$_2$
+    \item F$_{16}$ = 15$_{10}$ = 1111$_2$
+    \item 4$_{16}$ = 4$_{10}$ = 0100$_2$
+\end{itemize}
+
+$$AF4_{16} = \textcolor{defvert}{\textbf{101011110100}_2}$$
+
+\textbf{Étape 2 : Conversion binaire → base 4}
+
+Regrouper par blocs de 2 bits : $10\ 10\ 11\ 11\ 01\ 00_2$
+
+$$AF4_{16} = \textcolor{algoviolet}{\textbf{223310}_4}$$
+
+\textbf{Verification :} $AF4_{16} = 2560 + 240 + 4 = 2804_{10}$ et $223310_4 = 2804_{10}$
+\end{solution}
+
+\newpage
+\subsection{Exercice 4 bis : Binaire vers hexadécimal}
+
+\begin{exercice}
+\textbf{Question :} Convertir $11010110101_2$ en hexadécimal.
+\end{exercice}
+
+\begin{solution}
+\textbf{Regrouper par blocs de 4 bits (de droite à gauche) :}
+
+$$11010110101_2 = 0110\ 1011\ 0101_2$$
+
+\textbf{Convertir chaque bloc :}
+\begin{itemize}
+    \item $0110_2 = 6_{16}$
+    \item $1011_2 = B_{16}$
+    \item $0101_2 = 5_{16}$
+\end{itemize}
+
+$$11010110101_2 = \textcolor{importantrouge}{\textbf{6B5}_{16}}$$
+\end{solution}
+
+\newpage
+\section{Additions Binaires}
+
+\subsection{Exercice 5 : Additions en base 2}
+
+\begin{exercice}
+\textbf{Question 1 :} Calculer $100111_2 + 101110_2$
+
+\textbf{Question 2 :} Calculer $010101_2 + 111100_2$
+\end{exercice}
+
+\begin{methode}
+\textbf{Addition binaire :}
+\begin{itemize}
+    \item 0 + 0 = 0
+    \item 0 + 1 = 1
+    \item 1 + 0 = 1
+    \item 1 + 1 = 10 (0 avec retenue de 1)
+    \item 1 + 1 + 1 = 11 (1 avec retenue de 1)
+\end{itemize}
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : $100111_2 + 101110_2$}
+
+\begin{center}
+\begin{tabular}{cccccccc}
+  &   & 1 & 0 & 0 & 1 & 1 & 1 \\
++ &   & 1 & 0 & 1 & 1 & 1 & 0 \\
+\hline
+\textbf{res} & \textbf{1} & \textbf{0} & \textbf{1} & \textbf{0} & \textbf{1} & \textbf{0} & \textbf{1} \\
+\end{tabular}
+\end{center}
+
+$$100111_2 + 101110_2 = \textcolor{importantrouge}{\textbf{1010101}_2}$$
+
+\textbf{Verification :} $39 + 46 = 85$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : $010101_2 + 111100_2$}
+
+\begin{center}
+\begin{tabular}{cccccccc}
+  &   & 0 & 1 & 0 & 1 & 0 & 1 \\
++ &   & 1 & 1 & 1 & 1 & 0 & 0 \\
+\hline
+\textbf{res} & \textbf{1} & \textbf{0} & \textbf{1} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{1} \\
+\end{tabular}
+\end{center}
+
+$$010101_2 + 111100_2 = \textcolor{importantrouge}{\textbf{1010001}_2}$$
+
+\textbf{Verification :} $21 + 60 = 81$
+\end{solution}
+
+\newpage
+\section{Entiers Naturels - Complément Logique}
+
+\subsection{Exercice 6 : Valeurs en complément logique}
+
+\begin{exercice}
+\textbf{Question :} Quelle est la valeur décimale de :
+\begin{enumerate}
+    \item $00001101_2$ en complément logique
+    \item $11101001_2$ en complément logique
+\end{enumerate}
+\end{exercice}
+
+\begin{methode}
+\textbf{Complément logique :}
+\begin{itemize}
+    \item Si bit de poids fort = 0 → nombre positif, conversion directe
+    \item Si bit de poids fort = 1 → nombre négatif, inverser tous les bits puis convertir
+\end{itemize}
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : $00001101_2$}
+
+Bit de poids fort = 0 → nombre positif
+
+$$00001101_2 = 8 + 4 + 1 = \textcolor{importantrouge}{\textbf{+13}}$$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : $11101001_2$}
+
+Bit de poids fort = 1 → nombre négatif
+
+Inversion : $11101001 \rightarrow 00010110_2 = 22_{10}$
+
+$$11101001_2 = \textcolor{importantrouge}{\textbf{-22}}$$
+\end{solution}
+
+\newpage
+\subsection{Exercice 8 : Calculs en complément logique}
+
+\begin{exercice}
+\textbf{Question 1 :} Calculer $7 - 3$ en base 2 sur 4 bits
+
+\textbf{Question 2 :} Calculer $22 - 22$ en base 2 sur 8 bits
+\end{exercice}
+
+\begin{methode}
+\textbf{Addition en complément logique :}
+\begin{enumerate}
+    \item Faire l'addition binaire normale
+    \item Si une retenue déborde, la réajouter au résultat (retenue circulaire)
+\end{enumerate}
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : $7 - 3 = 7 + (-3)$}
+
+Représentations : $7 = 0111_2$, $-3 = 1100_2$ (inversion de $0011_2$)
+
+$$0111 + 1100 = 10011$$
+
+Retenue débordante réinjectée : $0011 + 1 = 0100_2 = 4$
+
+$$7 - 3 = \textcolor{importantrouge}{\textbf{4}}$$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : $22 - 22$}
+
+$22 = 00010110_2$, $-22 = 11101001_2$
+
+Addition donne $11111111_2$ + retenue débordante
+
+$$11111111 + 1 = 100000000 \rightarrow 00000000 = -0$$
+
+\textbf{Problème :} En complément logique, 0 et -0 sont différents!
+\end{solution}
+
+\newpage
+\section{Entiers Naturels - Complément Arithmétique}
+
+\subsection{Exercice 7 : Écriture en complément arithmétique}
+
+\begin{exercice}
+\textbf{Question 1 :} Écrire -17 en complément arithmétique sur 8 bits
+
+\textbf{Question 2 :} Écrire -0 en complément arithmétique sur 4 bits
+\end{exercice}
+
+\begin{methode}
+\textbf{Complément arithmétique (complément à 2) :}
+\begin{enumerate}
+    \item Écrire $n$ en binaire
+    \item Inverser tous les bits
+    \item Ajouter 1
+\end{enumerate}
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : -17 sur 8 bits}
+
+$$17 = 00010001 \rightarrow 11101110 \rightarrow 11101111$$
+
+$$-17 = \textcolor{importantrouge}{\textbf{11101111}_2}$$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : -0 sur 4 bits}
+
+$$0 = 0000 \rightarrow 1111 \rightarrow 10000 \rightarrow 0000$$
+
+$$-0 = \textcolor{importantrouge}{\textbf{0000}_2}$$
+
+\textbf{Avantage :} Une seule représentation pour 0!
+\end{solution}
+
+\newpage
+\subsection{Exercice 9 : Calculs en complément arithmétique}
+
+\begin{exercice}
+\textbf{Question 1 :} Calculer $6 - 5$ sur 4 bits
+
+\textbf{Question 2 :} Calculer $3 - 7$ sur 4 bits
+\end{exercice}
+
+\begin{methode}
+\textbf{Addition en complément arithmétique :}
+\begin{enumerate}
+    \item Faire l'addition binaire
+    \item Ignorer la retenue débordante
+\end{enumerate}
+\end{methode}
+
+\begin{solution}
+\textbf{Question 1 : $6 - 5 = 6 + (-5)$}
+
+$6 = 0110$, $-5 = 1011$ (CA de 5)
+
+$$0110 + 1011 = 10001 \rightarrow 0001 = +1$$
+\end{solution}
+
+\begin{solution}
+\textbf{Question 2 : $3 - 7 = 3 + (-7)$}
+
+$3 = 0011$, $-7 = 1001$ (CA de 7)
+
+$$0011 + 1001 = 1100$$
+
+Bit poids fort = 1 → négatif. Valeur : $-4$
+
+$$3 - 7 = \textcolor{importantrouge}{\textbf{-4}}$$
+\end{solution}
+
+\newpage
+\subsection{Exercice 9 bis : Débordements}
+
+\begin{exercice}
+\textbf{Question :} Calculer $5 + 6$ et $-5 + (-6)$ sur 4 bits. Y a-t-il débordement ?
+\end{exercice}
+
+\begin{remarque}
+Sur 4 bits en CA : valeurs de $-8$ à $+7$
+
+Débordement si : positif + positif = négatif OU négatif + négatif = positif
+\end{remarque}
+
+\begin{solution}
+\textbf{$5 + 6$ :} $0101 + 0110 = 1011 = -5$
+
+\textcolor{importantrouge}{\textbf{Débordement !}} Résultat $11 > 7$
+\end{solution}
+
+\begin{solution}
+\textbf{$-5 + (-6)$ :} $1011 + 1010 = 10101 \rightarrow 0101 = +5$
+
+\textcolor{importantrouge}{\textbf{Débordement !}} Résultat $-11 < -8$
+\end{solution}
+
+\newpage
+\section{Nombres Réels - IEEE 754}
+
+\subsection{Exercice 10 : Encodage IEEE 754}
+
+\begin{exercice}
+\textbf{Question :} Encoder -0,1015625 en simple précision IEEE 754.
+\end{exercice}
+
+\begin{methode}
+\textbf{Format IEEE 754 simple précision :}
+\begin{itemize}
+    \item 1 bit de signe
+    \item 8 bits d'exposant (biaisé de 127)
+    \item 23 bits de mantisse (bit caché)
+\end{itemize}
+\end{methode}
+
+\begin{solution}
+\textbf{Signe :} 1 (négatif)
+
+\textbf{Conversion :} $0,1015625 = 0,0001101_2 = 1,101 \times 2^{-4}$
+
+\textbf{Exposant :} $-4 + 127 = 123 = 01111011_2$
+
+\textbf{Mantisse :} 101 sur 23 bits = 10100000000000000000000
+
+$$-0,1015625 = \textcolor{importantrouge}{\textbf{1\ 01111011\ 10100000000000000000000}}$$
+\end{solution}
+
+\newpage
+\section{Circuits Logiques}
+
+\subsection{Exercice 12 : Simplification de fonction logique}
+
+\begin{exercice}
+\textbf{Question :} Simplifier $L = \bar{S} \cdot \bar{A} \cdot B + \bar{S} \cdot A \cdot \bar{B} + \bar{S} \cdot A \cdot B$
+
+Puis réaliser le circuit simplifié.
+\end{exercice}
+
+\begin{methode}
+\textbf{Méthodes de simplification :}
+\begin{enumerate}
+    \item Factorisation
+    \item Propriétés de l'algèbre de Boole
+    \item Tableaux de Karnaugh
+\end{enumerate}
+
+\textbf{Propriétés utiles :}
+\begin{itemize}
+    \item $A + A = A$ (idempotence)
+    \item $A \cdot \bar{A} = 0$
+    \item $A + \bar{A} = 1$
+    \item $A \cdot (B + C) = A \cdot B + A \cdot C$ (distributivité)
+\end{itemize}
+\end{methode}
+
+\begin{solution}
+\textbf{Simplification par factorisation :}
+
+$L = \bar{S} \cdot \bar{A} \cdot B + \bar{S} \cdot A \cdot \bar{B} + \bar{S} \cdot A \cdot B$
+
+\textbf{Étape 1 :} Factoriser par $\bar{S}$
+
+$L = \bar{S} \cdot (\bar{A} \cdot B + A \cdot \bar{B} + A \cdot B)$
+
+\textbf{Étape 2 :} Factoriser les deux derniers termes par $A$
+
+$L = \bar{S} \cdot (\bar{A} \cdot B + A \cdot (\bar{B} + B))$
+
+\textbf{Étape 3 :} Simplifier $\bar{B} + B = 1$
+
+$L = \bar{S} \cdot (\bar{A} \cdot B + A \cdot 1)$
+$L = \bar{S} \cdot (\bar{A} \cdot B + A)$
+
+\textbf{Étape 4 :} Utiliser $A + \bar{A} \cdot B = A + B$ (théorème d'absorption)
+
+$\boxed{L = \textcolor{importantrouge}{\bar{S} \cdot (A + B)}}$
+
+\textbf{Comparaison :}
+\begin{itemize}
+    \item Circuit original : 3 portes NOT, 3 portes AND à 3 entrées, 1 porte OR
+    \item Circuit simplifié : 1 porte NOT, 1 porte OR, 1 porte AND
+    \item \textcolor{defvert}{\textbf{Gain énorme !}}
+\end{itemize}
+\end{solution}
+
+\newpage
+\subsection{Exercice 13 : Simplification par Karnaugh (3 variables)}
+
+\begin{exercice}
+\textbf{Question :} Simplifier la fonction suivante à l'aide d'un tableau de Karnaugh :
+$F(A,B,C) = \bar{A}\bar{B}C + \bar{A}BC + A\bar{B}C + ABC$
+\end{exercice}
+
+\begin{methode}
+\textbf{Méthode des tableaux de Karnaugh :}
+
+\begin{enumerate}
+    \item Construire le tableau (2 variables en ligne, 1 en colonne)
+    \item Remplir avec les valeurs de la fonction
+    \item Regrouper les 1 adjacents par blocs de $2^n$ (1, 2, 4, 8...)
+    \item Pour chaque regroupement, identifier les variables constantes
+\end{enumerate}
+
+\textbf{Règle :} Plus les regroupements sont grands, plus la simplification est efficace.
+\end{methode}
+
+\begin{solution}
+\textbf{Étape 1 : Table de vérité}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{A} & \textbf{B} & \textbf{C} & \textbf{F} \\
+\hline
+0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 1 \\
+0 & 1 & 0 & 0 \\
+0 & 1 & 1 & 1 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 1 & 1 \\
+1 & 1 & 0 & 0 \\
+1 & 1 & 1 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Étape 2 : Tableau de Karnaugh}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{AB/C} & \textbf{0} & \textbf{1} \\
+\hline
+00 & 0 & 1 \\
+\hline
+01 & 0 & 1 \\
+\hline
+11 & 0 & 1 \\
+\hline
+10 & 0 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Étape 3 : Regroupement}
+
+Toute la colonne $C=1$ peut être regroupée → Variable constante : $C$
+
+\textbf{Fonction simplifiée :}
+
+$F(A,B,C) = \textcolor{importantrouge}{\textbf{C}}$
+
+\textbf{Vérification :} $F = 1$ si et seulement si $C = 1$
+\end{solution}
+
+\newpage
+\subsection{Exercice 14 : Karnaugh à 4 variables}
+
+\begin{exercice}
+\textbf{Question :} Simplifier la fonction à 4 variables :
+$G(A,B,C,D) = \bar{A}\bar{B}\bar{C}D + \bar{A}\bar{B}CD + \bar{A}B\bar{C}D + \bar{A}BCD + A\bar{B}\bar{C}D + A\bar{B}CD$
+\end{exercice}
+
+\begin{solution}
+\textbf{Tableau de Karnaugh 4 variables :}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{AB/CD} & \textbf{00} & \textbf{01} & \textbf{11} & \textbf{10} \\
+\hline
+00 & 0 & 1 & 1 & 0 \\
+\hline
+01 & 0 & 1 & 1 & 0 \\
+\hline
+11 & 0 & 0 & 0 & 0 \\
+\hline
+10 & 0 & 1 & 1 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Regroupements :}
+
+\textbf{Regroupement 1 :} Rectangle $2 \times 2$ en haut (lignes 00, 01)
+\begin{itemize}
+    \item Variables constantes : $\bar{A}$ et $D$
+    \item Terme : $\bar{A} \cdot D$
+\end{itemize}
+
+\textbf{Regroupement 2 :} Rectangle $1 \times 2$ en bas (ligne 10)
+\begin{itemize}
+    \item Variables constantes : $A$, $\bar{B}$ et $D$
+    \item Terme : $A \cdot \bar{B} \cdot D$
+\end{itemize}
+
+\textbf{Fonction simplifiée :}
+
+$G(A,B,C,D) = \bar{A}D + A\bar{B}D$
+
+Ou factorisé par $D$ :
+
+$G(A,B,C,D) = \textcolor{importantrouge}{D(\bar{A} + A\bar{B})}$
+
+En utilisant $\bar{A} + A\bar{B} = \bar{A} + \bar{B}$ :
+
+$G(A,B,C,D) = \textcolor{importantrouge}{D(\bar{A} + \bar{B})}$
+\end{solution}
+
+\newpage
+\subsection{Exercice 15 : Conception d'un demi-additionneur}
+
+\begin{exercice}
+\textbf{Question :} Concevoir un circuit qui additionne deux bits $A$ et $B$, produisant une somme $S$ et une retenue $C$ (carry).
+\end{exercice}
+
+\begin{solution}
+\textbf{Étape 1 : Table de vérité}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{A} & \textbf{B} & \textbf{S (Somme)} & \textbf{C (Retenue)} \\
+\hline
+0 & 0 & 0 & 0 \\
+0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 0 \\
+1 & 1 & 0 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Étape 2 : Fonctions logiques}
+
+Pour la somme $S$ :
+
+$S = \bar{A}B + A\bar{B} = \textcolor{importantrouge}{A \oplus B}$ \textbf{(XOR)}
+
+Pour la retenue $C$ :
+
+$C = \textcolor{importantrouge}{A \cdot B}$ \textbf{(AND)}
+
+\textbf{Étape 3 : Description du circuit}
+
+Le circuit nécessite :
+\begin{itemize}
+    \item 1 porte XOR pour la somme $S$
+    \item 1 porte AND pour la retenue $C$
+\end{itemize}
+
+\textbf{Nom :} Ce circuit s'appelle un \textbf{demi-additionneur} (half-adder).
+
+\textbf{Remarque :} Pour un additionneur complet (full-adder), il faudrait aussi prendre en compte une retenue entrante.
+\end{solution}
+
+\newpage
+\section{Résumé et Conseils}
+
+\begin{remarque}
+\textbf{Points clés à retenir :}
+
+\textbf{1. Conversions de bases}
+\begin{itemize}
+    \item Base $b$ vers base 10 : $\sum a_i \times b^i$
+    \item Base 10 vers base $b$ : divisions successives
+    \item Base 2 ↔ Base 16 : grouper par 4 bits
+    \item Base 2 ↔ Base 4 : grouper par 2 bits
+\end{itemize}
+
+\textbf{2. Additions binaires}
+\begin{itemize}
+    \item 0 + 0 = 0
+    \item 0 + 1 = 1
+    \item 1 + 1 = 10 (retenue)
+    \item 1 + 1 + 1 = 11 (retenue)
+\end{itemize}
+
+\textbf{3. Complément logique}
+\begin{itemize}
+    \item Pour $-n$ : inverser tous les bits de $n$
+    \item Addition : retenue débordante réinjectée
+    \item Problème : deux représentations pour 0
+\end{itemize}
+
+\textbf{4. Complément arithmétique}
+\begin{itemize}
+    \item Pour $-n$ : inverser les bits de $n$ puis ajouter 1
+    \item Addition : ignorer la retenue finale
+    \item Avantage : une seule représentation pour 0
+    \item Sur $n$ bits : de $-2^{n-1}$ à $2^{n-1}-1$
+    \item Débordement : positif + positif = négatif OU négatif + négatif = positif
+\end{itemize}
+
+\textbf{5. IEEE 754}
+\begin{itemize}
+    \item Simple précision : 1 bit signe - 8 bits exposant - 23 bits mantisse
+    \item Exposant biaisé de 127
+    \item Mantisse normalisée : $1.m \times 2^e$ (bit caché)
+    \item Valeurs spéciales : zéro (exp=0), infini (exp=255, mant=0), NaN (exp=255, mant$\neq$0)
+\end{itemize}
+
+\textbf{6. Caractères}
+\begin{itemize}
+    \item ASCII : 7 bits (128 caractères)
+    \item 'A' = 65, 'a' = 97 (différence de 32)
+    \item Chiffres : '0' = 48 à '9' = 57
+\end{itemize}
+
+\textbf{7. Circuits logiques}
+\begin{itemize}
+    \item Portes de base : NOT, AND, OR
+    \item Autres portes : XOR, NAND, NOR
+    \item Simplification : factorisation et propriétés booléennes
+    \item Tableaux de Karnaugh : regrouper les 1 adjacents
+    \item Théorème d'absorption : $A + \bar{A} \cdot B = A + B$
+\end{itemize}
+\end{remarque}
+
+\newpage
+\begin{methode}
+\textbf{Checklist pour vérifier vos réponses :}
+
+\begin{enumerate}
+    \item \textbf{Conversions :} toujours vérifier en convertissant dans l'autre sens
+    \item \textbf{Additions binaires :} vérifier en base 10
+    \item \textbf{Complément logique :} le bit de poids fort indique le signe
+    \item \textbf{Complément arithmétique :} vérifier les débordements
+    \item \textbf{IEEE 754 :} vérifier l'exposant biaisé (127 pour simple précision)
+    \item \textbf{IEEE 754 :} ne pas oublier le bit caché de la mantisse
+    \item \textbf{ASCII :} vérifier que les codes sont dans la plage 0-127
+    \item \textbf{Circuits :} vérifier avec la table de vérité
+    \item \textbf{Karnaugh :} vérifier que les regroupements sont des puissances de 2
+\end{enumerate}
+\end{methode}
+
+\begin{remarque}
+\textbf{Erreurs fréquentes à éviter :}
+
+\begin{itemize}
+    \item \textbf{Conversions :} Oublier de lire les restes de bas en haut
+    \item \textbf{Hexadécimal :} Confondre les lettres (A=10, B=11, etc.)
+    \item \textbf{Complément arithmétique :} Oublier d'ajouter 1 après l'inversion
+    \item \textbf{IEEE 754 :} Oublier le biais de 127 pour l'exposant
+    \item \textbf{IEEE 754 :} Oublier le bit caché (le 1 initial de la mantisse)
+    \item \textbf{Karnaugh :} Mal organiser le tableau (utiliser l'ordre Gray : 00, 01, 11, 10)
+    \item \textbf{Débordement :} Ne pas vérifier si le résultat est représentable
+\end{itemize}
+\end{remarque}
+
+\begin{methode}
+\textbf{Astuces pour gagner du temps :}
+
+\begin{itemize}
+    \item \textbf{Binaire ↔ Hexadécimal :} Mémoriser la table de conversion (0000=0 à 1111=F)
+    \item \textbf{Puissances de 2 :} Mémoriser jusqu'à $2^{10}=1024$
+    \item \textbf{Complément arithmétique :} Pour trouver $-n$, partir de droite, recopier jusqu'au premier 1 inclus, puis inverser le reste
+    \item \textbf{IEEE 754 :} Pour les nombres simples, penser aux puissances de 2
+    \item \textbf{Karnaugh :} Chercher d'abord les plus grands regroupements
+\end{itemize}
+\end{methode}
+
+\newpage
+\section{Annexes}
+
+\subsection*{Table des puissances de 2}
+
+\begin{center}
+\begin{tabular}{|c|c||c|c|}
+\hline
+\textbf{Exposant} & \textbf{Valeur} & \textbf{Exposant} & \textbf{Valeur} \\
+\hline
+$2^0$ & 1 & $2^{10}$ & 1024 \\
+$2^1$ & 2 & $2^{11}$ & 2048 \\
+$2^2$ & 4 & $2^{12}$ & 4096 \\
+$2^3$ & 8 & $2^{13}$ & 8192 \\
+$2^4$ & 16 & $2^{14}$ & 16384 \\
+$2^5$ & 32 & $2^{15}$ & 32768 \\
+$2^6$ & 64 & $2^{16}$ & 65536 \\
+$2^7$ & 128 & $2^{20}$ & 1048576 \\
+$2^8$ & 256 & $2^{30}$ & 1073741824 \\
+$2^9$ & 512 & $2^{31}$ & 2147483648 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection*{Table de conversion Binaire - Hexadécimal}
+
+\begin{center}
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+\textbf{Déc.} & \textbf{Bin.} & \textbf{Hex.} & \textbf{Déc.} & \textbf{Bin.} & \textbf{Hex.} \\
+\hline
+0 & 0000 & 0 & 8 & 1000 & 8 \\
+1 & 0001 & 1 & 9 & 1001 & 9 \\
+2 & 0010 & 2 & 10 & 1010 & A \\
+3 & 0011 & 3 & 11 & 1011 & B \\
+4 & 0100 & 4 & 12 & 1100 & C \\
+5 & 0101 & 5 & 13 & 1101 & D \\
+6 & 0110 & 6 & 14 & 1110 & E \\
+7 & 0111 & 7 & 15 & 1111 & F \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection*{Propriétés de l'algèbre de Boole}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Propriété} & \textbf{Formule} \\
+\hline
+Identité & $A + 0 = A$ \quad $A \cdot 1 = A$ \\
+Annulation & $A + 1 = 1$ \quad $A \cdot 0 = 0$ \\
+Idempotence & $A + A = A$ \quad $A \cdot A = A$ \\
+Complémentation & $A + \bar{A} = 1$ \quad $A \cdot \bar{A} = 0$ \\
+Double négation & $\overline{\bar{A}} = A$ \\
+Commutativité & $A + B = B + A$ \quad $A \cdot B = B \cdot A$ \\
+Associativité & $(A + B) + C = A + (B + C)$ \\
+Distributivité & $A \cdot (B + C) = A \cdot B + A \cdot C$ \\
+Absorption & $A + A \cdot B = A$ \quad $A \cdot (A + B) = A$ \\
+& $A + \bar{A} \cdot B = A + B$ \\
+De Morgan & $\overline{A + B} = \bar{A} \cdot \bar{B}$ \\
+& $\overline{A \cdot B} = \bar{A} + \bar{B}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection*{Codes ASCII principaux}
+
+\begin{center}
+\begin{tabular}{|c|c||c|c|}
+\hline
+\textbf{Caractère} & \textbf{Code décimal} & \textbf{Caractère} & \textbf{Code décimal} \\
+\hline
+'0' & 48 & 'A' & 65 \\
+'1' & 49 & 'B' & 66 \\
+'2' & 50 & 'C' & 67 \\
+... & ... & ... & ... \\
+'9' & 57 & 'Z' & 90 \\
+\hline
+espace & 32 & 'a' & 97 \\
+'!' & 33 & 'b' & 98 \\
+'+' & 43 & 'c' & 99 \\
+'/' & 47 & ... & ... \\
+':' & 58 & 'z' & 122 \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+\textcolor{titrebleu}{\Large\textbf{Fin du document}}
+
+\vspace{0.5cm}
+
+\textcolor{defvert}{\large Bonne révision et bon courage pour vos examens !}
+\end{center}
+
+\end{document}

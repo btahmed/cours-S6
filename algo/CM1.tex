@@ -1,0 +1,905 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs personnalisées
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Configuration des listings avec couleurs
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    showstringspaces=false,
+    commentstyle=\color{green! 60! black},
+    keywordstyle=\color{blue!80!black}\bfseries,
+    stringstyle=\color{red!70!black},
+    backgroundcolor=\color{fondgris},
+    rulecolor=\color{titrebleu}
+}
+
+% Boîtes colorées
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=�� Définition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=�� Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=⚠️ Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=�� À savoir,
+    arc=3mm
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=✏️ Note de Cours,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Niveaux de Description des Langages}\\[0.5em]
+\large\color{defvert}Mots, Mémoire, Variables et Valeurs}
+\author{\large Cours détaillé avec exemples et notes complémentaires}
+\date{\large Version 2025 - Enrichie}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Ce document présente les différents niveaux d'abstraction des langages informatiques, depuis le langage machine jusqu'aux langages de haut niveau. Nous explorerons comment un ordinateur stocke et manipule l'information, et comment les langages de programmation permettent de communiquer avec la machine.
+
+\newpage
+\section{Base Conceptuelle d'un Ordinateur}
+
+\needspace{10\baselineskip}
+\subsection{Architecture générale}
+
+\begin{important}
+Un ordinateur se compose de trois éléments principaux : 
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{La mémoire}} : stocke les données et les instructions
+    \item \textcolor{defvert}{\textbf{Le CPU (Unité Centrale)}} : exécute les instructions
+    \item \textcolor{exempleorange}{\textbf{Les entrées/sorties}} : permettent la communication avec l'extérieur
+\end{itemize}
+\end{important}
+
+\begin{notecours}
+\textbf{Point important : } On ne va pas parler des détails techniques trop spécifiques (rayés en cours).
+
+\textbf{Principe fondamental :} Pas de calcul sans mémoire !  La mémoire est essentielle au fonctionnement de tout ordinateur.
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsection{La Mémoire}
+
+\subsubsection{Structure de la mémoire}
+
+\begin{definition}
+La mémoire se décompose hiérarchiquement : 
+
+\begin{enumerate}
+    \item \textbf{Bits} : unités élémentaires, contacts magnétiques pouvant prendre deux positions (0 ou 1)
+    \item \textbf{Mots} : regroupements de bits formant des unités adressables
+\end{enumerate}
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple : } Une mémoire de 65 536 mots, où chaque mot contient 32 bits (4 octets).
+
+\begin{verbatim}
+Adresse 0    :  [01001010 11010101 00110011 10101010]
+Adresse 1    : [11110000 00001111 10101010 01010101]
+... 
+Adresse 65535:  [00110011 11001100 10011001 01100110]
+\end{verbatim}
+\end{exemple}
+
+\needspace{15\baselineskip}
+\subsubsection{Interprétation :  Instructions et Données}
+
+\begin{important}
+Les mots en mémoire peuvent contenir :
+\begin{itemize}
+    \item Des \textcolor{algoviolet}{\textbf{données}} à traiter (nombres, caractères, etc.)
+    \item Des \textcolor{importantrouge}{\textbf{instructions}} décrivant les opérations à effectuer
+\end{itemize}
+\end{important}
+
+\begin{notecours}
+\textbf{Vocabulaire essentiel :}
+\begin{itemize}
+    \item \texttt{ADD} = instruction d'addition
+    \item \texttt{AX} = registre (zone de stockage rapide dans le CPU)
+    \item Ce sont des éléments du code d'assembleur
+\end{itemize}
+\end{notecours}
+
+\begin{astuce}
+Le \textbf{compteur ordinal} (IP - Instruction Pointer, ou PC - Program Counter) est un registre spécial qui pointe vers le prochain mot à interpréter comme instruction.
+\end{astuce}
+
+\begin{exemple}
+\textbf{Exemple d'instructions en assemblage :}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+ADD AX, 1983    ; Ajoute 1983 au registre AX
+MOV AX, 1982    ; Place la valeur 1982 dans AX
+PUSH AX         ; Empile la valeur de AX
+\end{lstlisting}
+
+Chaque instruction se décompose en :
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Première partie}} : type d'instruction (ADD, MOV, PUSH)
+    \item \textcolor{defvert}{\textbf{Seconde partie}} : adresse(s) ou valeur(s) concernée(s)
+\end{itemize}
+\end{exemple}
+
+\needspace{12\baselineskip}
+\subsection{Espace de Stockage}
+
+\subsubsection{Vision conceptuelle}
+
+\begin{definition}
+Un espace de stockage est une collection de cellules où : 
+\begin{enumerate}
+    \item Chaque cellule a un statut :  \textit{allouée} ou \textit{non allouée}
+    \item Chaque cellule allouée a un contenu :  une \textit{valeur définie} ou \textit{indéfinie} (?)
+\end{enumerate}
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple en Pascal :}
+\begin{lstlisting}[language=Pascal]
+var n : integer;
+\end{lstlisting}
+
+\textbf{Représentation graphique :}
+\begin{verbatim}
+Avant allocation:   [ ]  (cellule non allouée)
+Après déclaration: [? ]  (cellule allouée, contenu indéfini)
+Après affectation: [42] (cellule allouée, contient 42)
+\end{verbatim}
+\end{exemple}
+
+\newpage
+\subsection{Variables}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Une \textbf{variable} est un objet qui contient une valeur pouvant être inspectée ou mise à jour.
+\end{definition}
+
+\begin{notecours}
+\textbf{Comprendre les variables locales :}
+
+Il est essentiel de comprendre le principe et le fonctionnement des \textbf{variables locales} : 
+\begin{itemize}
+    \item Une variable locale n'existe que dans le contexte d'une fonction/procédure
+    \item Elle est créée à l'appel de la fonction
+    \item Elle est détruite à la sortie de la fonction
+    \item Son contenu n'est pas accessible en dehors de sa portée (scope)
+\end{itemize}
+\end{notecours}
+
+\needspace{20\baselineskip}
+\subsubsection{Variables simples vs composées}
+
+\begin{important}
+\textbf{Variable simple : } contient une seule valeur primitive. 
+\end{important}
+
+\begin{exemple}
+\begin{lstlisting}[language=Pascal]
+var age :  integer;
+age := 25;
+\end{lstlisting}
+\end{exemple}
+
+\vspace{1em}
+
+\begin{important}
+\textbf{Variable composée :} constituée de composants accessibles sélectivement.
+\end{important}
+
+\begin{exemple}
+\textbf{Exemple détaillé :}
+\begin{lstlisting}[language=Pascal]
+type 
+    Mois = (jan, fev, mar, avr, mai, jun, 
+            jul, aou, sep, oct, nov, dec);
+    Date = record 
+        m : Mois; 
+        j : 1..31 
+    end;
+    
+var leJour : Date;
+
+begin
+    leJour.j := 23;
+    leJour.m := fev;
+end;
+\end{lstlisting}
+
+\textbf{Représentation en mémoire :}
+\begin{verbatim}
+leJour
+├── leJour.m : [fev]
+└── leJour.j : [23]
+\end{verbatim}
+\end{exemple}
+
+\begin{notecours}
+\textbf{Concept fondamental sur les types :}
+
+Un \textbf{type}, c'est un \textbf{ensemble de valeurs}. 
+
+Par exemple :
+\begin{itemize}
+    \item Type \texttt{integer} = ensemble de tous les entiers
+    \item Type \texttt{boolean} = ensemble \{vrai, faux\}
+    \item Type \texttt{Mois} = ensemble \{jan, fev, mar, .. ., dec\}
+\end{itemize}
+\end{notecours}
+
+\newpage
+\section{Les Langages Informatiques}
+
+\needspace{12\baselineskip}
+\subsection{Caractéristiques d'un Langage}
+
+\begin{important}
+Un langage de programmation doit satisfaire trois critères : 
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Universalité}} : tout problème calculable doit pouvoir être programmé
+    \item \textcolor{defvert}{\textbf{Naturel}} : proche de la pensée humaine pour faciliter l'expression
+    \item \textcolor{algoviolet}{\textbf{Implémentable}} : doit pouvoir s'exécuter sur un ordinateur
+\end{enumerate}
+\end{important}
+
+\needspace{15\baselineskip}
+\subsubsection{Syntaxe et Sémantique}
+
+\begin{definition}
+\textbf{Syntaxe : } forme du programme, arrangement des symboles et structures. 
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple syntaxiquement correct :}
+\begin{lstlisting}[language=Python]
+x = 10 + 5
+\end{lstlisting}
+
+\textbf{Exemple syntaxiquement incorrect :}
+\begin{lstlisting}[language=Python]
+x = + 10 5  # Erreur de syntaxe
+\end{lstlisting}
+\end{exemple}
+
+\vspace{1em}
+
+\begin{definition}
+\textbf{Sémantique :} signification du programme, comportement lors de l'exécution.
+\end{definition}
+
+\begin{exemple}
+\begin{lstlisting}[language=Python]
+x = 10 / 0  # Syntaxe correcte, sémantique incorrecte (division par zéro)
+\end{lstlisting}
+\end{exemple}
+
+\newpage
+\section{Hiérarchie des Langages}
+
+\begin{notecours}
+\textbf{Concept d'abstraction :}
+
+Quand le niveau d'abstraction \textbf{augmente}, on devient plus \textbf{général} et on \textbf{diminue} le niveau de détails concrets, devenant plus \textbf{spécialisé} vers les concepts de haut niveau.
+
+\textbf{Niveaux : }
+\begin{itemize}
+    \item Bas niveau = concret, spécifique à la machine
+    \item Haut niveau = abstrait, général, proche de la pensée humaine
+\end{itemize}
+\end{notecours}
+
+\needspace{12\baselineskip}
+\subsection{Langage Machine}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Le \textbf{langage machine} est la suite de bits directement interprétée par le processeur.  C'est le seul langage natif du processeur.
+\end{definition}
+
+\subsubsection{Exemple}
+
+\begin{exemple}
+Une simple opération d'addition en langage machine x86 :
+\begin{verbatim}
+10110000 01100001
+\end{verbatim}
+
+Cette séquence binaire signifie :  "Charger la valeur 97 (0x61) dans le registre AL". 
+\end{exemple}
+
+\begin{astuce}
+\textbf{Caractéristiques : }
+\begin{itemize}
+    \item \textcolor{defvert}{Directement exécutable} par le processeur
+    \item \textcolor{importantrouge}{Illisible} pour un humain
+    \item \textcolor{algoviolet}{Spécifique} à chaque architecture de processeur
+\end{itemize}
+\end{astuce}
+
+\needspace{15\baselineskip}
+\subsection{Langage d'Assemblage}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Le \textbf{langage d'assemblage} représente le langage machine sous forme lisible par un humain.  Il existe une correspondance directe entre instructions assembleur et instructions machine.
+\end{definition}
+
+\begin{notecours}
+Le langage d'assemblage est juste au-dessus du langage machine dans la hiérarchie des langages. Il représente le langage machine sous une forme lisible par un humain.
+\end{notecours}
+
+\needspace{10\baselineskip}
+\subsubsection{Exemple de correspondance}
+
+\begin{exemple}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+mov $0x61, %al
+\end{lstlisting}
+
+correspond à :
+\begin{verbatim}
+10110000 01100001
+\end{verbatim}
+\end{exemple}
+
+\needspace{15\baselineskip}
+\subsubsection{Exemple complet}
+
+\begin{exemple}
+Programme qui additionne deux nombres : 
+\begin{lstlisting}[language={[x86masm]Assembler}]
+section .data
+    num1 db 5
+    num2 db 3
+    
+section .text
+    global _start
+    
+_start:
+    mov al, [num1]    ; Charge num1 dans AL
+    add al, [num2]    ; Ajoute num2 à AL
+    ; Résultat dans AL = 8
+\end{lstlisting}
+\end{exemple}
+
+\needspace{8\baselineskip}
+\subsubsection{L'Assembleur}
+
+\begin{definition}
+Un \textbf{assembleur} est un programme qui traduit le code assembleur en code machine.
+\end{definition}
+
+\begin{astuce}
+\textbf{Processus :}
+\begin{verbatim}
+programme. asm  →  [Assembleur]  →  programme.o (code machine)
+\end{verbatim}
+\end{astuce}
+
+\newpage
+\subsection{Langages de Compilation}
+
+\needspace{10\baselineskip}
+\subsubsection{Définition}
+
+\begin{definition}
+Un \textbf{langage de compilation} est une notation conventionnelle de haut niveau destinée à formuler des algorithmes de manière compréhensible. 
+\end{definition}
+
+\subsubsection{Avantages}
+
+\begin{important}
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Modèles récurrents}} : structures algorithmiques réutilisables
+    \item \textcolor{defvert}{\textbf{Unités de haut niveau}} : programmes modulaires et indépendants
+    \item \textcolor{algoviolet}{\textbf{Abstraction}} : éloignement des détails matériels
+\end{itemize}
+\end{important}
+
+\begin{notecours}
+\textbf{Amorçage (Bootstrapping) :}
+
+Association sans contraintes : il n'existe pas de règle stricte.  Par exemple, une IA peut utiliser des statistiques pour construire notre langage, qui utilise ensuite le "penser libre" (pensée abstraite et créative).
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsubsection{Exemple comparatif}
+
+\begin{exemple}
+\textbf{En langage machine/assembleur :}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+mov eax, [x]
+add eax, [y]
+mov [z], eax
+\end{lstlisting}
+
+\textbf{En langage de compilation (C) :}
+\begin{lstlisting}[language=C]
+z = x + y;
+\end{lstlisting}
+
+\textbf{En langage de compilation (Python) :}
+\begin{lstlisting}[language=Python]
+z = x + y
+\end{lstlisting}
+\end{exemple}
+
+\newpage
+\subsection{Le Compilateur}
+
+\needspace{10\baselineskip}
+\subsubsection{Définition}
+
+\begin{definition}
+Un \textbf{compilateur} est un programme qui transforme un code source (haut niveau) en code objet (bas niveau).
+\end{definition}
+
+\begin{notecours}
+\textbf{Distinction importante :}
+
+\textbf{Le code source} est écrit dans un langage de programmation (langage source). Il est de haut niveau d'abstraction et facilement compréhensible par un humain.
+
+\textbf{Le code objet} est écrit dans un langage de bas niveau (langage cible), il est de bas niveau et destiné à la compilation. 
+
+\textbf{On utilisera ce langage du code} pour programmer effectivement. 
+\end{notecours}
+
+\subsubsection{Processus de compilation}
+
+\begin{astuce}
+\begin{verbatim}
+Code Source (C, Pascal, ...)
+        ↓
+    [Compilateur]
+        ↓
+Code Assembleur
+        ↓
+    [Assembleur]
+        ↓
+Code Machine (exécutable)
+\end{verbatim}
+\end{astuce}
+
+\needspace{25\baselineskip}
+\subsubsection{Exemple pratique}
+
+\begin{exemple}
+\textbf{Code source (C) :}
+\begin{lstlisting}[language=C]
+int main() {
+    int a = 5;
+    int b = 10;
+    int c = a + b;
+    return 0;
+}
+\end{lstlisting}
+
+\textbf{Après compilation (assembleur simplifié) :}
+\begin{lstlisting}[language={[x86masm]Assembler}]
+main:
+    push rbp
+    mov rbp, rsp
+    mov DWORD PTR [rbp-4], 5    ; a = 5
+    mov DWORD PTR [rbp-8], 10   ; b = 10
+    mov eax, DWORD PTR [rbp-4]  ; charge a
+    add eax, DWORD PTR [rbp-8]  ; ajoute b
+    mov DWORD PTR [rbp-12], eax ; stocke dans c
+    mov eax, 0
+    pop rbp
+    ret
+\end{lstlisting}
+\end{exemple}
+
+\newpage
+\needspace{15\baselineskip}
+\subsubsection{Amorçage (Bootstrapping)}
+
+\begin{important}
+Question intéressante : \textit{Dans quel langage sont écrits les compilateurs ?}
+
+Réponse : Les premiers compilateurs étaient écrits en assembleur.  Ensuite, par un processus d'amorçage : 
+
+\begin{enumerate}
+    \item On crée un compilateur minimal en assembleur
+    \item On utilise ce compilateur pour compiler une version plus complète écrite dans le langage même
+    \item On répète le processus pour améliorer le compilateur
+\end{enumerate}
+\end{important}
+
+\begin{exemple}
+Le compilateur GCC (GNU Compiler Collection) est écrit en C et peut se compiler lui-même.
+\end{exemple}
+
+\needspace{12\baselineskip}
+\subsection{L'Interpréteur}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Un \textbf{interpréteur} analyse, traduit et exécute les programmes ligne par ligne, sans produire de code machine intermédiaire.
+\end{definition}
+
+\begin{notecours}
+\textbf{Traduction simultanée vs traduction totale :}
+
+\begin{itemize}
+    \item \textbf{Compilateur} = traducteur total :  traduit tout le texte avant exécution
+    \item \textbf{Interpréteur} = ligne par ligne : traduit et exécute au fur et à mesure
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Cycle d'opérations}
+
+\begin{astuce}
+\begin{enumerate}
+    \item Lire et analyser une instruction
+    \item Si syntaxiquement correcte, l'exécuter
+    \item Passer à l'instruction suivante
+\end{enumerate}
+\end{astuce}
+
+\needspace{18\baselineskip}
+\subsubsection{Comparaison Compilateur vs Interpréteur}
+
+\begin{important}
+\textcolor{titrebleu}{\textbf{Compilateur : }}
+\begin{verbatim}
+Source → Compilation → Exécutable → Exécution
+         (une fois)                   (rapide)
+\end{verbatim}
+
+\textcolor{defvert}{\textbf{Interpréteur :}}
+\begin{verbatim}
+Source → Interprétation + Exécution simultanées
+         (à chaque exécution, plus lent)
+\end{verbatim}
+\end{important}
+
+\begin{exemple}
+\textbf{Exemple avec Python (interprété) :}
+\begin{lstlisting}[language=Python]
+>>> x = 5          # Exécuté immédiatement
+>>> y = 10         # Exécuté immédiatement
+>>> print(x + y)   # Exécuté immédiatement
+15
+\end{lstlisting}
+\end{exemple}
+
+\newpage
+\section{Langage de Description d'Algorithme (LDA)}
+
+\needspace{10\baselineskip}
+\subsection{Définition}
+
+\begin{definition}
+Le \textbf{LDA} (pseudo-code) est un langage de rédaction d'algorithmes à un niveau d'abstraction élevé, utilisé pour : 
+\begin{itemize}
+    \item Routines de calcul
+    \item Manipulation de données
+    \item Gestion de la mémoire
+\end{itemize}
+\end{definition}
+
+\subsection{Avantages du LDA}
+
+\begin{important}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{Indépendant} du langage de programmation
+    \item \textcolor{defvert}{Facilite} la compréhension de l'algorithme
+    \item \textcolor{algoviolet}{Distingue} clairement fonctions et procédures
+    \item \textcolor{exempleorange}{Adapté} au paradigme objet
+\end{enumerate}
+\end{important}
+
+\begin{notecours}
+\textbf{Symboles importants dans le LDA :}
+
+\begin{itemize}
+    \item \texttt{<-} ou \texttt{: =} est utilisé pour l'\textbf{affectation} (donner une valeur à une variable)
+    \item \texttt{=} est utilisé pour les \textbf{tests} (vérifier l'égalité)
+\end{itemize}
+
+\textbf{Itératif vs Récursif :}
+
+Le LDA permet d'écrire des algorithmes de manière \textbf{itérative} (boucles) ou \textbf{récursive} (appels de fonction sur elle-même). Le choix dépend du problème et de la clarté recherchée.
+\end{notecours}
+
+\needspace{15\baselineskip}
+\subsection{Exemple d'algorithme en LDA}
+
+\subsubsection{Structure de données :  Arbre Binaire de Recherche}
+
+\begin{exemple}
+\begin{verbatim}
+Type ABR
+    Attributs: 
+        clé : monType
+        sAG : ABR           // Sous-arbre gauche
+        sAD : ABR           // Sous-arbre droit
+        père : ABR
+    Fin Attributs
+Fin Type
+\end{verbatim}
+\end{exemple}
+
+\needspace{18\baselineskip}
+\subsubsection{Algorithme d'insertion}
+
+\begin{exemple}
+\begin{verbatim}
+Procédure Insérer(monABR : ABR, valeur : monType)
+Début
+    Si monABR est vide Alors
+        monABR ← NouvelArbre(valeur)
+    Sinon
+        Si valeur < monABR. clé Alors
+            Insérer(monABR. sAG, valeur)
+        Sinon
+            Insérer(monABR.sAD, valeur)
+        FinSi
+    FinSi
+Fin
+\end{verbatim}
+\end{exemple}
+
+\needspace{18\baselineskip}
+\subsubsection{Algorithme de recherche}
+
+\begin{exemple}
+\begin{verbatim}
+Fonction Rechercher(monABR : ABR, valeur : monType) :  Booléen
+Début
+    Si monABR est vide Alors
+        Retourner Faux
+    Sinon Si valeur = monABR. clé Alors
+        Retourner Vrai
+    Sinon Si valeur < monABR.clé Alors
+        Retourner Rechercher(monABR.sAG, valeur)
+    Sinon
+        Retourner Rechercher(monABR.sAD, valeur)
+    FinSi
+Fin
+\end{verbatim}
+\end{exemple}
+
+\newpage
+\needspace{18\baselineskip}
+\subsection{Distinction Fonction vs Procédure}
+
+\begin{important}
+\textcolor{titrebleu}{\textbf{Fonction :}}
+\begin{itemize}
+    \item Retourne une valeur
+    \item Ne modifie pas (idéalement) l'état global
+    \item Utilisée dans des expressions
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Procédure :}}
+\begin{itemize}
+    \item Ne retourne pas de valeur
+    \item Modifie l'état (effet de bord)
+    \item Appelée comme instruction
+\end{itemize}
+\end{important}
+
+\begin{notecours}
+\textbf{Distinction claire entre fonction et procédure :}
+
+\textbf{Fonction : } avec un retour
+\begin{itemize}
+    \item Renvoie une valeur
+    \item Peut être utilisée dans une expression
+\end{itemize}
+
+\textbf{Procédure :} sans retour
+\begin{itemize}
+    \item N'a pas de valeur de retour
+    \item Effectue une action (affichage, modification, etc.)
+\end{itemize}
+\end{notecours}
+
+\begin{exemple}
+\begin{verbatim}
+Fonction Carré(x :  Entier) : Entier
+    Retourner x * x
+Fin
+
+Procédure AfficherCarré(x : Entier)
+    Afficher(Carré(x))
+Fin
+\end{verbatim}
+\end{exemple}
+
+\newpage
+\section{Notes de Cours Complémentaires}
+
+Cette section regroupe les notes et observations importantes prises en cours, qui enrichissent et clarifient les concepts présentés.
+
+\subsection{Réunitarisation et Structure}
+
+\begin{notecours}
+\textbf{Réunitarisation :}
+
+La réunitarisation est un processus qui permet de regrouper des éléments dispersés en unités cohérentes et organisées. C'est un concept important pour structurer les programmes de manière logique et modulaire.
+\end{notecours}
+
+\subsection{Communauté de Programmeurs}
+
+\begin{astuce}
+L'évolution des langages de programmation reflète l'évolution de la communauté des développeurs. Les langages qui survivent sont ceux qui répondent aux besoins réels et qui ont une communauté active. 
+
+Certains langages deviennent populaires, d'autres disparaissent.  Cette dynamique est naturelle et reflète l'adaptation aux nouveaux défis technologiques.
+\end{astuce}
+
+\subsection{Exemple :  Séquence d'ADN}
+
+\begin{exemple}
+\textbf{Un morceau d'ADN :}
+
+Morceau de la séquence de base du chromosome du bactériophage Phi-X174. 
+
+\begin{verbatim}
+... 
+tcgtcgcgatctttgagctaattagagataattaatcaatctttgaccctaatct
+ctgctggaatcctcggattatttcatgat gacagtcaatttcatattgtgattcaccca
+accggaccttgagcacctccaaaccccccaaaagcg cactcgggat
+aaagtgtcatatactgagctcgaaccgaaccaaaccg accacgcttgagataatcg
+ccaggcaccatgagtgatgatcacgattaacacaggccatcgctaagtcg
+cccaacttctgggccagaagttttctcagaaacaccagctctctctcaaaggatctccg
+ctaaatgttcagcaacatattcagc ... 
+\end{verbatim}
+
+Cette représentation montre comment les données biologiques peuvent être stockées et manipulées de manière similaire aux données informatiques. 
+\end{exemple}
+
+\newpage
+\section{Résumé}
+
+\subsection{Points essentiels}
+
+\needspace{8\baselineskip}
+\subsubsection{Machine}
+
+\begin{astuce}
+Un ordinateur se compose d'une mémoire, d'un CPU et d'entrées/sorties. Sa fonction est d'exécuter des instructions sur des données.
+\end{astuce}
+
+\needspace{10\baselineskip}
+\subsubsection{Mémoire}
+
+\begin{important}
+\begin{itemize}
+    \item \textcolor{algoviolet}{\textbf{Physiquement}} : ensemble de mots composés de bits
+    \item Les mots sont adressables, pas les bits individuels
+    \item \textcolor{defvert}{\textbf{Symboliquement}} : espace de stockage avec cellules (allouées/non allouées, pleines/vides)
+\end{itemize}
+\end{important}
+
+\needspace{12\baselineskip}
+\subsubsection{Langages}
+
+\begin{definition}
+Hiérarchie d'abstraction croissante :
+\begin{enumerate}
+    \item \textcolor{importantrouge}{\textbf{Langage machine}} : binaire, directement exécutable
+    \item \textcolor{exempleorange}{\textbf{Langage d'assemblage}} : mnémoniques lisibles, correspondance 1:1 avec le machine
+    \item \textcolor{titrebleu}{\textbf{Langages de compilation}} : haut niveau, abstraits, portables
+\end{enumerate}
+\end{definition}
+
+\needspace{10\baselineskip}
+\subsubsection{LDA}
+
+\begin{astuce}
+\begin{itemize}
+    \item Permet la gestion abstraite de la mémoire
+    \item Modélise le calcul sous format objet
+    \item Distingue clairement fonctions et procédures
+    \item Facilite la conception d'algorithmes
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Conclusion}
+
+\begin{important}
+La compréhension des différents niveaux de description des langages est fondamentale en informatique. Elle permet : 
+\begin{itemize}
+    \item De mieux \textcolor{titrebleu}{\textbf{appréhender}} le fonctionnement d'un ordinateur
+    \item De \textcolor{defvert}{\textbf{choisir}} le niveau d'abstraction adapté à chaque problème
+    \item D'\textcolor{algoviolet}{\textbf{optimiser}} les programmes en comprenant leur traduction
+    \item De \textcolor{exempleorange}{\textbf{concevoir}} des algorithmes clairs et efficaces
+\end{itemize}
+\end{important}
+
+\begin{astuce}
+L'informaticien moderne travaille principalement avec des langages de haut niveau, mais la connaissance des niveaux inférieurs reste essentielle pour l'optimisation, le débogage et la compréhension profonde des systèmes.
+\end{astuce}
+
+\begin{notecours}
+\textbf{Recommandations finales :}
+
+\begin{enumerate}
+    \item Comprendre l'abstraction aide à penser de manière plus générale
+    \item Maîtriser les variables locales est crucial pour écrire du code propre
+    \item La distinction fonction/procédure clarifie la logique du programme
+    \item Le choix entre compilation et interprétation dépend du contexte
+    \item Le LDA est un outil puissant pour concevoir avant de coder
+\end{enumerate}
+\end{notecours}
+
+\end{document}

@@ -1,0 +1,570 @@
+\documentclass[10pt,a4paper,landscape]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{geometry}
+\usepackage{enumitem}
+\geometry{margin=1cm}
+
+\setlist{nosep,leftmargin=*}
+
+% Couleurs
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{titrebleu}{RGB}{0,102,204}
+
+% Boîtes compactes
+\newtcolorbox{defbox}{
+    colback=green!5,
+    colframe=defvert,
+    fonttitle=\bfseries\small,
+    title=�� DÉFINITION,
+    boxrule=0.5mm,
+    left=2mm,right=2mm,top=1mm,bottom=1mm
+}
+
+\newtcolorbox{algobox}{
+    colback=orange!5,
+    colframe=exempleorange,
+    fonttitle=\bfseries\small,
+    title=⚙️ ALGORITHME,
+    boxrule=0.5mm,
+    left=2mm,right=2mm,top=1mm,bottom=1mm
+}
+
+\newtcolorbox{importbox}{
+    colback=red!5,
+    colframe=importantrouge,
+    fonttitle=\bfseries\small,
+    title=⚠️ IMPORTANT,
+    boxrule=0.5mm,
+    left=2mm,right=2mm,top=1mm,bottom=1mm
+}
+
+\newtcolorbox{complexbox}{
+    colback=blue!5,
+    colframe=titrebleu,
+    fonttitle=\bfseries\small,
+    title=⏱️ COMPLEXITÉS,
+    boxrule=0.5mm,
+    left=2mm,right=2mm,top=1mm,bottom=1mm
+}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+\LARGE\textbf{\color{titrebleu}FICHE DE RÉVISION - À SAVOIR / FAIRE}\\
+\large\textit{Niveaux de Langages + Types Abstraits de Données}
+\end{center}
+
+\begin{multicols}{3}
+\small
+
+\section*{\color{titrebleu}1. NIVEAUX DE LANGAGES}
+
+\subsection*{MÉMOIRE ET VARIABLES}
+
+\begin{defbox}
+\textbf{Mémoire}
+\begin{itemize}
+\item \textbf{Bits} : contacts magnétiques (0 ou 1)
+\item \textbf{Mots} : groupes de bits adressables
+\item Exemple : 65 536 mots × 32 bits
+\item \textbf{IP/PC} : compteur ordinal, pointe vers prochaine instruction
+\end{itemize}
+\end{defbox}
+
+\begin{defbox}
+\textbf{Cellule mémoire}
+\begin{itemize}
+\item Statut : allouée / non allouée
+\item Contenu : valeur définie / indéfinie (?)
+\end{itemize}
+\end{defbox}
+
+\begin{defbox}
+\textbf{Variable}
+\begin{itemize}
+\item Objet contenant une valeur
+\item Inspectable et modifiable
+\item \textbf{Simple} : valeur primitive
+\item \textbf{Composée} : record, struct
+\end{itemize}
+\end{defbox}
+
+\subsection*{SYNTAXE ET SÉMANTIQUE}
+
+\begin{importbox}
+\textbf{Syntaxe} : forme du programme\\
+\textbf{Sémantique} : sens, comportement
+\end{importbox}
+
+\subsection*{LANGAGE MACHINE}
+
+\begin{defbox}
+\textbf{Langage machine}
+\begin{itemize}
+\item Suite de bits
+\item Seul langage du processeur
+\item Directement exécutable
+\item Illisible pour humain
+\item Spécifique à l'architecture
+\end{itemize}
+\end{defbox}
+
+\subsection*{LANGAGE D'ASSEMBLAGE}
+
+\begin{defbox}
+\textbf{Assemblage}
+\begin{itemize}
+\item Représentation lisible du machine
+\item Correspondance 1:1 avec machine
+\item Mnémoniques (ADD, MOV, PUSH)
+\end{itemize}
+\end{defbox}
+
+\begin{importbox}
+\textbf{Assembleur} : programme qui traduit assemblage → machine
+\end{importbox}
+
+\subsection*{LANGAGE DE COMPILATION}
+
+\begin{defbox}
+\textbf{Langage de compilation}
+\begin{itemize}
+\item Haut niveau d'abstraction
+\item Universel, naturel, implémentable
+\item Modèles récurrents
+\item Unités indépendantes
+\end{itemize}
+\end{defbox}
+
+\subsection*{COMPILATEUR}
+
+\begin{importbox}
+\textbf{Compilateur}
+\begin{itemize}
+\item Transforme code source → code objet
+\item Années 50
+\item Source (haut niveau) → Objet (bas niveau)
+\end{itemize}
+\end{importbox}
+
+\begin{algobox}
+\textbf{Processus}\\
+Source → Compilateur → Assembleur → Assembleur → Machine
+\end{algobox}
+
+\begin{defbox}
+\textbf{Bootstrapping}
+\begin{enumerate}
+\item Compilateur minimal en assembleur
+\item Compiler version complète
+\item Répéter (amélioration)
+\end{enumerate}
+\end{defbox}
+
+\subsection*{INTERPRÉTEUR}
+
+\begin{defbox}
+\textbf{Interpréteur}
+\begin{itemize}
+\item Analyse + traduit + exécute
+\item Ligne par ligne
+\item Pas de code intermédiaire
+\end{itemize}
+\end{defbox}
+
+\begin{importbox}
+\textbf{Cycle}
+\begin{enumerate}
+\item Lire et analyser
+\item Si correct, exécuter
+\item Passer à suivante
+\end{enumerate}
+\end{importbox}
+
+\subsection*{LDA (Pseudo-code)}
+
+\begin{defbox}
+\textbf{LDA}
+\begin{itemize}
+\item Langage de Description d'Algorithme
+\item Routines de calcul
+\item Gestion mémoire abstraite
+\item Paradigme objet
+\item Distingue fonction/procédure
+\end{itemize}
+\end{defbox}
+
+\begin{importbox}
+\textbf{Fonction} : retourne valeur\\
+\textbf{Procédure} : effet de bord
+\end{importbox}
+
+\columnbreak
+
+\section*{\color{titrebleu}2. STRUCTURES DE DONNÉES}
+
+\subsection*{PILE (Stack)}
+
+\begin{defbox}
+\textbf{Pile - LIFO}
+\begin{itemize}
+\item Last In, First Out
+\item Dernier entré = premier sorti
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{empiler(x)} / push
+\item \texttt{dépiler()} / pop
+\item \texttt{pileVide?()}
+\item \texttt{sommet()} / peek
+\end{itemize}
+\end{algobox}
+
+\begin{complexbox}
+\textbf{Toutes} : $O(1)$
+\end{complexbox}
+
+\begin{algobox}
+\small
+\textbf{Empiler}
+\begin{verbatim}
+Si taille >= max Alors
+    Erreur
+Sinon
+    taille++
+    tab[taille] <- x
+\end{verbatim}
+\end{algobox}
+
+\subsection*{FILE (Queue)}
+
+\begin{defbox}
+\textbf{File - FIFO}
+\begin{itemize}
+\item First In, First Out
+\item Premier entré = premier sorti
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{enfiler(x)} / enqueue
+\item \texttt{défiler()} / dequeue
+\item \texttt{fileVide?()}
+\end{itemize}
+\end{algobox}
+
+\begin{complexbox}
+\textbf{Toutes} : $O(1)$
+\end{complexbox}
+
+\begin{importbox}
+\textbf{Implémentations}
+\begin{itemize}
+\item Tableau circulaire
+\item Double pile
+\item Liste chaînée
+\end{itemize}
+\end{importbox}
+
+\subsection*{ABR (Arbre Binaire Recherche)}
+
+\begin{defbox}
+\textbf{ABR}
+\begin{itemize}
+\item Sous-arbre gauche $\leq$ nœud
+\item Sous-arbre droit $>$ nœud
+\item Structure récursive
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Accesseurs}
+\begin{itemize}
+\item \texttt{clé}
+\item \texttt{sAG}, \texttt{sAD}
+\item \texttt{père}
+\end{itemize}
+\end{algobox}
+
+\begin{complexbox}
+\begin{tabular}{lcc}
+\textbf{Op.} & \textbf{Moy.} & \textbf{Pire} \\
+\hline
+Recherche & $O(\log n)$ & $O(n)$ \\
+Insertion & $O(\log n)$ & $O(n)$ \\
+Suppression & $O(\log n)$ & $O(n)$ \\
+Min/Max & $O(\log n)$ & $O(n)$ \\
+\end{tabular}
+\end{complexbox}
+
+\begin{algobox}
+\small
+\textbf{Rechercher}
+\begin{verbatim}
+Si arbre = NIL OU clé = x
+    Retourner arbre
+Si x < clé
+    Retourner rechercher(sAG, x)
+Sinon
+    Retourner rechercher(sAD, x)
+\end{verbatim}
+\end{algobox}
+
+\subsection*{TAS (Heap)}
+
+\begin{defbox}
+\textbf{Tas}
+\begin{itemize}
+\item Arbre binaire presque complet
+\item \textbf{Max} : père $\geq$ fils
+\item \textbf{Min} : père $\leq$ fils
+\item Implémentation : tableau
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Relations}
+\begin{itemize}
+\item \texttt{père(i) = i DIV 2}
+\item \texttt{filsGauche(i) = 2i}
+\item \texttt{filsDroit(i) = 2i+1}
+\item \texttt{maximum() = tab[1]}
+\end{itemize}
+\end{algobox}
+
+\begin{complexbox}
+\begin{tabular}{lc}
+\textbf{Opération} & \textbf{Complexité} \\
+\hline
+Insertion & $O(\log n)$ \\
+Extraction max & $O(\log n)$ \\
+Recherche max & $O(1)$ \\
+Construction & $O(n)$ \\
+\end{tabular}
+\end{complexbox}
+
+\columnbreak
+
+\section*{\color{titrebleu}3. TYPES ABSTRAITS}
+
+\subsection*{TAD - Définition}
+
+\begin{defbox}
+\textbf{TAD}
+\begin{itemize}
+\item Ensemble d'objets similaires
+\item Ensemble d'opérations
+\item Spécification $\neq$ Implémentation
+\end{itemize}
+\end{defbox}
+
+\begin{importbox}
+\textbf{Contraintes}
+\begin{itemize}
+\item Min espace mémoire
+\item Min instructions
+\end{itemize}
+\end{importbox}
+
+\subsection*{DICTIONNAIRE}
+
+\begin{defbox}
+\textbf{Dictionnaire}
+\begin{itemize}
+\item Ensemble fini ordonné
+\item Opérations : insert, search, delete
+\end{itemize}
+\end{defbox}
+
+\begin{complexbox}
+\small
+\begin{tabular}{lccc}
+\textbf{Structure} & \textbf{R} & \textbf{I} & \textbf{S} \\
+\hline
+Tab non ord. & $O(n)$ & $O(1)$ & $O(1)$ \\
+Liste non ord. & $O(n)$ & $O(1)$ & $O(1)$ \\
+Tab ordonné & $O(\log n)$ & $O(n)$ & $O(n)$ \\
+ABR & $O(h)$ & $O(h)$ & $O(h)$ \\
+Tas & $O(n)$ & $O(\log n)$ & $O(\log n)$ \\
+\end{tabular}
+\end{complexbox}
+
+\subsection*{ENSEMBLE DYNAMIQUE}
+
+\begin{defbox}
+\textbf{Ensemble Dynamique}
+\begin{itemize}
+\item Extension du dictionnaire
+\item + min, max, pred, succ
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{inserer(x)}
+\item \texttt{supprimer(x)}
+\item \texttt{rechercher(x)}
+\item \texttt{minimum()}
+\item \texttt{maximum()}
+\item \texttt{predecesseur(x)}
+\item \texttt{successeur(x)}
+\end{itemize}
+\end{algobox}
+
+\begin{importbox}
+\textbf{Implémentation}\\
+Liste doublement chaînée ordonnée
+\begin{itemize}
+\item \texttt{premier}, \texttt{dernier}
+\item \texttt{précédent}, \texttt{suivant}
+\end{itemize}
+\end{importbox}
+
+\subsection*{FILE DE PRIORITÉ}
+
+\begin{defbox}
+\textbf{File de Priorité}
+\begin{itemize}
+\item Éléments avec clé
+\item Ordre de priorité sur clés
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{inserer(x, clé)}
+\item \texttt{maximum()}
+\item \texttt{extraireMax()}
+\end{itemize}
+\end{algobox}
+
+\begin{complexbox}
+\small
+\begin{tabular}{lccc}
+\textbf{Struct.} & \textbf{Ins} & \textbf{Max} & \textbf{Extr} \\
+\hline
+Tab non ord. & $O(1)$ & $O(n)$ & $O(n)$ \\
+Liste ord. & $O(n)$ & $O(1)$ & $O(1)$ \\
+\textbf{TAS} & $\mathbf{O(\log n)}$ & $\mathbf{O(1)}$ & $\mathbf{O(\log n)}$ \\
+\end{tabular}
+\end{complexbox}
+
+\begin{importbox}
+\textbf{Tas = structure optimale !}
+\end{importbox}
+
+\subsection*{FAMILLE D'ENSEMBLES}
+
+\begin{defbox}
+\textbf{Famille d'Ensembles}
+\begin{itemize}
+\item Ensemble de sous-ensembles
+\item Relation d'ordre $<_X$
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{inserer(ensemble)}
+\item \texttt{supprimer(ensemble)}
+\item \texttt{appartenance(ensemble)}
+\end{itemize}
+\end{algobox}
+
+\begin{importbox}
+\textbf{Implémentation}\\
+Arbre lexicographique (Trie)
+\begin{itemize}
+\item Arêtes étiquetées
+\item Nœuds terminaux
+\item Ordre $<_X$
+\end{itemize}
+\end{importbox}
+
+\begin{complexbox}
+Pour ensemble de taille $k$ :\\
+\textbf{Toutes opérations} : $O(k)$
+\end{complexbox}
+
+\subsection*{ENSEMBLES DISJOINTS (Union-Find)}
+
+\begin{defbox}
+\textbf{Union-Find}
+\begin{itemize}
+\item Partition d'un ensemble
+\item Sous-ensembles disjoints
+\item Évolution : singletons → union
+\end{itemize}
+\end{defbox}
+
+\begin{algobox}
+\textbf{Opérations}
+\begin{itemize}
+\item \texttt{trouverClasse(e)}
+\item \texttt{union(C1, C2)}
+\end{itemize}
+\end{algobox}
+
+\begin{importbox}
+\textbf{Implémentation 1 : Tableau}
+\begin{itemize}
+\item Trouver : $O(1)$
+\item Union : $O(n)$
+\end{itemize}
+
+\textbf{Implémentation 2 : Forêt}
+\begin{itemize}
+\item Trouver : $O(h)$
+\item Union : $O(h)$
+\end{itemize}
+\end{importbox}
+
+\begin{defbox}
+\textbf{Optimisations}
+\begin{itemize}
+\item \textbf{Union par rang} : attacher petit sous grand
+\item \textbf{Compression de chemin} : pointer vers racine
+\end{itemize}
+\end{defbox}
+
+\begin{complexbox}
+\textbf{Avec optimisations}\\
+$m$ opérations sur $n$ éléments :\\
+$O(m \cdot \alpha(n))$ \\
+$\alpha(n)$ = inverse Ackermann\\
+$\approx O(1)$ amorti
+\end{complexbox}
+
+\vfill
+
+\section*{\color{titrebleu}APPLICATIONS}
+
+\begin{importbox}
+\textbf{Pile} : parenthèses, undo\\
+\textbf{File} : BFS, processus\\
+\textbf{ABR} : dictionnaires triés\\
+\textbf{Tas} : files de priorité, heapsort\\
+\textbf{Union-Find} : Kruskal, cycles
+\end{importbox}
+
+\end{multicols}
+
+\end{document}

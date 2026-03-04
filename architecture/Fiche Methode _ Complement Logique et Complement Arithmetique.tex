@@ -1,0 +1,336 @@
+\documentclass[a4paper,12pt]{article} 
+
+\usepackage[utf8]{inputenc} 
+
+\usepackage{geometry} 
+
+\usepackage{amsmath} 
+
+\usepackage{amssymb} 
+
+\usepackage{array} 
+
+\geometry{margin=2cm} 
+
+  
+
+\title{Fiche Méthode : Complément Logique et Complément Arithmétique (Complément à 2)} 
+
+\author{} 
+
+\date{} 
+
+  
+
+\begin{document} 
+
+  
+
+\maketitle 
+
+  
+
+\section*{I. Règles générales} 
+
+\begin{itemize} 
+
+    \item Bit de poids fort (bit de gauche) :  
+
+    \begin{itemize} 
+
+        \item 0 $\rightarrow$ nombre positif 
+
+        \item 1 $\rightarrow$ nombre négatif 
+
+    \end{itemize} 
+
+    \item Complément logique (ou complément à 1) : inverser tous les bits pour représenter un nombre négatif. 
+
+    \item Complément arithmétique / complément à 2 : complément logique + 1. 
+
+    \item Plage de valeurs sur $N$ bits : $-2^{N-1}$ à $2^{N-1}-1$. 
+
+    \item Zéro : en complément à 2, un seul zéro (pas de $-0$). 
+
+\end{itemize} 
+
+  
+
+\section*{II. Règle clé : quand ajouter ou enlever 1} 
+
+  
+
+\begin{itemize} 
+
+    \item \textbf{Pour créer un nombre négatif (complément à 2)} : \textbf{inverser les bits + ajouter 1}   
+
+    \textbf{Exemple : écrire $-17$ sur 8 bits}  
+
+\[
+17 = 00010001 \quad\text{(positif)} 
+\] 
+
+\[
+\text{Inversion} = 11101110 
+\] 
+
+\[
+\text{Ajouter 1} = 11101111 \quad \Rightarrow -17 
+\] 
+
+  
+
+    \item \textbf{Pour retrouver la valeur d’un nombre négatif} : \textbf{enlever 1 puis inverser les bits}   
+
+    \textbf{Exemple : retrouver la valeur de $11101111$}  
+
+\[
+11101111 - 1 = 11101110 
+\] 
+
+\[
+\text{Inversion} = 00010001 
+\] 
+
+\[
+\text{Décimal} = 17 \Rightarrow valeur négative originale : -17 
+\] 
+
+\end{itemize} 
+
+  
+
+\textbf{Astuce à retenir :} 
+
+\begin{center} 
+
+\begin{tabular}{|c|c|} 
+
+\hline 
+
+\textbf{Objectif} & \textbf{Action} \\ \hline 
+
+Écrire $-X$ & Inverser les bits + 1 \\ \hline 
+
+Lire un nombre négatif & Enlever 1 puis inverser \\ \hline 
+
+Bit de gauche = 0 & Nombre positif \\ \hline 
+
+Bit de gauche = 1 & Nombre négatif \\ \hline 
+
+\end{tabular} 
+
+\end{center} 
+
+  
+
+\textbf{Cas spécial :} $0000 = 0$, on n’ajoute rien $\rightarrow$ pas de $-0$ 
+
+  
+
+\hrule
+\section*{III. Conversion binaire $\rightarrow$ décimal} 
+
+  
+
+\subsection*{A. Complément logique} 
+
+\begin{enumerate} 
+
+    \item Si bit de signe = 0 $\rightarrow$ positif, convertir directement. 
+
+    \item Si bit de signe = 1 $\rightarrow$ négatif : 
+
+    \begin{enumerate} 
+
+        \item Inverser tous les bits 
+
+        \item Convertir en décimal 
+
+        \item Ajouter le signe $-$ 
+
+    \end{enumerate} 
+
+\end{enumerate} 
+
+  
+
+\subsection*{B. Complément arithmétique (complément à 2)} 
+
+\begin{enumerate} 
+
+    \item Écrire le nombre positif en binaire sur $N$ bits. 
+
+    \item Inverser les bits. 
+
+    \item Ajouter 1. 
+
+\end{enumerate} 
+
+  
+
+\hrule
+\section*{IV. Addition / Soustraction en binaire} 
+
+  
+
+\subsection*{A. Complément logique} 
+
+\begin{enumerate} 
+
+    \item Convertir le nombre négatif en complément logique. 
+
+    \item Additionner en binaire normalement. 
+
+    \item Réajouter la retenue si elle dépasse $N$ bits. 
+
+\end{enumerate} 
+
+  
+
+\subsection*{B. Complément arithmétique (à 2)} 
+
+\begin{enumerate} 
+
+    \item Convertir le nombre négatif en complément à 2. 
+
+    \item Additionner en binaire normalement. 
+
+    \item Ignorer la retenue qui dépasse $N$ bits. 
+
+    \item Convertir le résultat en décimal. 
+
+\end{enumerate} 
+
+  
+
+\hrule
+\section*{V. Étapes concrètes à suivre} 
+
+  
+
+\subsection*{1. Valeur décimale d’un nombre binaire} 
+
+\begin{enumerate} 
+
+    \item Vérifier le bit de signe. 
+
+    \item Si 0 $\rightarrow$ positif, convertir directement. 
+
+    \item Si 1 $\rightarrow$ négatif : 
+
+    \begin{itemize} 
+
+        \item Complément logique : inverser $\rightarrow$ convertir $\rightarrow$ ajouter signe $-$ 
+
+        \item Complément à 2 : enlever 1 puis inverser $\rightarrow$ convertir $\rightarrow$ ajouter signe $-$ 
+
+    \end{itemize} 
+
+\end{enumerate} 
+
+  
+
+\subsection*{2. Écrire un nombre négatif en binaire} 
+
+\begin{itemize} 
+
+    \item Complément logique : inverser les bits 
+
+    \item Complément arithmétique : inverser les bits + 1 
+
+\end{itemize} 
+
+  
+
+\subsection*{3. Calculer une soustraction} 
+
+\begin{itemize} 
+
+    \item Complément logique : convertir le nombre à soustraire en complément logique, additionner, réajouter la retenue si nécessaire 
+
+    \item Complément arithmétique : convertir le nombre à soustraire en complément à 2, additionner, ignorer la retenue 
+
+\end{itemize} 
+
+  
+
+\subsection*{4. Vérification} 
+
+\begin{itemize} 
+
+    \item Convertir le résultat final en décimal 
+
+    \item Vérifier le signe 
+
+\end{itemize} 
+
+  
+
+\hrule
+\section*{VI. Tableau récapitulatif} 
+
+  
+
+\begin{tabular}{|>{\centering\arraybackslash}m{5cm}|>{\centering\arraybackslash}m{5cm}|>{\centering\arraybackslash}m{5cm}|} 
+
+\hline 
+
+\textbf{Objectif} & \textbf{Complément logique} & \textbf{Complément arithmétique (à 2)} \\ \hline 
+
+Nombre négatif & Inverser les bits & Inverser + 1 \\ \hline 
+
+Soustraction & Addition binaire + réajouter retenue & Addition binaire, ignorer la retenue \\ \hline 
+
+Zéro & Deux représentations possibles (+0, -0) & Zéro unique \\ \hline 
+
+Addition & Suivre les règles ci-dessus & Addition normale, simple \\ \hline 
+
+\end{tabular} 
+
+  
+
+\hrule
+\section*{VII. Exemples rapides} 
+
+  
+
+\textbf{Complément logique :}   
+
+\begin{itemize} 
+
+    \item $00001101_2 \rightarrow 13$ 
+
+    \item $11101001_2 \rightarrow -22$ 
+
+\end{itemize} 
+
+  
+
+\textbf{Complément arithmétique :}   
+
+\begin{itemize} 
+
+    \item $-17$ sur 8 bits $\rightarrow 11101111_2$ 
+
+    \item $-0$ sur 4 bits $\rightarrow 0000_2$ 
+
+\end{itemize} 
+
+  
+
+\textbf{Soustraction 4 bits :}   
+
+\begin{itemize} 
+
+    \item Complément logique : $7 - 3 \rightarrow 0111 + 1100 = 1 0011$ (réajouter retenue) 
+
+    \item Complément arithmétique : $6 - 5 \rightarrow 0110 + 1011 = 0001$ 
+
+\end{itemize} 
+
+  
+
+\end{document} 
+
+ 

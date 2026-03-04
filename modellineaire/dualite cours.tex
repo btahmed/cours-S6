@@ -1,0 +1,930 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning,matrix}
+\geometry{margin=2.5cm}
+
+% Command for circled numbers
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+% Couleurs personnalisees
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Boites colorees
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Definition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=A savoir,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Methode,
+    arc=3mm
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Note de Cours,
+    arc=3mm
+}
+
+\newtcolorbox{theoreme}{
+    colback=fondgris,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Theoreme,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}La Theorie de la Dualite}\\[0.5em]
+\large\color{defvert}Probleme Dual, Theoremes de Dualite et Ecarts Complementaires\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Prof. Herve KERIVIN, PhD\\
+\small Universite Clermont Auvergne\\
+Clermont Auvergne INP - ISIMA\\
+LIMOS UMR 6158 CNRS}
+\date{\large Version 2024-2025 - Cours 4}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================
+\section{Motivation : Bornes Superieures}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Probleme de Depart}
+
+\begin{notecours}
+\textbf{Rappel -- La methode du simplexe produit une solution optimale, mais peut-on la verifier sans la relancer ?}
+
+La methode du simplexe nous donne une solution realisable qui maximise $z$. Mais comment \textcolor{importantrouge}{\textbf{prouver}} qu'une solution donnee est optimale sans executer tout l'algorithme ?
+\end{notecours}
+
+\begin{exemple}
+\textbf{Probleme de PL de reference :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 4x_1 + x_2 + 5x_3 + 3x_4\\
+\text{sujet a} \quad & x_1 - x_2 - x_3 + 3x_4 \leq 1\\
+& 5x_1 + x_2 + 3x_3 + 8x_4 \leq 55\\
+& -x_1 + 2x_2 + 3x_3 - 5x_4 \leq 3\\
+& x_1, x_2, x_3, x_4 \geq 0
+\end{align*}
+
+\textbf{Observations initiales :}
+\begin{itemize}
+    \item Toute solution realisable donne une \textcolor{defvert}{\textbf{borne inferieure}} sur $z^*$
+    \item Par exemple : $x_1 = 3, x_2 = 0, x_3 = 2, x_4 = 0$ donne $z \geq 22$
+    \item Encore mieux : $x_1 = 0, x_2 = 14, x_3 = 0, x_4 = 5$ donne $z \geq 29$
+\end{itemize}
+
+\textbf{Probleme :} Pour prouver qu'une solution est optimale, il faut aussi une \textcolor{importantrouge}{\textbf{borne superieure}} sur $z^*$.
+\end{exemple}
+
+\subsection{Construction d'une Borne Superieure}
+
+\begin{methode}
+\textbf{Idee fondamentale -- Combinaison lineaire des contraintes :}
+
+On peut multiplier une contrainte par un scalaire positif pour obtenir une borne.
+
+\textbf{Exemple 1 :} Multiplier la 2e contrainte par $\frac{5}{3}$ :
+
+$$\frac{5}{3}(5x_1 + x_2 + 3x_3 + 8x_4 \leq 55) \quad \Rightarrow \quad \frac{25}{3}x_1 + \frac{5}{3}x_2 + 5x_3 + \frac{40}{3}x_4 \leq \frac{275}{3}$$
+
+Puisque pour toute solution realisable :
+$$4x_1 \leq \frac{25}{3}x_1, \quad x_2 \leq \frac{5}{3}x_2, \quad 5x_3 \leq 5x_3, \quad 3x_4 \leq \frac{40}{3}x_4$$
+
+on obtient :
+$$z = 4x_1 + x_2 + 5x_3 + 3x_4 \leq \frac{25}{3}x_1 + \frac{5}{3}x_2 + 5x_3 + \frac{40}{3}x_4 \leq \frac{275}{3}$$
+
+Donc $z^* \leq \frac{275}{3} \approx 91{,}7$.
+
+\textbf{Exemple 2 :} Additionner les 2e et 3e contraintes :
+$$4x_1 + 3x_2 + 6x_3 + 3x_4 \leq 58 \quad \Rightarrow \quad z^* \leq 58$$
+
+\textbf{Peut-on trouver une borne encore plus fine ?}
+\end{methode}
+
+\newpage
+\subsection{Combinaison Lineaire Generale}
+
+\begin{methode}
+\textbf{Construction systematique :}
+
+On forme une combinaison lineaire des $m$ contraintes avec des multiplicateurs $y_1, y_2, y_3 \geq 0$ :
+
+$$y_1(x_1 - x_2 - x_3 + 3x_4 \leq 1), \quad y_2(5x_1 + x_2 + 3x_3 + 8x_4 \leq 55), \quad y_3(-x_1 + 2x_2 + 3x_3 - 5x_4 \leq 3)$$
+
+Toute solution realisable satisfait alors :
+$$(y_1 + 5y_2 - y_3)x_1 + (-y_1 + y_2 + 2y_3)x_2 + (-y_1 + 3y_2 + 3y_3)x_3 + (3y_1 + 8y_2 - 5y_3)x_4 \leq y_1 + 55y_2 + 3y_3$$
+
+Pour conclure que $z^* \leq y_1 + 55y_2 + 3y_3$, il faut que chaque coefficient de la combinaison soit $\geq$ au coefficient de $z$ :
+\begin{align*}
+y_1 + 5y_2 - y_3 &\geq 4\\
+-y_1 + y_2 + 2y_3 &\geq 1\\
+-y_1 + 3y_2 + 3y_3 &\geq 5\\
+3y_1 + 8y_2 - 5y_3 &\geq 3
+\end{align*}
+\end{methode}
+
+\begin{important}
+\textbf{Conclusion fondamentale :}
+
+Pour obtenir la \textcolor{importantrouge}{\textbf{borne superieure la plus fine possible}}, il faut \textcolor{defvert}{\textbf{minimiser}} $y_1 + 55y_2 + 3y_3$ sous les contraintes ci-dessus avec $y_1, y_2, y_3 \geq 0$.
+
+\textcolor{titrebleu}{\textbf{Ce nouveau probleme d'optimisation est appele le probleme dual !}}
+\end{important}
+
+%=============================================
+\section{Le Probleme Dual}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Definition Formelle}
+
+\begin{definition}
+\textbf{Probleme primal et probleme dual :}
+
+Considerons le \textcolor{titrebleu}{\textbf{probleme primal}} sous forme standard :
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_j x_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij} x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+Son \textcolor{defvert}{\textbf{probleme dual}} est :
+\begin{align*}
+\text{minimiser} \quad & w = \sum_{i=1}^{m} b_i y_i\\
+\text{sujet a} \quad & \sum_{i=1}^{m} a_{ij} y_i \geq c_j \quad \text{pour } j = 1, 2, \ldots, n\\
+& y_i \geq 0 \quad \text{pour } i = 1, 2, \ldots, m
+\end{align*}
+\end{definition}
+
+\begin{astuce}
+\textbf{Correspondances primal/dual -- A retenir :}
+
+\begin{center}
+\begin{tabular}{l|l}
+\toprule
+\textbf{PRIMAL} & \textbf{DUAL} \\
+\midrule
+maximisation & minimisation \\
+contrainte $\leq$ & variable $\geq 0$ \\
+contrainte $\geq$ & variable $\leq 0$ \\
+contrainte $=$ & variable libre \\
+variable $\geq 0$ & contrainte $\geq$ \\
+variable $\leq 0$ & contrainte $\leq$ \\
+variable libre & contrainte $=$ \\
+membre droit $b_i$ & coefficient dans l'objectif dual \\
+coefficient dans l'objectif $c_j$ & membre droit dual \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{astuce}
+
+\newpage
+\subsection{Correspondance Contraintes-Variables}
+
+\begin{notecours}
+\textbf{Comment lire la correspondance primal/dual :}
+
+\begin{itemize}
+    \item Les $m$ \textcolor{titrebleu}{\textbf{contraintes primales}} $\sum_{j=1}^n a_{ij}x_j \leq b_i$ sont en correspondance \textbf{biunivoque} avec les $m$ \textcolor{defvert}{\textbf{variables duales}} $y_i$
+    \item Les $n$ \textcolor{titrebleu}{\textbf{variables primales}} $x_j$ sont en correspondance \textbf{biunivoque} avec les $n$ \textcolor{defvert}{\textbf{contraintes duales}} $\sum_{i=1}^m a_{ij}y_i \geq c_j$
+    \item Le coefficient $c_j$ de l'objectif primal devient le \textcolor{importantrouge}{\textbf{membre droit}} de la contrainte duale associee a $x_j$
+    \item Le membre droit $b_i$ de la contrainte primale devient le \textcolor{importantrouge}{\textbf{coefficient}} de $y_i$ dans l'objectif dual
+\end{itemize}
+\end{notecours}
+
+\begin{theoreme}
+\textbf{Proposition 1 -- Auto-dualite :}
+
+\textit{Le dual du dual est le primal.}
+\end{theoreme}
+
+\begin{definition}
+\textbf{Solutions primale et duale :}
+
+\begin{itemize}
+    \item Une solution realisable du probleme primal est appelee une \textcolor{titrebleu}{\textbf{solution primale}}
+    \item Une solution realisable du probleme dual est appelee une \textcolor{defvert}{\textbf{solution duale}}
+\end{itemize}
+\end{definition}
+
+\subsection{Exemples de Construction du Dual}
+
+\begin{exemple}
+\textbf{Probleme \#1 -- Primal avec 7 contraintes $\leq$ et maximisation :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 4x_1 + 3x_2 + 7x_3 + 9x_4\\
+\text{sujet a} \quad & 2x_1 - 4x_2 + x_3 \leq -1\\
+& x_1 + 5x_2 + x_3 + x_4 \leq 16\\
+& x_1 + x_3 \leq 5\\
+& 2x_1 + 4x_2 - x_4 \leq 8\\
+& x_2 - 3x_3 + x_4 \leq 0\\
+& -4x_2 + 3x_4 \leq 4\\
+& 5x_1 + 2x_2 - 3x_3 + 6x_4 \leq 19\\
+& x_1, x_2, x_3, x_4 \geq 0
+\end{align*}
+
+\textbf{Dual correspondant :}
+
+Les variables primales sont non negatives et le probleme est une maximisation : les contraintes duales sont donc des contraintes $\geq$.
+
+\begin{align*}
+\text{minimiser} \quad & w = -y_1 + 16y_2 + 5y_3 + 8y_4 + 0 \cdot y_5 + 4y_6 + 19y_7\\
+\text{sujet a} \quad & 2y_1 + y_2 + y_3 + 2y_4 + 5y_7 \geq 4\\
+& -4y_1 + 5y_2 + 4y_4 + y_5 - 4y_6 + 2y_7 \geq 3\\
+& y_1 + y_2 + y_3 - 3y_5 - 3y_7 \geq 7\\
+& y_2 - y_4 + y_5 + 3y_6 + 6y_7 \geq 9\\
+& y_i \geq 0 \quad \text{pour } i = 1, \ldots, 7
+\end{align*}
+\end{exemple}
+
+\newpage
+
+\begin{exemple}
+\textbf{Probleme \#2 -- Primal avec contraintes $\geq$ et minimisation :}
+
+\begin{align*}
+\text{minimiser} \quad & z = 5x_1 + 2x_2 + 6x_3\\
+\text{sujet a} \quad & 2x_1 + x_2 + x_3 \geq 5\\
+& x_2 + 2x_3 \geq 4\\
+& x_1 + x_3 \geq 4\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+Les variables primales sont non negatives et le probleme est une minimisation : les contraintes duales sont des contraintes $\leq$.
+
+\begin{align*}
+\text{maximiser} \quad & w = 5y_1 + 4y_2 + 4y_3\\
+\text{sujet a} \quad & 2y_1 + y_3 \leq 5\\
+& y_1 + y_2 \leq 2\\
+& y_1 + 2y_2 + y_3 \leq 6\\
+& y_i \geq 0 \quad \text{pour } i = 1, 2, 3
+\end{align*}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Probleme \#3 -- Primal avec contraintes mixtes et variables libres :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2 + 5x_3\\
+\text{sujet a} \quad & 5x_1 + 3x_2 + x_3 = -8\\
+& 4x_1 + 2x_2 + 8x_3 \leq 1\\
+& 6x_1 + 7x_2 + 3x_3 \geq 1\\
+& x_1 \leq 4\\
+& x_3 \geq 0 \quad \text{(seule contrainte de signe)}
+\end{align*}
+
+\textbf{Correspondance :}
+\begin{itemize}
+    \item Contrainte $=$ $\Rightarrow$ variable duale $y_1$ \textcolor{algoviolet}{\textbf{libre}}
+    \item Contrainte $\leq$ $\Rightarrow$ variable duale $y_2 \geq 0$
+    \item Contrainte $\geq$ $\Rightarrow$ variable duale $y_3 \leq 0$
+    \item $x_1, x_2$ libres $\Rightarrow$ contraintes duales correspondantes sont des \textcolor{algoviolet}{\textbf{egalites}}
+    \item $x_3 \geq 0$ $\Rightarrow$ contrainte duale correspondante est une \textcolor{defvert}{\textbf{inegalite $\geq$}}
+\end{itemize}
+\end{exemple}
+
+%=============================================
+\section{Theoremes de Dualite}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Theoreme de Dualite Faible}
+
+\begin{theoreme}
+\textbf{Theoreme 2 (Dualite faible) :}
+
+\textit{Supposons que $x$ soit une solution primale et $y$ une solution duale. Alors :}
+$$\sum_{j=1}^{n} c_j x_j \leq \sum_{i=1}^{m} b_i y_i$$
+\end{theoreme}
+
+\begin{methode}
+\textbf{Preuve du theoreme de dualite faible :}
+
+Puisque $y$ est une solution duale, $\sum_{i=1}^m a_{ij} y_i \geq c_j$ pour tout $j$. Comme $x_j \geq 0$ :
+$$\sum_{j=1}^n c_j x_j \leq \sum_{j=1}^n \left(\sum_{i=1}^m a_{ij} y_i\right) x_j = \sum_{i=1}^m \left(\sum_{j=1}^n a_{ij} x_j\right) y_i \leq \sum_{i=1}^m b_i y_i$$
+
+La derniere inegalite vient du fait que $x$ est une solution primale ($\sum_j a_{ij} x_j \leq b_i$) et $y_i \geq 0$. $\square$
+\end{methode}
+
+\begin{astuce}
+\textbf{Interpretation geometrique :}
+
+Le theoreme de dualite faible dit que \textcolor{importantrouge}{\textbf{toute solution duale fournit une borne superieure}} sur la valeur de la fonction objectif primale, et \textcolor{defvert}{\textbf{toute solution primale fournit une borne inferieure}} sur la valeur de la fonction objectif duale.
+
+Autrement dit, les valeurs de $z$ primal et $w$ dual sont \textcolor{titrebleu}{\textbf{separees}} : valeurs primales $\leq$ valeurs duales.
+\end{astuce}
+
+\newpage
+\subsection{Corollaire : Critere d'Optimalite par la Dualite}
+
+\begin{theoreme}
+\textbf{Corollaire 3 :}
+
+\textit{Supposons que $x^*$ soit une solution primale, $y^*$ une solution duale et :}
+$$\sum_{j=1}^{n} c_j x_j^* = \sum_{i=1}^{m} b_i y_i^*$$
+\textit{Alors $x^*$ est une solution primale optimale, et $y^*$ est une solution duale optimale.}
+\end{theoreme}
+
+\begin{exemple}
+\textbf{Application au probleme de reference :}
+
+On peut verifier que les solutions suivantes sont optimales :
+
+\textbf{Solution primale :} $x_1^* = 0, x_2^* = 14, x_3^* = 0, x_4^* = 5$
+
+$$z^* = 4(0) + 1(14) + 5(0) + 3(5) = 29$$
+
+\textbf{Solution duale :} $y_1^* = 11, y_2^* = 0, y_3^* = 6$
+
+$$w^* = 1(11) + 55(0) + 3(6) = 29$$
+
+Comme $z^* = w^* = 29$, les deux solutions sont \textcolor{defvert}{\textbf{simultanement optimales}} !
+\end{exemple}
+
+\subsection{Comment Lire la Solution Duale dans le Dictionnaire Primal}
+
+\begin{methode}
+\textbf{Lecture de la solution duale optimale a partir du dictionnaire primal optimal :}
+
+\textbf{Dictionnaire optimal pour le probleme primal :}
+\begin{align*}
+x_2 &= 14 - 2x_1 - 4x_3 - 5x_5 - 3x_7\\
+x_4 &= 5 - x_1 - x_3 - 2x_5 - x_7\\
+x_6 &= 1 + 5x_1 + 9x_3 + 21x_5 + 11x_7\\
+z &= 29 - x_1 - 2x_3 - 11x_5 - 6x_7
+\end{align*}
+
+ou $x_5, x_6, x_7$ sont les variables d'ecart des trois contraintes primales.
+
+\textbf{Regle de lecture :}
+
+Les variables d'ecart $x_5, x_6, x_7$ correspondent aux variables duales $y_1, y_2, y_3$ :
+$$x_5 \leftrightarrow y_1, \quad x_6 \leftrightarrow y_2, \quad x_7 \leftrightarrow y_3$$
+
+La solution duale optimale s'obtient en \textcolor{importantrouge}{\textbf{prenant les coefficients opposes des variables d'ecart dans l'equation de $z$}} :
+$$y_1^* = 11, \quad y_2^* = 0, \quad y_3^* = 6$$
+\end{methode}
+
+\begin{important}
+\textbf{Pourquoi cette correspondance fonctionne-t-elle ?}
+
+Dans le dictionnaire optimal, le coefficient de la variable d'ecart $x_{n+i}$ dans $z$ est $-\bar{c}_{n+i}$.
+
+La dualite forte (voir section suivante) garantit que ces valeurs correspondent exactement a la solution duale optimale.
+
+\textcolor{titrebleu}{\textbf{La methode du simplexe resout simultanement le primal et le dual !}}
+\end{important}
+
+\newpage
+\subsection{Theoreme de Dualite Forte}
+
+\begin{theoreme}
+\textbf{Theoreme 4 (Dualite forte) :}
+
+\textit{Si le probleme primal a une solution optimale $(x_1^*, x_2^*, \ldots, x_n^*)$, alors le probleme dual a une solution optimale $(y_1^*, y_2^*, \ldots, y_m^*)$ telle que :}
+$$\sum_{j=1}^{n} c_j x_j^* = \sum_{i=1}^{m} b_i y_i^*$$
+\end{theoreme}
+
+\begin{theoreme}
+\textbf{Corollaire 5 :}
+
+\begin{enumerate}
+    \item[\circled{i}] \textit{Le probleme primal a une solution optimale \textcolor{defvert}{\textbf{si et seulement si}} le probleme dual a une solution optimale.}
+    \item[\circled{ii}] \textit{Si le primal est \textcolor{importantrouge}{\textbf{non borne}}, alors le dual est \textcolor{importantrouge}{\textbf{infaisable}}.}
+    \item[\circled{iii}] \textit{Si le dual est \textcolor{importantrouge}{\textbf{non borne}}, alors le primal est \textcolor{importantrouge}{\textbf{infaisable}}.}
+\end{enumerate}
+\end{theoreme}
+
+\subsection{Tableau des Combinaisons Primal/Dual}
+
+\begin{important}
+\textbf{Toutes les combinaisons possibles entre primal et dual :}
+
+\begin{center}
+\begin{tabular}{l|c|c|c}
+\toprule
+& \textbf{Dual Optimal} & \textbf{Dual Infaisable} & \textbf{Dual Non Borne} \\
+\midrule
+\textbf{Primal Optimal} & \textcolor{defvert}{Possible} & Impossible & Impossible \\
+\textbf{Primal Infaisable} & Impossible & \textcolor{defvert}{Possible} & \textcolor{defvert}{Possible} \\
+\textbf{Primal Non Borne} & Impossible & \textcolor{defvert}{Possible} & Impossible \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textcolor{importantrouge}{\textbf{Attention :}} Primal infaisable ET dual infaisable est possible simultanement !
+\end{important}
+
+\begin{exemple}
+\textbf{Exemple d'auto-dualite (Self-Duality) :}
+
+Considerons :
+\begin{align*}
+\text{minimiser} \quad & z = 4x_1 + 7x_2 + 9x_3\\
+\text{sujet a} \quad & x_2 + 2x_3 \geq -4\\
+& -x_1 + 6x_3 \geq -7\\
+& 2x_1 + 6x_2 \leq 9\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+En ecrivant le dual, on obtient un probleme \textcolor{algoviolet}{\textbf{equivalent}} au primal. On parle de probleme \textbf{auto-dual}. Cela se produit lorsque la matrice des contraintes est \textcolor{importantrouge}{\textbf{antisymetrique}} ($A^T = -A$).
+
+\textbf{Consequence :} Primal et dual peuvent etre infaisables en meme temps dans ce cas.
+\end{exemple}
+
+%=============================================
+\section{Les Ecarts Complementaires}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Definition des Conditions d'Ecarts Complementaires}
+
+\begin{definition}
+\textbf{Conditions d'ecarts complementaires :}
+
+Soient $x^* \in \mathbb{R}^n$ et $y^* \in \mathbb{R}^m$. On dit qu'ils satisfont les \textcolor{defvert}{\textbf{conditions d'ecarts complementaires}} si :
+
+\begin{align}
+x_j^* = 0 \quad \text{ou} \quad \sum_{i=1}^{m} a_{ij} y_i^* = c_j \quad \text{(ou les deux)} &\quad \text{pour } j = 1, 2, \ldots, n \tag{1}\\[6pt]
+\sum_{j=1}^{n} a_{ij} x_j^* = b_i \quad \text{ou} \quad y_i^* = 0 \quad \text{(ou les deux)} &\quad \text{pour } i = 1, 2, \ldots, m \tag{2}
+\end{align}
+\end{definition}
+
+\begin{notecours}
+\textbf{Interpretation intuitive des deux conditions :}
+
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Condition (1) :}} Pour chaque variable primale, soit elle est nulle ($x_j^* = 0$), soit la variable d'ecart de la contrainte duale correspondante est nulle (la contrainte duale est \textbf{saturee}).
+    \item \textcolor{defvert}{\textbf{Condition (2) :}} Pour chaque contrainte primale, soit sa variable d'ecart est nulle (contrainte \textbf{saturee}), soit la variable duale correspondante est nulle ($y_i^* = 0$).
+\end{itemize}
+
+En d'autres termes : \textcolor{importantrouge}{\textbf{une variable et son ecart dual ne peuvent etre simultanement strictement positifs.}}
+\end{notecours}
+
+\newpage
+\subsection{Theoreme des Ecarts Complementaires}
+
+\begin{theoreme}
+\textbf{Theoreme 6 (Theoreme des ecarts complementaires) :}
+
+\textit{Soient $x^*$ et $y^*$ des solutions realisables pour les problemes primal et dual, respectivement. Les conditions d'ecarts complementaires sont des conditions \textcolor{defvert}{necessaires et suffisantes} pour l'optimalite simultanee de $x^*$ et $y^*$.}
+\end{theoreme}
+
+\begin{methode}
+\textbf{Preuve detaillee :}
+
+L'expression suivante (issue de la preuve de la dualite faible) :
+$$\sum_{j=1}^n c_j x_j^* \leq \sum_{j=1}^n \left(\sum_{i=1}^m a_{ij} y_i^*\right) x_j^* = \sum_{i=1}^m \left(\sum_{j=1}^n a_{ij} x_j^*\right) y_i^* \leq \sum_{i=1}^m b_i y_i^*$$
+
+est une egalite partout \textcolor{importantrouge}{\textbf{si et seulement si}} :
+
+\begin{align*}
+c_j x_j^* &= \left(\sum_{i=1}^m a_{ij} y_i^*\right) x_j^* \quad \text{pour } j = 1, 2, \ldots, n \quad \Rightarrow \textbf{ Condition (1)}\\[6pt]
+\left(\sum_{j=1}^n a_{ij} x_j^*\right) y_i^* &= b_i y_i^* \quad \text{pour } i = 1, 2, \ldots, m \quad \Rightarrow \textbf{ Condition (2)}
+\end{align*}
+
+Par le theoreme de dualite forte, cette egalite est necessaire et suffisante pour l'optimalite simultanee. $\square$
+\end{methode}
+
+\subsection{Forme Plus Applicable}
+
+\begin{theoreme}
+\textbf{Theoreme 7 (Forme pratique) :}
+
+\textit{Une solution realisable $x^*$ du probleme primal est optimale si et seulement si il existe des nombres $y_1^*, y_2^*, \ldots, y_m^*$ tels que :}
+
+\textbf{Conditions d'ecarts complementaires :}
+\begin{align*}
+\sum_{i=1}^{m} a_{ij} y_i^* &= c_j \quad \text{chaque fois que } x_j^* > 0\\
+y_i^* &= 0 \quad \text{chaque fois que } \sum_{j=1}^{n} a_{ij} x_j^* < b_i
+\end{align*}
+
+\textbf{et $y^*$ est une solution duale :}
+\begin{align*}
+\sum_{i=1}^{m} a_{ij} y_i^* &\geq c_j \quad \text{pour } j = 1, 2, \ldots, n\\
+y_i^* &\geq 0 \quad \text{pour } i = 1, 2, \ldots, m
+\end{align*}
+\end{theoreme}
+
+\begin{astuce}
+\textbf{Usage pratique :}
+
+Ce theoreme permet de \textcolor{defvert}{\textbf{verifier l'optimalite}} d'une solution proposee sans executer la methode du simplexe. La procedure est :
+
+\begin{enumerate}
+    \item Verifier que $x^*$ est une solution primale realisable
+    \item Utiliser les conditions (1) et (2) pour deduire les valeurs de $y^*$
+    \item Verifier que $y^*$ est une solution duale realisable
+    \item Si les trois conditions sont remplies : \textcolor{defvert}{\textbf{$x^*$ et $y^*$ sont optimales !}}
+\end{enumerate}
+\end{astuce}
+
+\newpage
+\subsection{Theoreme d'Unicite}
+
+\begin{theoreme}
+\textbf{Theoreme 8 (Unicite de la solution duale associee) :}
+
+\textit{Si $x^*$ est une solution de base primale \textcolor{defvert}{non degeneree}, alors le systeme d'equations du Theoreme 7 a une \textcolor{defvert}{solution unique}.}
+\end{theoreme}
+
+\begin{important}
+\textbf{Implication pratique :}
+
+La strategie de verification par les ecarts complementaires est \textcolor{importantrouge}{\textbf{applicable uniquement}} si le systeme du Theoreme 7 a une solution unique, ce qui est garanti lorsque $x^*$ est non degeneree.
+
+En cas de degenerescence, plusieurs solutions duales peuvent correspondre a la meme solution primale optimale.
+\end{important}
+
+%=============================================
+\section{Exemples Detailles : Verification par les Ecarts Complementaires}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Probleme d'Application}
+
+\begin{exemple}
+\textbf{Probleme \#4 -- Verification de solutions candidates :}
+
+\begin{align*}
+\text{maximiser} \quad & z = -x_1 - 2x_2\\
+\text{sujet a} \quad & -3x_1 + x_2 \leq -1\\
+& x_1 - x_2 \leq 1\\
+& -2x_1 + 7x_2 \leq 6\\
+& 9x_1 - 4x_2 \leq 6\\
+& -5x_1 + 2x_2 \leq -3\\
+& 7x_1 - 3x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+On pretend que la solution optimale est $x_1^* = \frac{3}{5}$, $x_2^* = 0$.
+\end{exemple}
+
+\begin{methode}
+\textbf{Construction du dual de ce probleme :}
+
+\begin{align*}
+\text{minimiser} \quad & w = -y_1 + y_2 + 6y_3 + 6y_4 - 3y_5 + 6y_6\\
+\text{sujet a} \quad & -3y_1 + y_2 - 2y_3 + 9y_4 - 5y_5 + 7y_6 \geq -1\\
+& y_1 - y_2 + 7y_3 - 4y_4 + 2y_5 - 3y_6 \geq -2\\
+& y_1, y_2, y_3, y_4, y_5, y_6 \geq 0
+\end{align*}
+\end{methode}
+
+\newpage
+\subsection{Premiere Affirmation : Verification par les Ecarts Complementaires}
+
+\begin{exemple}
+\textbf{Affirmation 1 :}
+
+$x_1^* = \frac{3}{5}$, $x_2^* = 0$ et $y_1^* = 0$, $y_2^* = 0$, $y_3^* = 0$, $y_4^* = 0$, $y_5^* = \frac{1}{5}$, $y_6^* = 0$ sont des solutions optimales pour le primal et le dual.
+
+\textbf{Tableau de verification :}
+
+\begin{center}
+\begin{tabular}{l|c||l|c}
+\toprule
+\textbf{Variable primale} & \textbf{Valeur} & \textbf{Variable duale} & \textbf{Valeur} \\
+\midrule
+$x_3$ (ecart contr.1) & $\frac{4}{5}$ & $y_1$ & $0$ \\
+$x_4$ (ecart contr.2) & $\frac{2}{5}$ & $y_2$ & $0$ \\
+$x_5$ (ecart contr.3) & $\frac{36}{5}$ & $y_3$ & $0$ \\
+$x_6$ (ecart contr.4) & $\frac{3}{5}$ & $y_4$ & $0$ \\
+$x_7$ (ecart contr.5) & $0$ & $y_5$ & $\frac{1}{5}$ \\
+$x_8$ (ecart contr.6) & $\frac{9}{5}$ & $y_6$ & $0$ \\
+\midrule
+$x_1$ & $\frac{3}{5}$ & $y_7$ (ecart dual c.1) & $0$ \\
+$x_2$ & $0$ & $y_8$ (ecart dual c.2) & $\frac{12}{5}$ \\
+\midrule
+$z$ (primal) & $-\frac{3}{5}$ & $w$ (dual) & $-\frac{3}{5}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Conditions d'ecarts complementaires verifiees :}
+\begin{itemize}
+    \item Pour chaque contrainte primale non saturee ($x_3, x_4, x_5, x_6, x_8 > 0$), la variable duale correspondante est bien 0 \checkmark
+    \item $x_7 = 0$ (contrainte 5 saturee) et $y_5 = \frac{1}{5} > 0$ \checkmark
+    \item $x_1 = \frac{3}{5} > 0$ et $y_7 = 0$ (contrainte duale 1 saturee) \checkmark
+    \item $x_2 = 0$ et $y_8 > 0$ (la contrainte duale 2 n'est pas saturee) \checkmark
+    \item $z^* = w^* = -\frac{3}{5}$ \checkmark
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Conclusion : Cette affirmation est VRAIE ! Les deux solutions sont optimales.}}
+\end{exemple}
+\vspace{0.5cm}
+\subsubsection*{Explications Détaillées : De la solution primale à la vérification}
+
+Cette section détaille le raisonnement mathématique caché derrière l'affirmation 1 et la construction du tableau de vérification.
+
+\paragraph{1. Comment a-t-on "deviné" la solution duale candidate ?}
+Le théorème des écarts complémentaires nous permet de déduire la solution optimale du dual uniquement à partir de celle du primal ($x_1^* = \frac{3}{5}, x_2^* = 0$), sans avoir à résoudre le dual de zéro. Ce théorème repose sur deux règles fondamentales :
+
+\vspace{0.3cm}
+\noindent\textbf{Règle A : Contraintes primales non saturées $\implies$ Variables duales nulles} \\
+Si l'on remplace les valeurs de $x^*$ dans les contraintes du primal, on observe quelles contraintes ont un "reste" (non saturées) et lesquelles atteignent exactement leur limite (saturées) :
+\begin{itemize}
+    \item \textbf{Contrainte 1 :} $-3(\frac{3}{5}) + 0 = -\frac{9}{5}$. Comme $-\frac{9}{5} < -1$, la contrainte n'est pas saturée $\implies y_1 = 0$.
+    \item Par le même calcul, les contraintes \textbf{2, 3, 4 et 6} sont strictement inférieures à leur second membre $\implies y_2 = 0, y_3 = 0, y_4 = 0, y_6 = 0$.
+    \item \textbf{Contrainte 5 :} $-5(\frac{3}{5}) + 2(0) = -3$. La limite est exactement atteinte ($-3 = -3$). C'est la seule contrainte saturée, donc seule la variable $y_5$ peut être strictement positive.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent\textbf{Règle B : Variables primales strictement positives $\implies$ Contraintes duales saturées} \\
+Puisque $x_1^* = \frac{3}{5}$, ce qui est strictement supérieur à $0$, la \textbf{première contrainte du dual} (qui correspond à $x_1$) doit obligatoirement être saturée. Le symbole $\geq$ devient une égalité stricte $=$ :
+$$ -3y_1 + y_2 - 2y_3 + 9y_4 - 5y_5 + 7y_6 = -1 $$
+
+Puisque nous savons grâce à la Règle A que toutes les variables $y$ (sauf $y_5$) valent $0$, l'équation se simplifie radicalement :
+$$ -5y_5 = -1 \implies y_5 = \frac{1}{5} $$
+C'est ainsi que l'on obtient la solution duale candidate complète : $y_5^* = \frac{1}{5}$ et tous les autres $y^* = 0$.
+
+\paragraph{2. Comment calculer les valeurs du tableau de vérification ?}
+Le tableau met en évidence les "variables d'écart", c'est-à-dire la différence entre les limites imposées par le problème et ce qui est réellement consommé par nos solutions candidates.
+
+\vspace{0.3cm}
+\noindent\textbf{Pour le bloc Primal (écarts $x_3$ à $x_8$) :} \\
+Les contraintes primales sont de type $\leq$. L'écart se calcule donc par : $\text{Limite (droite)} - \text{Valeur calculée (gauche)}$.
+\begin{itemize}
+    \item \textit{Exemple pour l'écart de la contrainte 1 ($x_3$) :}
+    $$ -1 - \left( -3\left(\frac{3}{5}\right) + 0 \right) = -1 - \left(-\frac{9}{5}\right) = -1 + \frac{9}{5} = \frac{4}{5} $$
+    \item \textit{Exemple pour l'écart de la contrainte 5 ($x_7$) :}
+    $$ -3 - \left( -5\left(\frac{3}{5}\right) + 0 \right) = -3 - (-3) = 0 $$
+    (L'écart est bien nul car la contrainte est saturée).
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent\textbf{Pour le bloc Dual (écarts $y_7$ à $y_8$) :} \\
+Les contraintes duales sont de type $\geq$. L'écart se calcule dans le sens inverse : $\text{Valeur calculée (gauche)} - \text{Limite (droite)}$.
+\begin{itemize}
+    \item \textit{Exemple pour l'écart dual de la contrainte 2 ($y_8$) :} En utilisant $y_5 = \frac{1}{5}$ (et les autres à $0$), on évalue la partie gauche de la 2ème contrainte duale : $2\left(\frac{1}{5}\right) = \frac{2}{5}$. \\
+    L'écart est donc :
+    $$ \frac{2}{5} - (-2) = \frac{2}{5} + \frac{10}{5} = \frac{12}{5} $$
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent La conclusion du tableau confirme la théorie : à chaque fois qu'une variable est strictement positive (comme $x_1$ ou $y_5$), la variable d'écart qui lui fait face de l'autre côté du miroir vaut exactement $0$.
+\newpage
+\subsection{Deuxieme Affirmation : Solution Duale Infaisable}
+
+\begin{exemple}
+\textbf{Affirmation 2 :}
+
+$x_1^* = \frac{3}{5}$, $x_2^* = 0$ et $y_1^* = \frac{1}{5}$, $y_2^* = 0$, $y_3^* = 0$, $y_4^* = 0$, $y_5^* = \frac{2}{15}$, $y_6^* = 0$ sont des solutions optimales.
+
+\textbf{Verification :}
+
+En calculant la valeur de la variable d'ecart $y_7$ de la premiere contrainte duale :
+$$y_7 = -3y_1 + y_2 - 2y_3 + 9y_4 - 5y_5 + 7y_6 - (-1) = -\frac{3}{5} \cdot \frac{1}{5} - \frac{5 \cdot 2}{15} + 1 = -\frac{4}{15} < 0$$
+
+\textcolor{importantrouge}{\textbf{La premiere contrainte duale n'est pas satisfaite !}} $y_7 = -\frac{4}{15} < 0$.
+
+\textcolor{importantrouge}{\textbf{Conclusion : Cette affirmation est FAUSSE. La solution duale proposee n'est pas realisable.}}
+\end{exemple}
+
+\subsection{Troisieme Affirmation : Solution Primale Infaisable}
+
+\begin{exemple}
+\textbf{Affirmation 3 :}
+
+$x_1^* = \frac{1}{5}$, $x_2^* = \frac{1}{5}$ et $y_1^* = 0$, $y_2^* = 0$, $y_3^* = 0$, $y_4^* = 0$, $y_5^* = \frac{1}{5}$, $y_6^* = 0$ sont des solutions optimales.
+
+\textbf{Verification :}
+
+Calcul de la variable d'ecart de la premiere contrainte primale :
+$$x_3 = -1 - (-3 \cdot \frac{1}{5} + \frac{1}{5}) = -1 + \frac{2}{5} = -\frac{3}{5} < 0$$
+
+\textcolor{importantrouge}{\textbf{La premiere contrainte primale n'est pas satisfaite !}}
+
+Calcul de la variable d'ecart de la cinquieme contrainte primale :
+$$x_7 = -3 - (-5 \cdot \frac{1}{5} + 2 \cdot \frac{1}{5}) = -3 + 1 - \frac{2}{5} = -\frac{12}{5} < 0$$
+
+\textcolor{importantrouge}{\textbf{Conclusion : Cette affirmation est FAUSSE. La solution primale proposee n'est pas realisable.}}
+\end{exemple}
+
+%=============================================
+\section{Resume et Points Cles}
+%=============================================
+
+\begin{important}
+\textbf{Recapitulatif de la theorie de la dualite :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Construction du dual :}}
+    \begin{itemize}
+        \item Utiliser le tableau de correspondance primal/dual
+        \item Maximisation $\leftrightarrow$ minimisation ; contrainte $\leq$ $\leftrightarrow$ variable $\geq 0$
+        \item Le dual du dual est le primal
+    \end{itemize}
+    
+    \item \textcolor{defvert}{\textbf{Dualite faible :}}
+    \begin{itemize}
+        \item Toute solution primale $\leq$ toute solution duale
+        \item Si les deux valeurs sont egales, les deux solutions sont optimales
+    \end{itemize}
+    
+    \item \textcolor{algoviolet}{\textbf{Dualite forte :}}
+    \begin{itemize}
+        \item Si le primal est optimal, le dual est optimal, et les valeurs optimales sont egales
+        \item La solution duale optimale se lit dans le dictionnaire primal optimal
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Ecarts complementaires :}}
+    \begin{itemize}
+        \item Outil de verification d'optimalite sans relancer le simplexe
+        \item Conditions necessaires ET suffisantes pour l'optimalite simultanee
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Retenir le tableau des combinaisons :}
+
+\begin{center}
+\begin{tabular}{l|ccc}
+\toprule
+ & Dual Optimal & Dual Infaisable & Dual Non Borne \\
+\midrule
+\textbf{Primal Optimal} & \textcolor{defvert}{\checkmark} & \ding{55} & \ding{55} \\
+\textbf{Primal Infaisable} & \ding{55} & \textcolor{defvert}{\checkmark} & \textcolor{defvert}{\checkmark} \\
+\textbf{Primal Non Borne} & \ding{55} & \textcolor{defvert}{\checkmark} & \ding{55} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textcolor{importantrouge}{\textbf{Rappel :}} Les deux problemes peuvent etre infaisables simultanement !
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Exercices}
+%=============================================
+
+\begin{exemple}
+\textbf{Exercice 1 -- Ecriture du dual}
+
+Ecrire le dual du probleme primal suivant :
+\begin{align*}
+\text{maximiser} \quad & z = 2x_1 + 3x_2 - x_3\\
+\text{sujet a} \quad & x_1 + x_2 + x_3 \leq 10\\
+& 2x_1 - x_2 + 3x_3 \leq 15\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+\begin{enumerate}
+    \item Ecrire le dual
+    \item Verifier que le dual du dual est bien le primal
+    \item Si on vous donne la solution primale $x_1^* = 5, x_2^* = 5, x_3^* = 0$, utiliser les ecarts complementaires pour trouver la solution duale optimale
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 -- Correspondance primal/dual avancee}
+
+Ecrire le dual des problemes suivants :
+
+\textbf{a)}
+\begin{align*}
+\text{minimiser} \quad & z = 3x_1 + 5x_2\\
+\text{sujet a} \quad & x_1 + 2x_2 \geq 4\\
+& 2x_1 + x_2 \geq 3\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{b)}
+\begin{align*}
+\text{maximiser} \quad & z = x_1 + 2x_2\\
+\text{sujet a} \quad & x_1 + x_2 = 5\\
+& x_1 - x_2 \leq 3\\
+& x_1 \geq 0, \quad x_2 \text{ libre}
+\end{align*}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 3 -- Verification par les ecarts complementaires}
+
+Considerons le probleme :
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 4x_2\\
+\text{sujet a} \quad & 6x_1 + 4x_2 \leq 24\\
+& x_1 + 2x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+Quelqu'un affirme que $x_1^* = 3, x_2^* = \frac{3}{2}$ est la solution optimale.
+
+\begin{enumerate}
+    \item Ecrire le dual de ce probleme
+    \item En utilisant les conditions d'ecarts complementaires, trouver la solution duale correspondante
+    \item Verifier que cette solution duale est realisable
+    \item Conclure sur l'optimalite de $x^*$
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 4 -- Analyse de combinaisons primal/dual}
+
+Pour chacun des cas suivants, indiquer si la situation est \textbf{possible ou impossible}, et justifier :
+
+\begin{enumerate}
+    \item Le primal a une solution optimale de valeur 10 et le dual a une solution optimale de valeur 8.
+    \item Le primal est non borne et le dual a une solution optimale de valeur 5.
+    \item Le primal est infaisable et le dual est infaisable.
+    \item Le primal a une solution realisable de valeur 7 et le dual a une solution realisable de valeur 9.
+    \item Le primal est non borne et le dual est non borne.
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 5 -- Lecture de la solution duale dans le dictionnaire}
+
+Apres resolution par le simplexe, on obtient le dictionnaire optimal suivant pour un probleme a 3 contraintes et 2 variables de decision ($n=2$, $m=3$) :
+\begin{align*}
+x_1 &= 4 - 2x_3 + x_5\\
+x_2 &= 1 + x_3 - x_4\\
+x_3 &= 2 - x_4 + 3x_5 - x_6\\
+z &= 15 - 3x_4 - 2x_5 - 4x_6
+\end{align*}
+
+ou $x_3, x_4, x_5$ sont les variables d'ecart primales et $x_6$ est la troisieme variable d'ecart.
+
+\begin{enumerate}
+    \item Donner la solution primale optimale
+    \item Lire la solution duale optimale $y_1^*, y_2^*, y_3^*$ dans ce dictionnaire
+    \item Verifier les conditions d'ecarts complementaires
+\end{enumerate}
+\end{exemple}
+
+\end{document}

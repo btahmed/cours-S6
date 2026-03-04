@@ -1,0 +1,534 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning}
+\geometry{margin=2.5cm}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+\newtcolorbox{correction}{colback=fondvert,colframe=defvert,fonttitle=\bfseries,title=Correction,arc=3mm}
+\newtcolorbox{enonce}{colback=fondjaune,colframe=exempleorange,fonttitle=\bfseries,title=Enonce,arc=3mm}
+\newtcolorbox{important}{colback=white,colframe=importantrouge,fonttitle=\bfseries,title=Important,arc=3mm}
+\newtcolorbox{astuce}{colback=fondbleu,colframe=titrebleu,fonttitle=\bfseries,title=A savoir,arc=3mm}
+\newtcolorbox{methode}{colback=fondbleu,colframe=algoviolet,fonttitle=\bfseries,title=Methode,arc=3mm}
+
+\usepackage{titlesec}
+\titleformat{\section}{\color{titrebleu}\normalfont\Large\bfseries}{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}{\color{defvert}\normalfont\large\bfseries}{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Corrections des Exercices}\\[0.5em]
+\large\color{defvert}La Methode du Simplexe Revise\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Universite Clermont Auvergne\\
+\small Clermont Auvergne INP - ISIMA}
+\date{\large Version 2024-2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================
+\section{Exercice 1 -- Formulation Matricielle}
+%=============================================
+
+\begin{enonce}
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2 + 5x_3\\
+\text{sujet a} \quad & x_1 + 2x_2 + x_3 \leq 6\\
+& 2x_1 + x_2 + 3x_3 \leq 10\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+Variables d'ecart $x_4, x_5$. Base proposee $\mathcal{B} = \{x_1, x_3\}$.
+\end{enonce}
+
+\subsection{Question 1 -- Ecriture des matrices}
+
+\begin{correction}
+Les colonnes de $A$ associees aux variables ($x_1$ a $x_5$) sont :
+$$\mathbf{a}_1 = \begin{pmatrix}1\\2\end{pmatrix},\quad
+\mathbf{a}_2 = \begin{pmatrix}2\\1\end{pmatrix},\quad
+\mathbf{a}_3 = \begin{pmatrix}1\\3\end{pmatrix},\quad
+\mathbf{a}_4 = \begin{pmatrix}1\\0\end{pmatrix},\quad
+\mathbf{a}_5 = \begin{pmatrix}0\\1\end{pmatrix}$$
+
+\textbf{Matrice de base} (colonnes de $x_1$ et $x_3$) :
+$$B = \begin{pmatrix}1 & 1\\2 & 3\end{pmatrix}$$
+
+\textbf{Vecteurs associes a la base :}
+$$\mathbf{c}_B = \begin{pmatrix}3\\5\end{pmatrix} \quad \text{(coefficients objectif de } x_1, x_3\text{)}$$
+
+\textbf{Variables hors-base :} $x_2, x_4, x_5$
+
+$$A_N = \begin{pmatrix}2 & 1 & 0\\1 & 0 & 1\end{pmatrix}, \qquad \mathbf{c}_N = \begin{pmatrix}2\\0\\0\end{pmatrix}$$
+\end{correction}
+
+\subsection{Question 2 -- Valeurs des variables de base}
+
+\begin{correction}
+On calcule $B^{-1}$ :
+$$\det(B) = 1\cdot 3 - 1\cdot 2 = 1 \qquad \Rightarrow \qquad B^{-1} = \begin{pmatrix}3 & -1\\-2 & 1\end{pmatrix}$$
+
+Valeurs des variables de base :
+$$\bar{\mathbf{x}}_B = B^{-1}\mathbf{b} = \begin{pmatrix}3 & -1\\-2 & 1\end{pmatrix}\begin{pmatrix}6\\10\end{pmatrix} = \begin{pmatrix}18-10\\-12+10\end{pmatrix} = \begin{pmatrix}8\\-2\end{pmatrix}$$
+
+Donc $x_1 = 8$ et $x_3 = -2$.
+
+\begin{important}
+La base $\mathcal{B} = \{x_1, x_3\}$ donne une solution \textcolor{importantrouge}{\textbf{non realisable}} car $x_3 = -2 < 0$.
+
+Cela signifie que cette base ne correspond pas a un sommet realisable du polyedre. Le simplexe revise doit partir d'une base realisable (par exemple les variables d'ecart $\{x_4, x_5\}$). On poursuit cependant les calculs pour s'exercer sur la methode.
+\end{important}
+\end{correction}
+
+\subsection{Question 3 -- Solution duale courante}
+
+\begin{correction}
+On resout $\mathbf{y}^T B = \mathbf{c}_B^T$, c'est-a-dire :
+$$[y_1 \quad y_2]\begin{pmatrix}1 & 1\\2 & 3\end{pmatrix} = [3 \quad 5]$$
+
+Systeme :
+$$\begin{cases} y_1 + 2y_2 = 3\\ y_1 + 3y_2 = 5 \end{cases} \quad \Rightarrow \quad y_2 = 2, \quad y_1 = -1$$
+
+$$\textcolor{algoviolet}{\mathbf{y}^T = [-1 \quad 2]}$$
+
+\textbf{Remarque :} $y_1 = -1 < 0$ signifie que cette solution duale est egalement \textcolor{importantrouge}{\textbf{non realisable}} pour le dual. On peut le voir comme une confirmation que la base n'est pas optimale.
+\end{correction}
+
+\subsection{Question 4 -- Couts reduits}
+
+\begin{correction}
+On calcule $\bar{c}_j = c_j - \mathbf{y}^T \mathbf{a}_j$ pour chaque variable hors-base :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable & $c_j$ & $\mathbf{y}^T \mathbf{a}_j = [-1,2]\cdot\mathbf{a}_j$ & $\bar{c}_j$ \\
+\midrule
+$x_2$ & $2$ & $(-1)(2)+(2)(1) = -2+2 = 0$ & $2-0 = \mathbf{2 > 0}$ \\
+$x_4$ & $0$ & $(-1)(1)+(2)(0) = -1$ & $0-(-1) = \mathbf{1 > 0}$ \\
+$x_5$ & $0$ & $(-1)(0)+(2)(1) = 2$ & $0-2 = \mathbf{-2 < 0}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{correction}
+
+\subsection{Question 5 -- Conclusion}
+
+\begin{correction}
+Comme la base est non realisable, on ne peut pas conclure directement sur l'optimalite. On resout le PL depuis le debut avec la base initiale $\{x_4, x_5\}$.
+
+\textbf{Resolution complete par le simplexe revise :}
+
+\textbf{Base initiale $\{x_4, x_5\}$ :} $B = I_2$, $\mathbf{c}_B = \mathbf{0}$, $\bar{\mathbf{x}}_B = [6, 10]^T$, $z = 0$.
+
+$\mathbf{y}^T = \mathbf{0}$. Couts reduits : $\bar{c}_1 = 3$, $\bar{c}_2 = 2$, $\bar{c}_3 = 5$.
+
+$x_3$ entre ($\bar{c}_3 = 5$ max). $\mathbf{d} = I\cdot\mathbf{a}_3 = [1,3]^T$.
+
+Ratio test : $6/1 = 6$ et $10/3 \approx 3.33$. $x_5$ sort ($t = 10/3$).
+
+\textbf{Nouvelle base $\{x_4, x_3\}$ :}
+$$B = \begin{pmatrix}1 & 1\\0 & 3\end{pmatrix},\quad
+\bar{\mathbf{x}}_B = \begin{pmatrix}x_4\\x_3\end{pmatrix} = \begin{pmatrix}8/3\\10/3\end{pmatrix}, \quad z = 5 \cdot \frac{10}{3} = \frac{50}{3}$$
+
+$\mathbf{y}^T B = [0,5]$ : $y_1 = 0$, $3y_2 = 5 \Rightarrow y_2 = 5/3$.
+
+Couts reduits :
+\begin{itemize}
+\item $\bar{c}_1 = 3 - [0, 5/3]\cdot[1,2]^T = 3 - 10/3 = -1/3 < 0$
+\item $\bar{c}_2 = 2 - [0, 5/3]\cdot[2,1]^T = 2 - 5/3 = 1/3 > 0 \Rightarrow$ \textcolor{defvert}{\textbf{$x_2$ entre !}}
+\item $\bar{c}_5 = -5/3 < 0$
+\end{itemize}
+
+$x_2$ entre. $B^{-1} = \begin{pmatrix}1 & -1/3\\0 & 1/3\end{pmatrix}$.
+
+$\mathbf{d} = B^{-1}\mathbf{a}_2 = \begin{pmatrix}1 & -1/3\\0 & 1/3\end{pmatrix}\begin{pmatrix}2\\1\end{pmatrix} = \begin{pmatrix}5/3\\1/3\end{pmatrix}$
+
+Ratio test : $(8/3)/(5/3) = 8/5$ et $(10/3)/(1/3) = 10$. $x_4$ sort ($t = 8/5$).
+
+\textbf{Nouvelle base $\{x_2, x_3\}$ :}
+$$x_2 = \frac{8}{5},\quad x_3 = \frac{10}{3} - \frac{1}{3}\cdot\frac{8}{5} = \frac{50-8}{15} = \frac{42}{15} = \frac{14}{5}, \quad z = 2\cdot\frac{8}{5} + 5\cdot\frac{14}{5} = \frac{16+70}{5} = \frac{86}{5}$$
+
+$B = \begin{pmatrix}2 & 1\\1 & 3\end{pmatrix}$, $\mathbf{c}_B = [2,5]$. $\mathbf{y}^T B = [2,5]$ donne :
+$$2y_1+y_2=2,\quad y_1+3y_2=5 \Rightarrow y_1 = \frac{1}{5},\quad y_2 = \frac{8}{5}$$
+
+Couts reduits :
+\begin{itemize}
+\item $\bar{c}_1 = 3 - [1/5, 8/5]\cdot[1,2]^T = 3 - 17/5 = -2/5 < 0$
+\item $\bar{c}_4 = 0 - [1/5, 8/5]\cdot[1,0]^T = -1/5 < 0$
+\item $\bar{c}_5 = 0 - [1/5, 8/5]\cdot[0,1]^T = -8/5 < 0$
+\end{itemize}
+
+\textcolor{defvert}{\Large\textbf{Tous les couts reduits sont $\leq 0$ : solution optimale !}}
+
+$$\boxed{x_2^* = \frac{8}{5}, \quad x_3^* = \frac{14}{5}, \quad z^* = \frac{86}{5} = 17.2}$$
+
+Prix fantomes : $y_1^* = 1/5$ (contrainte 1), $y_2^* = 8/5$ (contrainte 2).
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 2 -- Deux Iterations Completes}
+%=============================================
+
+\begin{enonce}
+\begin{align*}
+\text{maximiser} \quad & z = 4x_1 + 3x_2\\
+\text{sujet a} \quad & x_1 + x_2 \leq 4\\
+& 2x_1 + x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+Base initiale : $\mathcal{B}_0 = \{x_3, x_4\}$ (variables d'ecart).
+\end{enonce}
+
+\subsection{Donnees initiales}
+
+\begin{correction}
+Avec les variables d'ecart $x_3$ et $x_4$ :
+
+$$A = \begin{pmatrix}1 & 1 & 1 & 0\\2 & 1 & 0 & 1\end{pmatrix}, \quad \mathbf{b} = \begin{pmatrix}4\\6\end{pmatrix}, \quad \mathbf{c} = \begin{pmatrix}4\\3\\0\\0\end{pmatrix}$$
+
+\textbf{Base $\mathcal{B}_0 = \{x_3, x_4\}$ :} $B_0 = I_2$, $\mathbf{c}_{B_0} = [0,0]^T$, $\bar{\mathbf{x}}_{B_0} = [4,6]^T$, $z = 0$.
+\end{correction}
+
+\subsection{Iteration 1}
+
+\begin{correction}
+\textbf{Etape \circled{1} :} $\mathbf{y}^T B_0 = \mathbf{c}_{B_0}^T \Rightarrow \mathbf{y}^T = [0 \quad 0]$
+
+\textbf{Etape \circled{2} :} Couts reduits des variables hors-base $x_1, x_2$ :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable & $c_j$ & $\mathbf{y}^T \mathbf{a}_j = [0,0]\cdot\mathbf{a}_j$ & $\bar{c}_j$ \\
+\midrule
+$x_1$ & $4$ & $0$ & $\textcolor{importantrouge}{\mathbf{4}}$ (max) \\
+$x_2$ & $3$ & $0$ & $3$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$\bar{c}_1 = 4 > 0$ : \textcolor{defvert}{\textbf{$x_1$ entre (cout reduit max).}}
+
+\textbf{Etape \circled{3} :} Resoudre $B_0 \mathbf{d} = \mathbf{a}_1 = [1,2]^T$ :
+$$I \cdot \mathbf{d} = \begin{pmatrix}1\\2\end{pmatrix} \Rightarrow \mathbf{d} = \begin{pmatrix}1\\2\end{pmatrix}$$
+
+\textbf{Etape \circled{4} :} Ratio test :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable de base & $\bar{x}_{B_i}$ & $d_i$ & Ratio $\bar{x}_{B_i}/d_i$ \\
+\midrule
+$x_3 = 4$ & $4$ & $1$ & $4$ \\
+$x_4 = 6$ & $6$ & $2$ & $\textcolor{importantrouge}{\mathbf{3}}$ (min) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$t^* = 3$. \textcolor{importantrouge}{\textbf{$x_4$ sort.}}
+
+\textbf{Etape \circled{5} :} Mise a jour :
+\begin{itemize}
+    \item $x_1 = 3$
+    \item $x_3 = 4 - 3\cdot 1 = 1$ (reste en base)
+    \item $z = 4 \times 3 = 12$
+    \item Nouveau basis heading : $(x_3, x_1)$
+    \item Nouvelle matrice de base : $B_1 = \begin{pmatrix}\mathbf{a}_3 & \mathbf{a}_1\end{pmatrix} = \begin{pmatrix}1 & 1\\0 & 2\end{pmatrix}$
+\end{itemize}
+\end{correction}
+
+\subsection{Iteration 2}
+
+\begin{correction}
+\textbf{Base $\mathcal{B}_1 = \{x_3, x_1\}$ :} $\mathbf{c}_{B_1} = [0,4]^T$, $\bar{\mathbf{x}}_{B_1} = [1,3]^T$, $z = 12$.
+
+\textbf{Etape \circled{1} :} Resoudre $\mathbf{y}^T B_1 = \mathbf{c}_{B_1}^T$ :
+$$[y_1 \quad y_2]\begin{pmatrix}1 & 1\\0 & 2\end{pmatrix} = [0 \quad 4]$$
+$$\begin{cases}y_1 = 0\\y_1 + 2y_2 = 4\end{cases} \Rightarrow \textcolor{algoviolet}{\mathbf{y}^T = [0 \quad 2]}$$
+
+\textbf{Etape \circled{2} :} Couts reduits des variables hors-base $x_2, x_4$ :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable & $c_j$ & $\mathbf{y}^T \mathbf{a}_j = [0,2]\cdot\mathbf{a}_j$ & $\bar{c}_j$ \\
+\midrule
+$x_2$ & $3$ & $[0,2]\cdot[1,1]^T = 2$ & $3 - 2 = \textcolor{importantrouge}{\mathbf{1 > 0}}$ \\
+$x_4$ & $0$ & $[0,2]\cdot[0,1]^T = 2$ & $0 - 2 = -2 \leq 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$\bar{c}_2 = 1 > 0$ : \textcolor{defvert}{\textbf{$x_2$ entre.}}
+
+\textbf{Etape \circled{3} :} Calcul de $B_1^{-1}$ :
+$$B_1 = \begin{pmatrix}1 & 1\\0 & 2\end{pmatrix} \Rightarrow B_1^{-1} = \frac{1}{2}\begin{pmatrix}2 & -1\\0 & 1\end{pmatrix} = \begin{pmatrix}1 & -1/2\\0 & 1/2\end{pmatrix}$$
+
+Resoudre $B_1 \mathbf{d} = \mathbf{a}_2 = [1,1]^T$ :
+$$\mathbf{d} = B_1^{-1}\mathbf{a}_2 = \begin{pmatrix}1 & -1/2\\0 & 1/2\end{pmatrix}\begin{pmatrix}1\\1\end{pmatrix} = \begin{pmatrix}1/2\\1/2\end{pmatrix}$$
+
+\textbf{Etape \circled{4} :} Ratio test :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable de base & $\bar{x}_{B_i}$ & $d_i$ & Ratio $\bar{x}_{B_i}/d_i$ \\
+\midrule
+$x_3 = 1$ & $1$ & $1/2$ & $\textcolor{importantrouge}{\mathbf{2}}$ (min) \\
+$x_1 = 3$ & $3$ & $1/2$ & $6$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$t^* = 2$. \textcolor{importantrouge}{\textbf{$x_3$ sort.}}
+
+\textbf{Etape \circled{5} :} Mise a jour :
+\begin{itemize}
+    \item $x_2 = 2$
+    \item $x_1 = 3 - 2\cdot\frac{1}{2} = 2$
+    \item $x_3 = 1 - 2\cdot\frac{1}{2} = 0$ (sort de la base)
+    \item $z = 4\times 2 + 3\times 2 = \mathbf{14}$
+    \item Nouveau basis heading : $(x_2, x_1)$
+    \item $B_2 = \begin{pmatrix}1 & 1\\1 & 2\end{pmatrix}$
+\end{itemize}
+\end{correction}
+
+\subsection{Test d'optimalite apres l'iteration 2}
+
+\begin{correction}
+\textbf{Base $\mathcal{B}_2 = \{x_2, x_1\}$ :} $\mathbf{c}_{B_2} = [3,4]^T$, $\bar{\mathbf{x}}_{B_2} = [2,2]^T$, $z = 14$.
+
+\textbf{Etape \circled{1} :} $\mathbf{y}^T B_2 = [3,4]$ :
+$$[y_1 \quad y_2]\begin{pmatrix}1 & 1\\1 & 2\end{pmatrix} = [3 \quad 4]$$
+$$\begin{cases}y_1 + y_2 = 3\\y_1 + 2y_2 = 4\end{cases} \Rightarrow y_2 = 1,\quad y_1 = 2 \quad \Rightarrow \quad \mathbf{y}^T = [2 \quad 1]$$
+
+\textbf{Etape \circled{2} :} Couts reduits de $x_3$ et $x_4$ :
+\begin{itemize}
+    \item $\bar{c}_3 = 0 - [2,1]\cdot[1,0]^T = -2 \leq 0$ \checkmark
+    \item $\bar{c}_4 = 0 - [2,1]\cdot[0,1]^T = -1 \leq 0$ \checkmark
+\end{itemize}
+
+\textcolor{defvert}{\Large\textbf{Tous les couts reduits sont $\leq 0$ : solution optimale atteinte en 2 iterations !}}
+
+\begin{center}
+\Large $\boxed{x_1^* = 2, \quad x_2^* = 2, \quad z^* = 14}$
+\end{center}
+
+\textbf{Verification :} Les deux contraintes sont saturees :
+$2 + 2 = 4$ \checkmark \quad et \quad $2(2) + 2 = 6$ \checkmark
+
+\textbf{Solution duale optimale :} $y_1^* = 2$, $y_2^* = 1$
+
+Verification dualite forte : $w^* = 4(2) + 6(1) = 14 = z^*$ \checkmark
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 3 -- Prix Fantomes et Analyse de Sensibilite}
+%=============================================
+
+\begin{enonce}
+Probleme de l'atelier (Section 3 du cours) :
+\begin{align*}
+\text{maximiser} \quad & z = 19x_1 + 13x_2 + 12x_3 + 17x_4\\
+\text{sujet a} \quad & 3x_1 + 2x_2 + x_3 + 2x_4 \leq 225 \quad (b_1: \text{travail})\\
+& x_1 + x_2 + x_3 + x_4 \leq 117 \quad (b_2: \text{metal})\\
+& 4x_1 + 3x_2 + 3x_3 + 4x_4 \leq 420 \quad (b_3: \text{bois})
+\end{align*}
+
+La solution optimale est atteinte apres une iteration, avec la base $\mathcal{B}^* = \{x_1, x_3, x_4\}$.
+\end{enonce}
+
+\begin{correction}
+\textbf{Rappel : verification que $\mathcal{B}^* = \{x_1, x_3, x_4\}$ est optimale.}
+
+La base $\{x_1, x_3, x_7\}$ (initiale) donne $y = [7/2, 17/2, 0]$ et revele que $x_4$ entre ($\bar{c}_4 = 3/2 > 0$) et $x_7$ sort. Apres cette iteration :
+
+$$B^* = \begin{pmatrix}3 & 1 & 2\\1 & 1 & 1\\4 & 3 & 4\end{pmatrix}, \quad \bar{\mathbf{x}}_{B^*} = \begin{pmatrix}x_1\\x_3\\x_4\end{pmatrix} = \begin{pmatrix}39\\48\\30\end{pmatrix}, \quad z^* = 19(39)+12(48)+17(30) = 1827$$
+
+\textbf{Calcul des prix fantomes optimaux} en resolvant $\mathbf{y}^{*T} B^* = \mathbf{c}_{B^*}^T = [19, 12, 17]$ :
+
+On developpe le systeme $\mathbf{y}^T [\ \mathbf{a}_1\ |\ \mathbf{a}_3\ |\ \mathbf{a}_4\ ] = [19,12,17]$ :
+$$\begin{cases}
+3y_1 + y_2 + 4y_3 = 19\\
+y_1 + y_2 + 3y_3 = 12\\
+2y_1 + y_2 + 4y_3 = 17
+\end{cases}$$
+
+Ligne 1 $-$ Ligne 3 : $y_1 = 2$
+
+Substitution dans Ligne 2 : $2 + y_2 + 3y_3 = 12 \Rightarrow y_2 + 3y_3 = 10$
+
+Substitution dans Ligne 1 : $6 + y_2 + 4y_3 = 19 \Rightarrow y_2 + 4y_3 = 13$
+
+Soustraction : $y_3 = 3$, puis $y_2 = 10 - 9 = 1$
+
+$$\textcolor{importantrouge}{\boxed{y_1^* = 2 \quad (\text{travail}), \qquad y_2^* = 1 \quad (\text{metal}), \qquad y_3^* = 3 \quad (\text{bois})}}$$
+
+\textbf{Verification} : $w^* = 225(2) + 117(1) + 420(3) = 450 + 117 + 1260 = 1827 = z^*$ \checkmark
+\end{correction}
+
+\subsection{Question 1 -- Interpretation economique}
+
+\begin{correction}
+\begin{itemize}
+    \item $y_1^* = 2$ : une heure de travail supplementaire permet d'augmenter le profit optimal de \textcolor{defvert}{\textbf{2 dollars}}. C'est la valeur marginale du temps de travail.
+    
+    \textit{Le profit rapporte par 1 heure extra equivaut au benefice net de produire une combinaison optimale de meubles supplementaires.}
+    
+    \item $y_2^* = 1$ : une unite de metal supplementaire permettrait d'augmenter le profit de \textcolor{defvert}{\textbf{1 dollar}}.
+    
+    \textit{Le metal a une faible valeur marginale car il est utilise de maniere moins intensive dans la production optimale.}
+    
+    \item $y_3^* = 3$ : une unite de bois supplementaire permet d'augmenter le profit de \textcolor{defvert}{\textbf{3 dollars}}.
+    
+    \textit{Le bois est la ressource la plus precieuse a la marge : la contrainte de bois est saturee et chaque unite supplementaire debloquerait une production plus importante.}
+\end{itemize}
+
+\textbf{Interpretation gestionnaire :} L'entreprise devrait etre prete a payer jusqu'a $y_i^*$ dollars en supplement du prix du marche pour obtenir une unite supplementaire de la ressource $i$.
+\end{correction}
+
+\subsection{Question 2 -- Acheter 5 heures de travail a 10\$/heure ?}
+
+\begin{correction}
+\textbf{Analyse cout/benefice :}
+
+Le prix fantome du travail est $y_1^* = 2$ dollars par heure. Cela signifie que chaque heure supplementaire augmente le profit de 2\$.
+
+\begin{itemize}
+    \item \textbf{Gain} en profit grâce aux 5 heures : $y_1^* \times 5 = 2 \times 5 = \$10$
+    \item \textbf{Cout} d'achat des 5 heures : $10 \times 5 = \$50$
+    \item \textbf{Benefice net} : $\$10 - \$50 = -\$40$
+\end{itemize}
+
+\textcolor{importantrouge}{\textbf{Conclusion : NON, il ne faut pas acheter ces heures.}}
+
+La valeur marginale d'une heure de travail ($y_1^* = 2\,\$/\text{heure}$) est bien inferieure au prix demande ($10\,\$/\text{heure}$). Le cout depasse largement le gain obtenu.
+\end{correction}
+
+\subsection{Question 3 -- Vendre 2 unites de metal a 6\$/unite ?}
+
+\begin{correction}
+\textbf{Analyse cout/benefice :}
+
+Vendre 2 unites de metal \textcolor{importantrouge}{\textbf{reduit}} la disponibilite : $t_2 = -2$ (on perd 2 unites).
+
+\begin{itemize}
+    \item \textbf{Perte} en profit due a la reduction de metal : $|y_2^* \times t_2| = 1 \times 2 = \$2$
+    \item \textbf{Revenu} de la vente : $6 \times 2 = \$12$
+    \item \textbf{Benefice net} : $-\$2 + \$12 = +\$10$
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Conclusion : OUI, il faut vendre le metal.}}
+
+Le prix de vente du metal ($6\,\$/\text{unite}$) est bien superieur a sa valeur marginale dans la production ($y_2^* = 1\,\$/\text{unite}$). L'entreprise gagne a vendre ce metal plutot que de l'utiliser en production.
+
+\textbf{Formule generale :} L'entreprise a interet a vendre la ressource $i$ si son prix de vente $p_i > y_i^*$.
+\end{correction}
+
+\subsection{Question 4 -- Impact si le bois passe de 420 a 430 unites ?}
+
+\begin{correction}
+La variation est $t_3 = +10$ unites de bois.
+
+D'apres le theoreme de sensibilite aux membres droits, pour des petites perturbations :
+$$\Delta z^* = y_3^* \times t_3 = 3 \times 10 = +\$30$$
+
+\textcolor{defvert}{\textbf{Le profit optimal augmente de 30\$, passant de 1827\$ a 1857\$.}}
+
+\textbf{Condition de validite :} Ce resultat est valable tant que la perturbation est suffisamment petite pour ne pas changer la base optimale. Si on augmente trop le bois, la contrainte de bois deviendrait non saturee et $y_3^* = 0$ (valeur marginale nulle).
+
+Pour trouver la plage de validite, il faudrait verifier que $\bar{\mathbf{x}}_{B^*}(t_3) = B^{*-1}(\mathbf{b} + t_3 \mathbf{e}_3) \geq \mathbf{0}$.
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 4 -- Interpretation des Couts Reduits}
+%=============================================
+
+\begin{enonce}
+Pourquoi le cout reduit de $x_2$ (bureaux) est-il negatif ($\bar{c}_2 = -5/2$) alors que le profit unitaire des bureaux est positif (\$13) ? La premiere iteration utilise la base initiale $\{x_1, x_3, x_7\}$ avec $\mathbf{y}^T = [7/2,\, 17/2,\, 0]$.
+\end{enonce}
+
+\begin{correction}
+\textbf{Calcul detaille du cout reduit de $x_2$ :}
+
+Un bureau ($x_2$) consomme :
+\begin{itemize}
+    \item 2 heures de travail
+    \item 1 unite de metal
+    \item 3 unites de bois
+\end{itemize}
+
+Avec les prix fantomes \textbf{temporaires} $y_1 = 7/2$ (travail), $y_2 = 17/2$ (metal), $y_3 = 0$ (bois), la \textbf{valeur des ressources consommees} par un bureau est :
+
+$$\mathbf{y}^T \mathbf{a}_2 = \frac{7}{2}(2) + \frac{17}{2}(1) + 0(3) = 7 + \frac{17}{2} + 0 = \frac{31}{2} = 15.5 \, \$$$
+
+Le cout reduit est donc :
+$$\bar{c}_2 = c_2 - \mathbf{y}^T \mathbf{a}_2 = 13 - 15.5 = -2.5 = -\frac{5}{2}$$
+
+\textbf{Interpretation economique :}
+
+\begin{center}
+\begin{tabular}{l|c}
+\toprule
+Profit apporte par un bureau & $+13\,\$$ \\
+Valeur des ressources consommees (aux prix fantomes) & $-15.5\,\$$ \\
+\midrule
+Benefice net (cout reduit) & $-2.5\,\$$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Le cout reduit negatif signifie que \textcolor{importantrouge}{\textbf{produire un bureau consomme des ressources dont la valeur (15.50\$) depasse le profit qu'il genere (13\$)}}.
+
+\begin{astuce}
+\textbf{D'ou vient la valeur elevee des ressources ?}
+
+Les prix fantomes $y_1 = 7/2$ et $y_2 = 17/2$ sont eleves car les ressources (travail et metal) sont \textbf{tres demandees} par les activites de base courantes (bibliotheques $x_1$ et chaises $x_3$).
+
+En particulier : une heure de travail vaut 3.50\$ car les bibliotheques rapportent 19\$ pour 3h de travail (soit 6.33\$/h en brut), et les chaises rapportent 12\$ pour 1h de travail (12\$/h en brut), ce qui rend le temps de travail precieux.
+
+Produire des bureaux a la place \textbf{reduirait le profit} car les bureaux utilisent ces ressources moins efficacement que les bibliotheques et les chaises.
+\end{astuce}
+
+\textbf{Coherence avec la theorie :}
+
+\begin{itemize}
+    \item Un cout reduit negatif ($\bar{c}_j < 0$) \textcolor{importantrouge}{\textbf{ne signifie pas}} que le produit $j$ est non rentable en absolu (son $c_j$ peut etre positif).
+    
+    \item Il signifie que ce produit \textcolor{importantrouge}{\textbf{est moins rentable}} que la combinaison des activites de base actuelles, a ressources egales.
+    
+    \item Le cout reduit est un \textbf{cout d'opportunite} : produire un bureau ``coute'' 15.50\$ en ressources qui pourraient etre utilisees plus avantageusement par les autres produits.
+    
+    \item En solution optimale, tous les couts reduits sont $\leq 0$, ce qui garantit qu'aucun changement de production ne peut ameliorer le profit.
+\end{itemize}
+\end{correction}
+
+\end{document}

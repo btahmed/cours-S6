@@ -1,0 +1,764 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning,matrix}
+\geometry{margin=2.5cm}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+\newtcolorbox{definition}{colback=fondvert,colframe=defvert,fonttitle=\bfseries,title=Definition,arc=3mm}
+\newtcolorbox{exemple}{colback=fondjaune,colframe=exempleorange,fonttitle=\bfseries,title=Exemple,arc=3mm}
+\newtcolorbox{important}{colback=white,colframe=importantrouge,fonttitle=\bfseries,title=Important,arc=3mm}
+\newtcolorbox{astuce}{colback=fondbleu,colframe=titrebleu,fonttitle=\bfseries,title=A savoir,arc=3mm}
+\newtcolorbox{methode}{colback=fondbleu,colframe=algoviolet,fonttitle=\bfseries,title=Methode,arc=3mm}
+\newtcolorbox{notecours}{colback=fondrose,colframe=importantrouge,fonttitle=\bfseries,title=Note de Cours,arc=3mm}
+\newtcolorbox{theoreme}{colback=fondgris,colframe=algoviolet,fonttitle=\bfseries,title=Theoreme,arc=3mm}
+
+\usepackage{titlesec}
+\titleformat{\section}{\color{titrebleu}\normalfont\Large\bfseries}{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}{\color{defvert}\normalfont\large\bfseries}{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}La Methode du Simplexe Revise}\\[0.5em]
+\large\color{defvert}Description Matricielle, Iterations et Interpretation Economique\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Prof. Herve KERIVIN, PhD\\
+\small Universite Clermont Auvergne\\
+Clermont Auvergne INP - ISIMA\\
+LIMOS UMR 6158 CNRS}
+\date{\large Version 2024-2025 - Cours 6}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================
+\section{Motivation : Pourquoi le Simplexe Revise ?}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Limites du Simplexe Standard}
+
+\begin{notecours}
+\textbf{Rappel -- Le simplexe standard :}
+
+La methode du simplexe standard met a jour un \textcolor{titrebleu}{\textbf{dictionnaire}} (ou un tableau) a chaque iteration. Cela implique de recalculer et stocker l'integralite de la matrice transformee.
+
+Pour des problemes de grande taille en pratique (des milliers de variables et de contraintes), cette approche est \textcolor{importantrouge}{\textbf{couteuseuse en memoire et en calcul}}.
+\end{notecours}
+
+\begin{astuce}
+\textbf{Observation fondamentale :}
+
+\begin{itemize}
+    \item A chaque iteration, seule une \textcolor{defvert}{\textbf{petite partie}} du dictionnaire est reellement utilisee
+    \item La partie utilisee peut etre \textcolor{titrebleu}{\textbf{reconstruite a partir des donnees originales}} a tout moment
+    \item Il suffit de connaître la base courante $B$ !
+\end{itemize}
+\end{astuce}
+
+\begin{definition}
+\textbf{Methode du simplexe revise :}
+
+Implementation de la methode du simplexe qui travaille avec les \textcolor{defvert}{\textbf{donnees originales du probleme}} (matrice $A$, vecteurs $b$ et $c$) et la base courante $B$, \textcolor{importantrouge}{\textbf{sans maintenir de dictionnaire ou tableau transforme}}.
+\end{definition}
+
+\begin{important}
+\textbf{Avantages en pratique :}
+
+\begin{itemize}
+    \item Sur les problemes \textcolor{titrebleu}{\textbf{grands et creux}} (sparse) typiques des applications, le simplexe revise est \textbf{beaucoup plus rapide} que le simplexe standard
+    \item \textcolor{defvert}{\textbf{Tous les logiciels modernes}} de resolution de PL utilisent une forme du simplexe revise
+    \item Chaque iteration requiert la resolution de \textcolor{algoviolet}{\textbf{deux systemes lineaires}} (pas de zero) plutot que la mise a jour complete du tableau
+    \item Les matrices creuses restent creuses (pas de fill-in artificiel)
+\end{itemize}
+\end{important}
+
+\newpage
+%=============================================
+\section{Description Matricielle du Simplexe}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Formulation Matricielle du PL}
+
+\begin{methode}
+\textbf{Mise en forme matricielle du probleme standard :}
+
+Considerons le PL sous forme standard :
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_j x_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij} x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+Apres introduction des variables d'ecart $x_{n+1}, \ldots, x_{n+m} \geq 0$, le probleme devient :
+$$\text{maximiser } z = \mathbf{c}^T \mathbf{x} \quad \text{sujet a } A\mathbf{x} = \mathbf{b}, \quad \mathbf{x} \geq \mathbf{0}$$
+
+ou :
+\begin{itemize}
+    \item $A$ est une matrice $m \times (n+m)$ : les $n$ premieres colonnes sont les contraintes originales, les $m$ dernieres forment la \textcolor{defvert}{\textbf{matrice identite}} $I_m$ (colonnes des variables d'ecart)
+    \item $\mathbf{x} \in \mathbb{R}^{n+m}$ : vecteur de toutes les variables
+    \item $\mathbf{b} \in \mathbb{R}^m$ : membres droits
+    \item $\mathbf{c} \in \mathbb{R}^{n+m}$ : coefficients objectif (les $m$ derniers sont nuls)
+\end{itemize}
+\end{methode}
+
+\begin{exemple}
+\textbf{Exemple de reference :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 4x_2 + 3x_3\\
+\text{sujet a} \quad & 2x_1 + 3x_2 + x_3 \leq 5\\
+& 4x_1 + x_2 + 2x_3 \leq 11\\
+& 3x_1 + 4x_2 + 2x_3 \leq 8\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+Avec les variables d'ecart $x_4, x_5, x_6$ :
+
+$$A = \begin{pmatrix} 2 & 3 & 1 & 1 & 0 & 0 \\ 4 & 1 & 2 & 0 & 1 & 0 \\ 3 & 4 & 2 & 0 & 0 & 1 \end{pmatrix}, \quad \mathbf{b} = \begin{pmatrix} 5 \\ 11 \\ 8 \end{pmatrix}, \quad \mathbf{c} = \begin{pmatrix} 5 \\ 4 \\ 3 \\ 0 \\ 0 \\ 0 \end{pmatrix}$$
+\end{exemple}
+
+\newpage
+\subsection{Partition Base / Hors-Base}
+
+\begin{definition}
+\textbf{Partition associee a une base $B$ :}
+
+Chaque solution de base realisable induit une partition de $\mathbf{x}$, $A$ et $\mathbf{c}$ en parties basique et non-basique :
+
+\begin{center}
+\begin{tabular}{l|l|l}
+\toprule
+\textbf{Element} & \textbf{Partie basique} & \textbf{Partie non-basique} \\
+\midrule
+Variables & $\mathbf{x}_B$ ($m$ variables) & $\mathbf{x}_N$ ($n$ variables) \\
+Colonnes de $A$ & $B = A_B$ (matrice $m \times m$) & $A_N$ (matrice $m \times n$) \\
+Coefficients objectif & $\mathbf{c}_B$ ($m$ composantes) & $\mathbf{c}_N$ ($n$ composantes) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Ainsi, le systeme $A\mathbf{x} = \mathbf{b}$ s'ecrit :
+$$B\mathbf{x}_B + A_N\mathbf{x}_N = \mathbf{b}$$
+\end{definition}
+
+\begin{definition}
+\textbf{Matrice de base (Basis Matrix) :}
+
+La \textcolor{defvert}{\textbf{matrice de base}} $B$ de $A$ est une sous-matrice carree formee de $m$ colonnes \textcolor{algoviolet}{\textbf{lineairement independantes}} de $A$.
+
+\begin{itemize}
+    \item Une matrice de base est \textcolor{titrebleu}{\textbf{non singuliere}} (inversible)
+    \item La colonne de $B$ correspondant a la variable de base $x_i$ est la $i$-eme colonne de $A$
+    \item Par convention, on note $B$ la matrice de base plutot que $A_B$
+\end{itemize}
+\end{definition}
+
+\begin{methode}
+\textbf{Expression du dictionnaire en termes matriciels :}
+
+En multipliant $B\mathbf{x}_B = \mathbf{b} - A_N\mathbf{x}_N$ par $B^{-1}$ a gauche :
+
+$$\boxed{\mathbf{x}_B = B^{-1}\mathbf{b} - B^{-1}A_N\mathbf{x}_N}$$
+
+Et en substituant dans $z = \mathbf{c}^T\mathbf{x} = \mathbf{c}_B^T\mathbf{x}_B + \mathbf{c}_N^T\mathbf{x}_N$ :
+
+$$\boxed{z = \mathbf{c}_B^T B^{-1}\mathbf{b} + (\mathbf{c}_N^T - \mathbf{c}_B^T B^{-1}A_N)\mathbf{x}_N}$$
+
+Ces deux equations constituent le \textcolor{algoviolet}{\textbf{dictionnaire en forme matricielle}}, associe a la base $B$.
+\end{methode}
+
+\begin{astuce}
+\textbf{Correspondance avec le dictionnaire classique :}
+
+\begin{itemize}
+    \item $\bar{\mathbf{b}} = B^{-1}\mathbf{b}$ : valeurs des variables de base (membre droit du dictionnaire)
+    \item $\bar{A}_N = B^{-1}A_N$ : coefficients des variables non-basiques dans les equations
+    \item $\bar{z} = \mathbf{c}_B^T B^{-1}\mathbf{b}$ : valeur courante de l'objectif
+    \item $\bar{\mathbf{c}}_N = \mathbf{c}_N^T - \mathbf{c}_B^T B^{-1}A_N$ : coefficients reduits (ligne $z$ du dictionnaire)
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Remarque sur l'Inverse de la Matrice de Base}
+
+\begin{notecours}
+\textbf{Ne pas calculer $B^{-1}$ explicitement !}
+
+On pourrait penser que le simplexe revise necesssite de calculer l'inverse $B^{-1}$ explicitement. C'est une idee fausse pour plusieurs raisons :
+
+\begin{itemize}
+    \item Calculer $B^{-1}$ est \textcolor{importantrouge}{\textbf{plus long}} que calculer la factorisation triangulaire de $B$
+    \item Les calculs intermediaires pour $B^{-1}$ introduisent des \textcolor{importantrouge}{\textbf{erreurs numeriques}} supplementaires
+    \item Meme des matrices tres creuses (sparse) ont souvent des \textcolor{importantrouge}{\textbf{inverses denses}}
+\end{itemize}
+
+\textbf{En pratique :} On utilise une \textcolor{defvert}{\textbf{factorisation triangulaire}} de $B$ (elimination gaussienne) :
+$$U = L_n P_n L_{n-1} P_{n-1} \cdots L_1 P_1 B$$
+
+ou $P_i$ sont des matrices de permutation et $L_i$ des matrices triangulaires inferieures eta.
+
+Pour resoudre $B\mathbf{d} = \mathbf{a}$, on resout successivement deux systemes triangulaires, ce qui est rapide.
+\end{notecours}
+
+\newpage
+%=============================================
+\section{Premier Exemple Detaille}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Enonce et Mise en Forme}
+
+\begin{exemple}
+\textbf{Probleme de l'atelier de menuiserie :}
+
+Un atelier fabrique quatre types de meubles : biblioth\`eques, bureaux, chaises et cadres de lit.
+
+\begin{center}
+\begin{tabular}{l|c|c|c|c}
+\toprule
+\textbf{Ressource} & Biblioth. & Bureau & Chaise & Cadre lit \\
+\midrule
+Heures de travail & 3 & 2 & 1 & 2 \\
+Unites de metal & 1 & 1 & 1 & 1 \\
+Unites de bois & 4 & 3 & 3 & 4 \\
+\midrule
+\textbf{Profit (\$)} & 19 & 13 & 12 & 17 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Disponibilites :} 225 heures de travail, 117 unites de metal, 420 unites de bois par jour.
+
+\textbf{Formulation PL :}
+\begin{align*}
+\text{maximiser} \quad & z = 19x_1 + 13x_2 + 12x_3 + 17x_4\\
+\text{sujet a} \quad & 3x_1 + 2x_2 + x_3 + 2x_4 \leq 225 \quad \text{(travail)}\\
+& x_1 + x_2 + x_3 + x_4 \leq 117 \quad \text{(metal)}\\
+& 4x_1 + 3x_2 + 3x_3 + 4x_4 \leq 420 \quad \text{(bois)}\\
+& x_1, x_2, x_3, x_4 \geq 0
+\end{align*}
+
+\textbf{Variables d'ecart :} $x_5$ (travail), $x_6$ (metal), $x_7$ (bois)
+\end{exemple}
+
+\subsection{Donnees Matricielles}
+
+\begin{exemple}
+$$A = \begin{pmatrix} 3 & 2 & 1 & 2 & 1 & 0 & 0 \\ 1 & 1 & 1 & 1 & 0 & 1 & 0 \\ 4 & 3 & 3 & 4 & 0 & 0 & 1 \end{pmatrix}, \quad \mathbf{b} = \begin{pmatrix} 225 \\ 117 \\ 420 \end{pmatrix}, \quad \mathbf{c} = \begin{pmatrix} 19 \\ 13 \\ 12 \\ 17 \\ 0 \\ 0 \\ 0 \end{pmatrix}$$
+
+\textbf{Solution de base initiale proposee :} $x_1 = 54, x_3 = 63$, autres variables nulles.
+
+\textbf{Variables de base :} $x_1, x_3, x_7$ (et les autres hors-base). Donc :
+
+$$B = \begin{pmatrix} 3 & 1 & 0 \\ 1 & 1 & 0 \\ 4 & 3 & 1 \end{pmatrix}, \quad \mathbf{x}_B = \begin{pmatrix} x_1 \\ x_3 \\ x_7 \end{pmatrix}, \quad \mathbf{c}_B = \begin{pmatrix} 19 \\ 12 \\ 0 \end{pmatrix}$$
+
+Verification : $\bar{\mathbf{x}}_B = B^{-1}\mathbf{b} = (54, 63, 15)^T$ (tous $\geq 0$ : solution realisable \checkmark)
+\end{exemple}
+
+\newpage
+%=============================================
+\section{Une Iteration du Simplexe Revise}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Structure d'une Iteration}
+
+\begin{important}
+\textbf{Les 5 etapes d'une iteration du simplexe revise :}
+
+\textcolor{defvert}{\textbf{Test d'optimalite et variable entrante :}}
+
+\begin{enumerate}
+    \item[\circled{1}] \textbf{Resoudre} le systeme $\mathbf{y}^T B = \mathbf{c}_B^T$ pour trouver $\mathbf{y}^T = \mathbf{c}_B^T B^{-1}$
+
+    \item[\circled{2}] \textbf{Calculer} $\mathbf{c}_N^T - \mathbf{y}^T A_N$ :
+    \begin{itemize}
+        \item Si tous les composantes sont $\leq 0$ : \textcolor{defvert}{\textbf{STOP -- solution optimale}}
+        \item Sinon : choisir une colonne entrante $\mathbf{a}_j$ telle que $\mathbf{y}^T \mathbf{a}_j < c_j$
+    \end{itemize}
+\end{enumerate}
+
+\textcolor{importantrouge}{\textbf{Test de borne et variable sortante :}}
+
+\begin{enumerate}
+    \item[\circled{3}] \textbf{Resoudre} le systeme $B\mathbf{d} = \mathbf{a}_j$ pour trouver $\mathbf{d} = B^{-1}\mathbf{a}_j$
+
+    \item[\circled{4}] \textbf{Trouver} le plus grand $t$ tel que $\bar{\mathbf{x}}_B - t\mathbf{d} \geq \mathbf{0}$ :
+    \begin{itemize}
+        \item Si aucun $t$ n'existe (tous $d_i \leq 0$) : \textcolor{importantrouge}{\textbf{STOP -- probleme non borne}}
+        \item Sinon : la variable sortante est celle qui impose la borne la plus stringente
+    \end{itemize}
+\end{enumerate}
+
+\textcolor{algoviolet}{\textbf{Mise a jour de la base :}}
+
+\begin{enumerate}
+    \item[\circled{5}] \textbf{Mettre a jour} :
+    \begin{itemize}
+        \item Valeur de la variable entrante : $t$
+        \item Valeurs des variables de base : $\bar{\mathbf{x}}_B \leftarrow \bar{\mathbf{x}}_B - t\mathbf{d}$
+        \item Remplacer la \textcolor{importantrouge}{\textbf{colonne sortante}} de $B$ par la \textcolor{defvert}{\textbf{colonne entrante}}
+        \item Mettre a jour le \textcolor{algoviolet}{\textbf{basis heading}}
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\begin{definition}
+\textbf{Basis Heading (En-tete de base) :}
+
+La liste ordonnee des variables de base qui specifie l'ordre effectif des $m$ colonnes de $B$ est appelee le \textcolor{algoviolet}{\textbf{basis heading}}.
+
+Par commodite, a chaque mise a jour, on remplace la variable sortante par la variable entrante dans le basis heading.
+\end{definition}
+
+\newpage
+\subsection{Etape 1 et 2 : Variable Entrante}
+
+\begin{methode}
+\textbf{Calcul de $\mathbf{y}^T$ et test d'optimalite :}
+
+\textbf{Etape \circled{1}} : Resoudre $\mathbf{y}^T B = \mathbf{c}_B^T$ (systeme triangulaire par substitution inverse).
+
+\textbf{Etape \circled{2}} : Pour chaque variable non-basique $x_j$ (avec colonne $\mathbf{a}_j$), calculer le \textcolor{algoviolet}{\textbf{cout reduit}} :
+$$\bar{c}_j = c_j - \mathbf{y}^T \mathbf{a}_j$$
+
+\begin{itemize}
+    \item Si $\bar{c}_j \leq 0$ pour tout $j \notin B$ : solution optimale
+    \item Sinon : la \textcolor{defvert}{\textbf{variable entrante}} est tout $x_j$ avec $\bar{c}_j > 0$ (typiquement, on choisit celui avec le plus grand $\bar{c}_j$)
+\end{itemize}
+
+\textbf{Interpretation duale :} Le vecteur $\mathbf{y}^T = \mathbf{c}_B^T B^{-1}$ n'est autre que la \textcolor{importantrouge}{\textbf{solution duale courante}}.
+\end{methode}
+
+\begin{exemple}
+\textbf{Application a notre exemple (base $B = \{x_1, x_3, x_7\}$) :}
+
+\textbf{Etape \circled{1} :} Resoudre $[y_1 \; y_2 \; y_3] \begin{pmatrix} 3 & 1 & 0 \\ 1 & 1 & 0 \\ 4 & 3 & 1 \end{pmatrix} = [19 \; 12 \; 0]$
+
+Par substitution : $y_3 = 0$, puis $y_1 + y_2 = 12$ et $3y_1 + y_2 = 19$, ce qui donne :
+
+$$\mathbf{y}^T = \left[\frac{7}{2} \quad \frac{17}{2} \quad 0\right]$$
+
+\textbf{Etape \circled{2} :} Pour les variables hors-base $x_2, x_4, x_5, x_6$ :
+
+$$\mathbf{c}_N^T - \mathbf{y}^T A_N = [13 \; 17 \; 0 \; 0] - \left[\frac{7}{2} \; \frac{17}{2} \; 0\right] \begin{pmatrix} 2 & 2 & 1 & 0 \\ 1 & 1 & 0 & 1 \\ 3 & 4 & 0 & 0 \end{pmatrix} = \left[-\frac{5}{2} \quad \frac{3}{2} \quad -\frac{7}{2} \quad -\frac{17}{2}\right]$$
+
+Seul $x_4$ a un cout reduit positif : $\bar{c}_4 = \frac{3}{2} > 0$. \textcolor{defvert}{\textbf{Variable entrante : $x_4$.}}
+\end{exemple}
+
+\newpage
+\subsection{Etape 3 et 4 : Variable Sortante}
+
+\begin{methode}
+\textbf{Calcul de la direction de descente $\mathbf{d}$ :}
+
+\textbf{Etape \circled{3} :} Resoudre $B\mathbf{d} = \mathbf{a}_j$ (colonne entrante de $A$).
+
+Le vecteur $\mathbf{d} = B^{-1}\mathbf{a}_j$ donne les changements des variables de base quand la variable entrante augmente d'une unite.
+
+\textbf{Etape \circled{4} :} La variable sortante est celle qui impose la borne la plus stringente sur $t$ :
+$$t^* = \min_{i : d_i > 0} \frac{\bar{x}_{B_i}}{d_i}$$
+
+La variable sortante correspond au minimum de ce rapport (regle du rapport minimum).
+\end{methode}
+
+\begin{exemple}
+\textbf{Application (variable entrante $x_4$, colonne $\mathbf{a}_4 = (2, 1, 4)^T$) :}
+
+\textbf{Etape \circled{3} :} Resoudre $B\mathbf{d} = \mathbf{a}_4$ :
+$$\begin{pmatrix} 3 & 1 & 0 \\ 1 & 1 & 0 \\ 4 & 3 & 1 \end{pmatrix} \begin{pmatrix} d_1 \\ d_2 \\ d_3 \end{pmatrix} = \begin{pmatrix} 2 \\ 1 \\ 4 \end{pmatrix} \quad \Rightarrow \quad \mathbf{d} = \begin{pmatrix} 1/2 \\ 1/2 \\ 1/2 \end{pmatrix}$$
+
+\textbf{Etape \circled{4} :} Ratios pour chaque variable de base :
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+Variable de base & Valeur $\bar{x}_{B_i}$ & $d_i$ & Ratio $\bar{x}_{B_i}/d_i$ \\
+\midrule
+$x_1 = 54$ & 54 & $1/2$ & $108$ \\
+$x_3 = 63$ & 63 & $1/2$ & $126$ \\
+$x_7 = 15$ & 15 & $1/2$ & \textcolor{importantrouge}{\textbf{30 (minimum)}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$t^* = 30$. \textcolor{importantrouge}{\textbf{Variable sortante : $x_7$.}}
+\end{exemple}
+
+\newpage
+\subsection{Etape 5 : Mise a Jour de la Base}
+
+\begin{methode}
+\textbf{Mise a jour apres la premiere iteration :}
+
+\textbf{Nouvelle base :} On remplace $x_7$ (sortant) par $x_4$ (entrant) :
+\begin{itemize}
+    \item Nouveau basis heading : $(x_1, x_3, x_4)$
+    \item Valeur de la variable entrante : $x_4 = t^* = 30$
+    \item Nouvelles valeurs des variables de base :
+    $$\bar{\mathbf{x}}_B \leftarrow \bar{\mathbf{x}}_B - t^* \mathbf{d} = \begin{pmatrix} 54 \\ 63 \\ 15 \end{pmatrix} - 30 \begin{pmatrix} 1/2 \\ 1/2 \\ 1/2 \end{pmatrix} = \begin{pmatrix} 39 \\ 48 \\ 0 \end{pmatrix}$$
+\end{itemize}
+
+\textbf{Nouvelle matrice de base :} On remplace la colonne de $x_7$ dans $B$ par la colonne de $x_4$ :
+$$B_{\text{nouveau}} = \begin{pmatrix} 3 & 1 & 2 \\ 1 & 1 & 1 \\ 4 & 3 & 4 \end{pmatrix}$$
+
+\textbf{Nouvelle valeur de l'objectif :} $z = 19(39) + 12(48) + 17(30) = 741 + 576 + 510 = 1827$
+\end{methode}
+
+\begin{astuce}
+\textbf{Remarque sur l'ordre des colonnes dans $B$ :}
+
+L'ordre des colonnes de $B$ n'est important que si il correspond a l'ordre des composantes de $\mathbf{x}_B$.
+
+Par exemple, le basis heading $(x_3, x_4, x_1)$ avec $\mathbf{x}_B = (x_3, x_4, x_1)^T = (48, 30, 39)^T$ et $B = \begin{pmatrix} 1 & 2 & 3 \\ 1 & 1 & 1 \\ 3 & 4 & 4 \end{pmatrix}$ est tout aussi valide.
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Interpretation Economique}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Signification des Variables Duales : Prix Fantomes}
+
+\begin{notecours}
+\textbf{Cadre economique :}
+
+Dans un probleme de programmation lineaire typique :
+\begin{itemize}
+    \item $x_j$ mesure le \textcolor{titrebleu}{\textbf{niveau de production}} du produit $j$
+    \item $b_i$ specifie la \textcolor{defvert}{\textbf{quantite disponible}} de la ressource $i$
+    \item $a_{ij}$ : quantite de la ressource $i$ consommee par unite du produit $j$ (en unites de ressource $i$ par unite de produit $j$)
+    \item $c_j$ : profit en dollars par unite du produit $j$
+\end{itemize}
+
+Les valeurs optimales duales $y_i^*$ ont alors une interpretation economique claire.
+\end{notecours}
+
+\begin{definition}
+\textbf{Prix fantome (Shadow Price) :}
+
+Pour $i = 1, 2, \ldots, m$, la variable duale optimale $y_i^*$ est appelee le \textcolor{importantrouge}{\textbf{prix fantome}} (shadow price) de la ressource $i$, ou encore sa \textcolor{defvert}{\textbf{valeur marginale}}.
+
+Elle represente la \textcolor{algoviolet}{\textbf{variation du profit optimal}} par unite supplementaire de la ressource $i$ :
+$$\frac{\partial z^*}{\partial b_i} = y_i^*$$
+
+\textbf{Interpretation pratique :} Si la solution optimale est non degeneree, l'entreprise devrait etre prete a payer jusqu'a $y_i^*$ dollars \textbf{au-dela du prix de marche} pour obtenir une unite supplementaire de la ressource $i$.
+\end{definition}
+
+\subsection{Interpretation des Etapes du Simplexe Revise}
+
+\begin{methode}
+\textbf{Etape \circled{1} -- Prix fantomes temporaires :}
+
+Resoudre $\mathbf{y}^T B = \mathbf{c}_B^T$ consiste a affecter des \textcolor{algoviolet}{\textbf{prix fantomes temporaires}} aux ressources tels que la \textbf{valeur totale des ressources consommees par chaque activite de base egale le profit} de cette activite.
+
+\textbf{Pour notre exemple :} $y_1 = \frac{7}{2}$ (travail), $y_2 = \frac{17}{2}$ (metal), $y_3 = 0$ (bois)
+
+\begin{itemize}
+    \item Heure de travail : 3,50 \$/heure
+    \item Unite de metal : 8,50 \$/unite
+    \item Unite de bois : 0 \$/unite (ressource non saturee = valeur nulle)
+\end{itemize}
+\end{methode}
+
+\begin{methode}
+\textbf{Etape \circled{2} -- Evaluation des activites non-basiques (Pricing Out) :}
+
+Calculer $\mathbf{y}^T A_N$ consiste a evaluer la valeur totale des ressources consommees par chaque activite non-basique. On compare cette valeur au profit qu'elle rapporte.
+
+\begin{center}
+\begin{tabular}{l|c|c|c}
+\toprule
+\textbf{Activite} & \textbf{Profit $c_j$} & \textbf{Cout ressources $\mathbf{y}^T \mathbf{a}_j$} & \textbf{Benefice net $\bar{c}_j$} \\
+\midrule
+Bureaux ($x_2$) & 13 & $\frac{7}{2}(2) + \frac{17}{2}(1) = \frac{31}{2}$ & $-\frac{5}{2} < 0$ \\
+Cadres lit ($x_4$) & 17 & $\frac{7}{2}(2) + \frac{17}{2}(1) + 0(4) = \frac{31}{2}$ & $+\frac{3}{2} > 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La \textcolor{defvert}{\textbf{variable entrante}} est l'activite dont le \textbf{profit depasse le cout des ressources consommees}.
+\end{methode}
+
+\newpage
+\begin{methode}
+\textbf{Etape \circled{3} -- Le Mix :}
+
+Resoudre $B\mathbf{d} = \mathbf{a}_j$ consiste a trouver la \textcolor{algoviolet}{\textbf{combinaison}} (mix) d'activites de base qui consomme les ressources au meme rythme que l'activite entrante.
+
+\textbf{Pour notre exemple} (variable entrante : cadres de lit $x_4$) :
+
+On cherche $d_1$ (biblio.), $d_3$ (chaises), $d_7$ (bois non utilise) tels que :
+$$3d_1 + d_3 = 2, \quad d_1 + d_3 = 1, \quad 4d_1 + 3d_3 + d_7 = 4$$
+
+Solution : $d_1 = \frac{1}{2}$, $d_3 = \frac{1}{2}$, $d_7 = \frac{1}{2}$.
+
+Chaque cadre de lit sera substitue par : $\frac{1}{2}$ biblio. $+$ $\frac{1}{2}$ chaise $+$ $\frac{1}{2}$ unite de bois non utilise.
+\end{methode}
+
+\begin{definition}
+\textbf{Substitution :}
+
+L'operation consistant a remplacer l'activite entrante profitable par un mix approprie d'activites de base est appelee une \textcolor{defvert}{\textbf{substitution}}.
+
+Une substitution augmente la valeur de l'objectif de :
+$$c_j - \mathbf{y}^T \mathbf{a}_j = \bar{c}_j > 0$$
+
+par unite d'activite entrante.
+
+La valeur maximale $t$ que l'activite entrante peut prendre est determinee par la condition de ne pas consommer plus de ressources que disponible :
+$$t^* = \max\{t : \bar{\mathbf{x}}_B - t\mathbf{d} \geq \mathbf{0}\}$$
+\end{definition}
+
+\begin{astuce}
+\textbf{Couts Reduits (Reduced Costs) :}
+
+Le \textcolor{algoviolet}{\textbf{cout reduit}} $\bar{c}_j = c_j - \mathbf{c}_B^T B^{-1} \mathbf{a}_j$ d'une variable non-basique $x_j$ represente la \textbf{variation nette de $z$} par unite d'augmentation de $x_j$ :
+
+\begin{itemize}
+    \item Augmenter $x_j$ d'une unite fait changer $\mathbf{x}_B$ de $-B^{-1}\mathbf{a}_j = -\mathbf{d}$
+    \item La perte dans l'objectif due aux variables de base est $\mathbf{c}_B^T B^{-1}\mathbf{a}_j$
+    \item Le gain direct est $c_j$
+    \item Le \textbf{gain net} est $\bar{c}_j = c_j - \mathbf{c}_B^T B^{-1}\mathbf{a}_j$
+\end{itemize}
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Changement du Membre Droit et Prix Fantomes}
+%=============================================
+
+\needspace{10\baselineskip}
+\subsection{Impact d'une Variation de $b_i$}
+
+\begin{theoreme}
+\textbf{Theoreme -- Sensibilite aux membres droits :}
+
+Si le PL a au moins une solution de base optimale \textcolor{defvert}{\textbf{non degeneree}}, alors il existe $\varepsilon > 0$ tel que : si $|t_i| \leq \varepsilon$ pour tout $i = 1, \ldots, m$, le probleme perturbe
+
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_j x_j\\
+\text{sujet a} \quad & \sum_{j=1}^{n} a_{ij} x_j \leq b_i + t_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0
+\end{align*}
+
+admet une solution optimale de valeur :
+$$z^*(t) = z^* + \sum_{i=1}^{m} y_i^* t_i$$
+
+ou $z^*$ est la valeur optimale du probleme original et $y_1^*, y_2^*, \ldots, y_m^*$ est la solution duale optimale.
+\end{theoreme}
+
+\begin{important}
+\textbf{Consequences pratiques :}
+
+\begin{itemize}
+    \item Le prix fantome $y_i^*$ donne la \textcolor{importantrouge}{\textbf{valeur exacte}} du changement de $z^*$ pour une petite variation de $b_i$
+    \item Ce resultat est valable \textcolor{defvert}{\textbf{localement}} (pour des petites perturbations $|t_i| \leq \varepsilon$)
+    \item Pour des perturbations plus grandes, la base optimale peut changer (on sort de la region de validite)
+    \item En cas de \textcolor{algoviolet}{\textbf{degenerescence}}, plusieurs prix fantomes peuvent correspondre a la meme solution primale optimale
+\end{itemize}
+\end{important}
+
+\subsection{Exemple : L'Application Forestiere}
+
+\begin{exemple}
+\textbf{Probleme du forestier :}
+
+Un forestier dispose de 100 acres de bois de feuillus. Deux options :
+\begin{itemize}
+    \item \textbf{Option 1 :} Couper et laisser regenerer naturellement -- cout immediat 10\$/acre, retour 50\$/acre (profit net : 40\$/acre)
+    \item \textbf{Option 2 :} Couper et replanter en pins -- cout immediat 50\$/acre, retour 120\$/acre (profit net : 70\$/acre)
+\end{itemize}
+
+Budget immediat disponible : 4 000\$.
+
+\textbf{Formulation PL} (avec $x_1$ = acres option 1, $x_2$ = acres option 2) :
+\begin{align*}
+\text{maximiser} \quad & z = 40x_1 + 70x_2\\
+\text{sujet a} \quad & x_1 + x_2 \leq 100 \quad \text{(superficie)}\\
+& 10x_1 + 50x_2 \leq 4000 \quad \text{(budget)}\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{Solution optimale :} $x_1^* = 25$ acres, $x_2^* = 75$ acres, $z^* = 25(40) + 75(70) = 1000 + 5250 = 6250$ \$.
+\end{exemple}
+
+\newpage
+\begin{exemple}
+\textbf{Calcul des prix fantomes :}
+
+Dual optimal : $y_1^*$ (superficie) et $y_2^*$ (budget).
+
+Par les ecarts complementaires (les deux contraintes sont saturees) :
+\begin{align*}
+y_1^* + y_2^* &= 40 \quad \text{(dual contrainte } x_1 > 0\text{)}\\
+y_1^* + 5y_2^* &= 70 \quad \text{(dual contrainte } x_2 > 0\text{, coeff. 50/10 = 5)}
+\end{align*}
+
+\textbf{Attention :} La deuxieme contrainte duale est $y_1^* + \frac{50}{10}y_2^* \geq 70$, mais en divisant par les bonnes unites... Utilisons directement $y_1^*$ = prix par acre et $y_2^*$ = prix par dollar de budget :
+
+$$y_1^* = 22.5, \quad y_2^* = \frac{17.5}{10} = 1.75 \text{ par dollar} \Rightarrow y_2^* = 0.175 \text{ par dollar}$$
+
+\textbf{Questions sur la perturbation :}
+
+\textbf{1. Emprunter 100\$ maintenant pour rembourser 180\$ plus tard ?}
+
+Emprunter augmente le budget de 100\$ ($t_2 = +100$) et reduit le profit futur de 180\$. L'effet sur $z^*$ :
+$$\Delta z = y_2^* \cdot 100 - 180 = 0.175 \times 100 \times 10 - 180$$
+
+\textit{(Nota : $y_2^*$ est en profit par dollar de budget, le budget est en dollars)}
+
+Gain brut : $y_2^* \times 100 = 17.5$ \$ de profit supplementaire. Cout : 180\$. 
+
+\textcolor{importantrouge}{\textbf{Conclusion :}} $17.5 < 180$. Ne pas emprunter.
+
+\textbf{2. Investir 100\$ maintenant pour recevoir 180\$ plus tard ?}
+
+Investir reduit le budget de 100\$ ($t_2 = -100$) et rapporte 180\$ plus tard.
+
+Perte : $y_2^* \times 100 = 17.5$ \$ de profit perdu. Gain : 180\$.
+
+\textcolor{defvert}{\textbf{Conclusion :}} $180 > 17.5$. Investir est profitable.
+\end{exemple}
+
+\begin{astuce}
+\textbf{Interpretation generale :}
+
+\begin{itemize}
+    \item Toute operation qui \textcolor{defvert}{\textbf{rapporte plus}} que $y_i^*$ par unite de ressource $i$ est \textbf{profitable}
+    \item Toute operation qui \textcolor{importantrouge}{\textbf{coute plus}} que $y_i^*$ par unite de ressource $i$ est \textbf{non profitable}
+    \item Les prix fantomes fournissent les \textcolor{algoviolet}{\textbf{prix d'equilibre}} qui maximisent le profit global
+\end{itemize}
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Resume et Comparaison des Methodes}
+%=============================================
+
+\begin{important}
+\textbf{Simplexe Standard vs. Simplexe Revise :}
+
+\begin{center}
+\begin{tabular}{l|p{5cm}|p{5cm}}
+\toprule
+& \textbf{Simplexe Standard} & \textbf{Simplexe Revise} \\
+\midrule
+\textbf{Stockage} & Tableau complet $m \times (n+m)$ & Matrice de base $B$ ($m \times m$) \\
+\textbf{Calculs par iteration} & Mise a jour du tableau entier & 2 systemes lineaires \\
+\textbf{Donnees utilisees} & Tableau transforme & Donnees originales $A, b, c$ \\
+\textbf{Avantage} & Simple a implementer & Rapide pour grands problemes \\
+\textbf{Usage pratique} & Pedagogique & Tous les logiciels modernes \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{important}
+
+\begin{astuce}
+\textbf{Recapitulatif des formules cles :}
+
+\begin{center}
+\begin{tabular}{l|l}
+\toprule
+\textbf{Element} & \textbf{Formule matricielle} \\
+\midrule
+Valeurs variables de base & $\bar{\mathbf{x}}_B = B^{-1}\mathbf{b}$ \\
+Solution duale courante & $\mathbf{y}^T = \mathbf{c}_B^T B^{-1}$ (resoudre $\mathbf{y}^T B = \mathbf{c}_B^T$) \\
+Couts reduits & $\bar{c}_j = c_j - \mathbf{y}^T \mathbf{a}_j$ \\
+Direction $\mathbf{d}$ (entrant $x_j$) & $\mathbf{d} = B^{-1}\mathbf{a}_j$ (resoudre $B\mathbf{d} = \mathbf{a}_j$) \\
+Ratio test & $t^* = \min_{d_i > 0} \bar{x}_{B_i}/d_i$ \\
+Valeur objectif & $z = \mathbf{c}_B^T B^{-1}\mathbf{b} = \mathbf{y}^T \mathbf{b}$ \\
+Sensibilite $b$ & $z^*(b + t) \approx z^* + \mathbf{y}^{*T} \mathbf{t}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Exercices}
+%=============================================
+
+\begin{exemple}
+\textbf{Exercice 1 -- Formulation matricielle}
+
+Pour le PL suivant :
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2 + 5x_3\\
+\text{sujet a} \quad & x_1 + 2x_2 + x_3 \leq 6\\
+& 2x_1 + x_2 + 3x_3 \leq 10\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+
+Avec les variables d'ecart $x_4, x_5$ et la base $B = \{x_1, x_3\}$ :
+
+\begin{enumerate}
+    \item Ecrire la matrice de base $B$, les vecteurs $\mathbf{c}_B$, $\mathbf{c}_N$, la matrice $A_N$
+    \item Calculer les valeurs des variables de base $\bar{\mathbf{x}}_B = B^{-1}\mathbf{b}$
+    \item Calculer la solution duale courante $\mathbf{y}^T = \mathbf{c}_B^T B^{-1}$
+    \item Calculer les couts reduits des variables hors-base
+    \item Conclure sur l'optimalite ou identifier la variable entrante
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 -- Iteration complete du simplexe revise}
+
+En partant de la solution initiale (variables d'ecart en base) pour le PL :
+\begin{align*}
+\text{maximiser} \quad & z = 4x_1 + 3x_2\\
+\text{sujet a} \quad & x_1 + x_2 \leq 4\\
+& 2x_1 + x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+Effectuer \textbf{deux iterations completes} du simplexe revise en suivant les 5 etapes. A chaque iteration, verifier la valeur de $z$.
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 3 -- Prix fantomes et analyse de sensibilite}
+
+On revient au probleme de l'atelier (Section 3.1). La solution optimale est $x_1^* = 54, x_3^* = 63, x_4^* = 30$ avec $z^* = 1827$ et les prix fantomes $y_1^* = \frac{7}{2}$, $y_2^* = \frac{17}{2}$, $y_3^* = 0$.
+
+\begin{enumerate}
+    \item Interpreter economiquement chaque prix fantome
+    \item L'entreprise peut obtenir 5 heures de travail supplementaires au prix de 10\$/heure. Vaut-il mieux les acheter ?
+    \item L'entreprise peut vendre 2 unites de metal a 6\$ l'unite. Doit-elle le faire ?
+    \item Quel est l'impact sur $z^*$ si le bois disponible passe de 420 a 430 unites ?
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 4 -- Interpretation economique des couts reduits}
+
+Expliquer pourquoi, dans la premiere iteration de notre exemple, le cout reduit de $x_2$ (bureaux) est negatif alors que le profit unitaire des bureaux est positif (\$13). Comment cela est-il coherent avec la theorie ?
+\end{exemple}
+
+\end{document}

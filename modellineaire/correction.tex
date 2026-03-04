@@ -1,0 +1,926 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+
+% Boîtes colorées
+\newtcolorbox{exercice}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=�� Énoncé,
+    arc=3mm
+}
+
+\newtcolorbox{solution}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=✅ Solution,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=⚙️ Méthode,
+    arc=3mm
+}
+
+\newtcolorbox{remarque}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Remarque,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=fondjaune,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\LARGE\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\Large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Correction des Exercices}\\[0.5em]
+\large\color{defvert}Programmation Linéaire}
+\author{\large Introduction et Formulation}
+\date{\large Version 2024-2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Exercice 1 : Formulation d'un Problème}
+
+\begin{exercice}
+\textbf{Énoncé :}
+
+Une entreprise fabrique deux produits A et B. 
+\begin{itemize}
+    \item Le produit A nécessite 2 heures de main-d'œuvre et rapporte 30€ de profit
+    \item Le produit B nécessite 3 heures de main-d'œuvre et rapporte 40€ de profit
+    \item L'entreprise dispose de 120 heures de main-d'œuvre par semaine
+    \item Elle doit produire au moins 10 unités de A et 15 unités de B
+\end{itemize}
+
+\textbf{Question :} Formulez ce problème comme un programme linéaire.
+\end{exercice}
+
+\subsection{Méthode de Résolution}
+
+\begin{methode}
+\textbf{Les 3 étapes de formulation :}
+
+\textbf{Étape 1 : Définir les variables}
+\begin{itemize}
+    \item Quelles sont les décisions à prendre ?
+    \item Que devons-nous déterminer ?
+\end{itemize}
+
+\textbf{Étape 2 : Identifier les contraintes}
+\begin{itemize}
+    \item Quelles sont les limitations ?
+    \item Quelles sont les exigences ?
+\end{itemize}
+
+\textbf{Étape 3 : Définir la fonction objectif}
+\begin{itemize}
+    \item Que voulons-nous optimiser ?
+    \item Maximiser ou minimiser ?
+\end{itemize}
+\end{methode}
+
+\newpage
+\subsection{Solution Détaillée}
+
+\begin{solution}
+\textbf{Étape 1 : Variables de décision}
+
+Soit :
+\begin{itemize}
+    \item $x_1$ = nombre d'unités du produit A à produire par semaine
+    \item $x_2$ = nombre d'unités du produit B à produire par semaine
+\end{itemize}
+\end{solution}
+
+\begin{solution}
+\textbf{Étape 2 : Contraintes}
+
+\textcolor{titrebleu}{\textbf{Contrainte de main-d'œuvre :}}
+\begin{itemize}
+    \item Produit A : 2 heures par unité
+    \item Produit B : 3 heures par unité
+    \item Total disponible : 120 heures
+\end{itemize}
+$$2x_1 + 3x_2 \leq 120$$
+
+\textcolor{defvert}{\textbf{Contrainte de production minimale de A :}}
+$$x_1 \geq 10$$
+
+\textcolor{algoviolet}{\textbf{Contrainte de production minimale de B :}}
+$$x_2 \geq 15$$
+
+\textcolor{exempleorange}{\textbf{Contraintes de non-négativité :}}
+$$x_1 \geq 0, \quad x_2 \geq 0$$
+
+Note : Ces contraintes sont déjà incluses dans $x_1 \geq 10$ et $x_2 \geq 15$.
+\end{solution}
+
+\begin{solution}
+\textbf{Étape 3 : Fonction objectif}
+
+On veut \textcolor{importantrouge}{\textbf{maximiser le profit total}} :
+\begin{itemize}
+    \item Profit de A : 30€ par unité
+    \item Profit de B : 40€ par unité
+\end{itemize}
+
+$$\text{Maximiser } z = 30x_1 + 40x_2$$
+\end{solution}
+
+\newpage
+\subsection{Modèle Complet}
+
+\begin{solution}
+\textbf{Programme linéaire complet :}
+
+\begin{align*}
+\text{\textcolor{importantrouge}{maximiser}} \quad & \textcolor{importantrouge}{z = 30x_1 + 40x_2}\\
+\text{sujet à} \quad & 2x_1 + 3x_2 \leq 120 \quad \textcolor{titrebleu}{\text{(main-d'œuvre)}}\\
+& x_1 \geq 10 \quad \textcolor{defvert}{\text{(minimum A)}}\\
+& x_2 \geq 15 \quad \textcolor{algoviolet}{\text{(minimum B)}}\\
+& x_1, x_2 \geq 0 \quad \textcolor{exempleorange}{\text{(non-négativité)}}
+\end{align*}
+\end{solution}
+
+\begin{remarque}
+\textbf{Vérification :}
+\begin{itemize}
+    \item ✅ Toutes les fonctions sont linéaires
+    \item ✅ Toutes les contraintes sont linéaires
+    \item ✅ Les variables sont continues et réelles
+    \item ✅ Le problème est bien formulé
+\end{itemize}
+\end{remarque}
+
+\begin{solution}
+\textbf{Interprétation géométrique (optionnelle) :}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.12]
+    % Axes
+    \draw[->] (0,0) -- (70,0) node[right] {$x_1$};
+    \draw[->] (0,0) -- (0,50) node[above] {$x_2$};
+    
+    % Grille
+    \foreach \x in {10,20,30,40,50,60} {
+        \draw[thin,gray!30] (\x,0) -- (\x,45);
+        \node[below,font=\tiny] at (\x,0) {\x};
+    }
+    \foreach \y in {10,20,30,40} {
+        \draw[thin,gray!30] (0,\y) -- (65,\y);
+        \node[left,font=\tiny] at (0,\y) {\y};
+    }
+    
+    % Contraintes
+    \draw[ultra thick,titrebleu] (0,40) -- (60,0); % 2x1 + 3x2 = 120
+    \draw[ultra thick,defvert] (10,0) -- (10,45); % x1 = 10
+    \draw[ultra thick,algoviolet] (0,15) -- (65,15); % x2 = 15
+    
+    % Région réalisable
+    \fill[fondvert,opacity=0.4] (10,15) -- (10,33.33) -- (22.5,25) -- (30,15) -- cycle;
+    
+    % Sommets
+    \fill[importantrouge] (10,15) circle (8pt);
+    \fill[importantrouge] (10,33.33) circle (8pt);
+    \fill[importantrouge] (22.5,25) circle (8pt);
+    \fill[importantrouge] (30,15) circle (8pt);
+    
+    % Labels
+    \node[titrebleu,right] at (35,25) {$2x_1 + 3x_2 = 120$};
+    \node[defvert,above,rotate=90] at (10,20) {$x_1 = 10$};
+    \node[algoviolet,above] at (30,15) {$x_2 = 15$};
+    \node[below left] at (10,15) {$(10,15)$};
+    \node[left] at (10,33.33) {$(10,30)$};
+    \node[above right] at (22.5,25) {$(22.5,25)$};
+    \node[below right] at (30,15) {$(30,15)$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Sommets de la région réalisable :}
+\begin{itemize}
+    \item $(10, 15)$ : $z = 30(10) + 40(15) = 900$€
+    \item $(10, 30)$ : $z = 30(10) + 40(30) = 1500$€
+    \item $(22.5, 25)$ : $z = 30(22.5) + 40(25) = 1675$€ \textcolor{importantrouge}{\textbf{← OPTIMAL}}
+    \item $(30, 15)$ : $z = 30(30) + 40(15) = 1500$€
+\end{itemize}
+\end{solution}
+
+\newpage
+\section{Exercice 2 : Conversion en Forme Standard}
+
+\begin{exercice}
+\textbf{Énoncé :}
+
+Convertissez le problème suivant en forme standard :
+
+\begin{align*}
+\text{minimiser} \quad & z = 2x_1 - 3x_2 + x_3\\
+\text{sujet à} \quad & x_1 + x_2 - x_3 = 5\\
+& 2x_1 - x_2 + 3x_3 \geq 10\\
+& x_1 \geq 0, \quad x_2 \leq 0, \quad x_3 \text{ libre}
+\end{align*}
+\end{exercice}
+
+\subsection{Rappel : Forme Standard}
+
+\begin{methode}
+\textbf{Forme standard d'un problème de PL :}
+
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet à} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+\textbf{Caractéristiques :}
+\begin{itemize}
+    \item \textcolor{importantrouge}{Maximisation}
+    \item \textcolor{defvert}{Contraintes $\leq$}
+    \item \textcolor{titrebleu}{Variables $\geq 0$}
+\end{itemize}
+\end{methode}
+
+\newpage
+\subsection{Transformations Nécessaires}
+
+\begin{methode}
+\textbf{Règles de conversion :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Fonction objectif :}}
+    $$\min w \equiv \max (-w)$$
+    
+    \item \textcolor{defvert}{\textbf{Inégalités :}}
+    $$\sum a_{ij}x_j \geq b_i \equiv -\sum a_{ij}x_j \leq -b_i$$
+    
+    \item \textcolor{algoviolet}{\textbf{Égalités :}}
+    $$\sum a_{ij}x_j = b_i \equiv \begin{cases}
+    \sum a_{ij}x_j \leq b_i\\
+    -\sum a_{ij}x_j \leq -b_i
+    \end{cases}$$
+    
+    \item \textcolor{exempleorange}{\textbf{Variables :}}
+    \begin{itemize}
+        \item $x_j \leq 0$ remplacer par $-x_j \geq 0$
+        \item $x_j$ libre remplacer par $x_j = x_j^+ - x_j^-$ avec $x_j^+, x_j^- \geq 0$
+    \end{itemize}
+\end{enumerate}
+\end{methode}
+
+\newpage
+\subsection{Solution Détaillée}
+
+\begin{solution}
+\textbf{Transformation 1 : Fonction objectif}
+
+$$\text{minimiser } z = 2x_1 - 3x_2 + x_3$$
+
+devient
+
+$$\text{\textcolor{importantrouge}{maximiser}} \quad z' = -(2x_1 - 3x_2 + x_3) = \textcolor{importantrouge}{-2x_1 + 3x_2 - x_3}$$
+
+Note : À la fin, si $z'^* = k$, alors $z^* = -k$
+\end{solution}
+
+\begin{solution}
+\textbf{Transformation 2 : Variable $x_2 \leq 0$}
+
+Remplacer $x_2$ par $-y_2$ où $y_2 \geq 0$ :
+$$x_2 = -y_2, \quad y_2 \geq 0$$
+
+Dans la fonction objectif :
+$$-2x_1 + 3x_2 - x_3 = -2x_1 + 3(-y_2) - x_3 = -2x_1 - 3y_2 - x_3$$
+\end{solution}
+
+\begin{solution}
+\textbf{Transformation 3 : Variable $x_3$ libre}
+
+Remplacer $x_3$ par $x_3^+ - x_3^-$ où $x_3^+, x_3^- \geq 0$ :
+$$x_3 = x_3^+ - x_3^-, \quad x_3^+ \geq 0, \quad x_3^- \geq 0$$
+
+Dans la fonction objectif :
+$$-2x_1 - 3y_2 - x_3 = -2x_1 - 3y_2 - (x_3^+ - x_3^-) = -2x_1 - 3y_2 - x_3^+ + x_3^-$$
+\end{solution}
+
+\begin{solution}
+\textbf{Transformation 4 : Contrainte d'égalité}
+
+$$x_1 + x_2 - x_3 = 5$$
+
+devient (en utilisant $x_2 = -y_2$ et $x_3 = x_3^+ - x_3^-$) :
+$$x_1 + (-y_2) - (x_3^+ - x_3^-) = 5$$
+$$x_1 - y_2 - x_3^+ + x_3^- = 5$$
+
+Puis séparer en deux inégalités :
+\begin{align*}
+x_1 - y_2 - x_3^+ + x_3^- &\leq 5\\
+-(x_1 - y_2 - x_3^+ + x_3^-) &\leq -5\\
+-x_1 + y_2 + x_3^+ - x_3^- &\leq -5
+\end{align*}
+\end{solution}
+
+\begin{solution}
+\textbf{Transformation 5 : Contrainte d'inégalité $\geq$}
+
+$$2x_1 - x_2 + 3x_3 \geq 10$$
+
+devient (en utilisant $x_2 = -y_2$ et $x_3 = x_3^+ - x_3^-$) :
+$$2x_1 - (-y_2) + 3(x_3^+ - x_3^-) \geq 10$$
+$$2x_1 + y_2 + 3x_3^+ - 3x_3^- \geq 10$$
+
+Puis multiplier par $-1$ :
+$$-2x_1 - y_2 - 3x_3^+ + 3x_3^- \leq -10$$
+\end{solution}
+
+\newpage
+\subsection{Forme Standard Finale}
+
+\begin{solution}
+\textbf{Programme linéaire en forme standard :}
+
+\begin{align*}
+\text{\textcolor{importantrouge}{maximiser}} \quad & z' = -2x_1 - 3y_2 - x_3^+ + x_3^-\\
+\text{sujet à} \quad & x_1 - y_2 - x_3^+ + x_3^- \leq 5 \quad \textcolor{titrebleu}{\text{(égalité, partie 1)}}\\
+& -x_1 + y_2 + x_3^+ - x_3^- \leq -5 \quad \textcolor{titrebleu}{\text{(égalité, partie 2)}}\\
+& -2x_1 - y_2 - 3x_3^+ + 3x_3^- \leq -10 \quad \textcolor{defvert}{\text{(inégalité)}}\\
+& x_1 \geq 0\\
+& y_2 \geq 0\\
+& x_3^+ \geq 0\\
+& x_3^- \geq 0
+\end{align*}
+
+\textbf{Nouvelles variables :}
+\begin{itemize}
+    \item $x_1$ : inchangée
+    \item $y_2 = -x_2$ (car $x_2 \leq 0$)
+    \item $x_3^+, x_3^-$ : décomposition de $x_3$ libre
+\end{itemize}
+
+\textbf{Récupération de la solution originale :}
+\begin{itemize}
+    \item $x_1^* = x_1^*$ (direct)
+    \item $x_2^* = -y_2^*$
+    \item $x_3^* = x_3^{+*} - x_3^{-*}$
+    \item $z^* = -z'^*$
+\end{itemize}
+\end{solution}
+
+\begin{remarque}
+\textbf{Points importants :}
+\begin{itemize}
+    \item Le nombre de variables est passé de 3 à 4 ($x_1, y_2, x_3^+, x_3^-$)
+    \item Le nombre de contraintes est passé de 2 à 3
+    \item La valeur optimale finale doit être inversée : $z^* = -z'^*$
+    \item Cette forme est nécessaire pour appliquer la méthode du simplexe
+\end{itemize}
+\end{remarque}
+
+\newpage
+\section{Exercice 3 : Résolution Graphique}
+
+\begin{exercice}
+\textbf{Énoncé :}
+
+Résolvez graphiquement :
+
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2\\
+\text{sujet à} \quad & x_1 + x_2 \leq 4\\
+& x_1 + 2x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{exercice}
+
+\subsection{Méthode Graphique}
+
+\begin{methode}
+\textbf{Étapes de la méthode graphique :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Tracer les axes}} et identifier la région $x_1, x_2 \geq 0$
+    
+    \item \textcolor{defvert}{\textbf{Tracer chaque contrainte}} :
+    \begin{itemize}
+        \item Tracer la ligne d'égalité
+        \item Déterminer le demi-plan correspondant à l'inégalité
+    \end{itemize}
+    
+    \item \textcolor{algoviolet}{\textbf{Identifier la région réalisable}} : intersection de tous les demi-plans
+    
+    \item \textcolor{exempleorange}{\textbf{Tracer les courbes de niveau}} de la fonction objectif
+    
+    \item \textcolor{importantrouge}{\textbf{Trouver le point optimal}} : dernier point de contact entre la courbe de niveau et la région réalisable
+\end{enumerate}
+\end{methode}
+
+\newpage
+\subsection{Solution Graphique}
+
+\begin{solution}
+\textbf{Étape 1 : Tracer les contraintes}
+
+\textcolor{titrebleu}{\textbf{Contrainte 1 :}} $x_1 + x_2 \leq 4$
+\begin{itemize}
+    \item Ligne : $x_1 + x_2 = 4$
+    \item Points : $(0, 4)$ et $(4, 0)$
+    \item Demi-plan : sous la ligne
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Contrainte 2 :}} $x_1 + 2x_2 \leq 6$
+\begin{itemize}
+    \item Ligne : $x_1 + 2x_2 = 6$
+    \item Points : $(0, 3)$ et $(6, 0)$
+    \item Demi-plan : sous la ligne
+\end{itemize}
+
+\textcolor{algoviolet}{\textbf{Contraintes de non-négativité :}} $x_1, x_2 \geq 0$
+\begin{itemize}
+    \item Premier quadrant
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    % Axes
+    \draw[->] (-0.5,0) -- (7,0) node[right] {$x_1$};
+    \draw[->] (0,-0.5) -- (0,5) node[above] {$x_2$};
+    
+    % Grille
+    \foreach \x in {1,2,3,4,5,6} {
+        \draw[thin,gray!30] (\x,0) -- (\x,4.5);
+        \node[below] at (\x,0) {\x};
+    }
+    \foreach \y in {1,2,3,4} {
+        \draw[thin,gray!30] (0,\y) -- (6.5,\y);
+        \node[left] at (0,\y) {\y};
+    }
+    
+    % Contraintes
+    \draw[ultra thick,titrebleu] (0,4) -- (4,0); % x1 + x2 = 4
+    \draw[ultra thick,defvert] (0,3) -- (6,0); % x1 + 2x2 = 6
+    
+    % Région réalisable
+    \fill[fondvert,opacity=0.5] (0,0) -- (2,2) -- (4,0) -- cycle;
+    \fill[fondvert,opacity=0.5] (0,0) -- (0,3) -- (2,2) -- cycle;
+    
+    % Sommets de la région réalisable
+    \fill[importantrouge] (0,0) circle (2pt);
+    \fill[importantrouge] (0,3) circle (2pt);
+    \fill[importantrouge] (2,2) circle (2pt);
+    \fill[importantrouge] (4,0) circle (2pt);
+    
+    % Labels des sommets
+    \node[below left] at (0,0) {$(0,0)$};
+    \node[left] at (0,3) {$(0,3)$};
+    \node[above right] at (2,2) {$(2,2)$};
+    \node[below right] at (4,0) {$(4,0)$};
+    
+    % Labels des contraintes
+    \node[titrebleu,rotate=-45] at (2.5,1.8) {$x_1 + x_2 = 4$};
+    \node[defvert,rotate=-30] at (4,1.2) {$x_1 + 2x_2 = 6$};
+    
+    % Courbes de niveau
+    \draw[dashed,exempleorange,thick] (0,1.5) -- (1,0) node[midway,below right] {$z=3$};
+    \draw[dashed,exempleorange,thick] (0,3) -- (2,0) node[midway,below right] {$z=6$};
+    \draw[dashed,exempleorange,thick] (0,5) -- (3.33,0) node[midway,below right,exempleorange] {$z=10$};
+    
+    % Gradient
+    \draw[->,ultra thick,importantrouge] (1.5,1.5) -- (2.5,2) node[right] {$\nabla z = (3,2)$};
+\end{tikzpicture}
+\end{center}
+\end{solution}
+
+\newpage
+\subsection{Identification des Sommets}
+
+\begin{solution}
+\textbf{Étape 2 : Sommets de la région réalisable}
+
+La région réalisable est un polygone avec 4 sommets :
+
+\textcolor{titrebleu}{\textbf{Sommet A :}} $(0, 0)$
+\begin{itemize}
+    \item Intersection de $x_1 = 0$ et $x_2 = 0$
+    \item $z = 3(0) + 2(0) = 0$
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Sommet B :}} $(0, 3)$
+\begin{itemize}
+    \item Intersection de $x_1 = 0$ et $x_1 + 2x_2 = 6$
+    \item $z = 3(0) + 2(3) = 6$
+\end{itemize}
+
+\textcolor{algoviolet}{\textbf{Sommet C :}} $(2, 2)$
+\begin{itemize}
+    \item Intersection de $x_1 + x_2 = 4$ et $x_1 + 2x_2 = 6$
+    \item Résolution :
+    \begin{align*}
+    x_1 + x_2 &= 4 \quad \text{(1)}\\
+    x_1 + 2x_2 &= 6 \quad \text{(2)}\\
+    \text{(2) - (1) : } x_2 &= 2\\
+    \text{Dans (1) : } x_1 &= 4 - 2 = 2
+    \end{align*}
+    \item $z = 3(2) + 2(2) = 10$ \textcolor{importantrouge}{\textbf{← MAXIMUM}}
+\end{itemize}
+
+\textcolor{exempleorange}{\textbf{Sommet D :}} $(4, 0)$
+\begin{itemize}
+    \item Intersection de $x_2 = 0$ et $x_1 + x_2 = 4$
+    \item $z = 3(4) + 2(0) = 12$ 
+    \item \textcolor{importantrouge}{ATTENTION : Ce point n'est pas réalisable !}
+    \item Vérification avec l'autre contrainte : $4 + 2(0) = 4 \not\leq 6$ ❌ (Erreur : $4 \leq 6$ ✅)
+    \item En fait ce point EST réalisable : $z = 12$ \textcolor{importantrouge}{\textbf{← NOUVEAU MAXIMUM !}}
+\end{itemize}
+\end{solution}
+
+\begin{remarque}
+\textbf{Correction :} Le sommet $(4,0)$ EST réalisable :
+\begin{itemize}
+    \item $x_1 + x_2 = 4 + 0 = 4 \leq 4$ ✅
+    \item $x_1 + 2x_2 = 4 + 0 = 4 \leq 6$ ✅
+    \item $x_1, x_2 \geq 0$ ✅
+\end{itemize}
+\end{remarque}
+
+\newpage
+\subsection{Solution Finale et Analyse}
+
+\begin{solution}
+\textbf{Étape 3 : Calcul des valeurs objectives à tous les sommets}
+
+Récapitulatif des sommets réalisables et leurs valeurs :
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Sommet} & \textbf{Coordonnées} & \textbf{Calcul} & \textbf{Valeur $z$} \\
+\hline
+A & $(0, 0)$ & $3(0) + 2(0)$ & $0$ \\
+\hline
+B & $(0, 3)$ & $3(0) + 2(3)$ & $6$ \\
+\hline
+C & $(2, 2)$ & $3(2) + 2(2)$ & $10$ \\
+\hline
+D & $(4, 0)$ & $3(4) + 2(0)$ & $\textcolor{importantrouge}{\mathbf{12}}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Vérification du sommet D = $(4, 0)$ :}
+\begin{itemize}
+    \item Contrainte 1 : $x_1 + x_2 = 4 + 0 = 4 \leq 4$ ✅
+    \item Contrainte 2 : $x_1 + 2x_2 = 4 + 2(0) = 4 \leq 6$ ✅
+    \item Non-négativité : $x_1 = 4 \geq 0$, $x_2 = 0 \geq 0$ ✅
+\end{itemize}
+
+\textcolor{importantrouge}{\textbf{Conclusion :}} La solution optimale est au sommet D.
+\end{solution}
+
+\begin{solution}
+\textbf{SOLUTION OPTIMALE :}
+
+\begin{center}
+\fcolorbox{importantrouge}{fondjaune}{
+\begin{minipage}{0.8\textwidth}
+\centering
+\Large
+$$\mathbf{x_1^* = 4, \quad x_2^* = 0}$$
+$$\mathbf{z^* = 12}$$
+\end{minipage}
+}
+\end{center}
+
+\textbf{Interprétation :}
+\begin{itemize}
+    \item La solution optimale se trouve à un sommet de la région réalisable
+    \item À ce point, les deux variables ne sont pas nécessairement strictement positives
+    \item La contrainte 1 ($x_1 + x_2 \leq 4$) est \textcolor{importantrouge}{\textbf{saturée}} (égalité)
+    \item La contrainte 2 ($x_1 + 2x_2 \leq 6$) est \textcolor{defvert}{\textbf{non saturée}} (inégalité stricte : $4 < 6$)
+\end{itemize}
+\end{solution}
+
+\newpage
+\subsection{Analyse Graphique Détaillée}
+
+\begin{solution}
+\textbf{Visualisation complète avec courbes de niveau :}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.8]
+    % Axes
+    \draw[->] (-0.5,0) -- (7,0) node[right] {$x_1$};
+    \draw[->] (0,-0.5) -- (0,5) node[above] {$x_2$};
+    
+    % Grille
+    \foreach \x in {1,2,3,4,5,6} {
+        \draw[thin,gray!30] (\x,0) -- (\x,4.5);
+        \node[below,font=\small] at (\x,0) {\x};
+    }
+    \foreach \y in {1,2,3,4} {
+        \draw[thin,gray!30] (0,\y) -- (6.5,\y);
+        \node[left,font=\small] at (0,\y) {\y};
+    }
+    
+    % Contraintes (lignes pleines)
+    \draw[ultra thick,titrebleu] (0,4) -- (4,0) node[midway,above left] {$x_1 + x_2 = 4$};
+    \draw[ultra thick,defvert] (0,3) -- (6,0) node[midway,below right] {$x_1 + 2x_2 = 6$};
+    
+    % Région réalisable (polygone)
+    \fill[fondvert,opacity=0.6] (0,0) -- (4,0) -- (2,2) -- (0,3) -- cycle;
+    
+    % Sommets
+    \fill[black] (0,0) circle (2.5pt);
+    \fill[black] (0,3) circle (2.5pt);
+    \fill[black] (2,2) circle (2.5pt);
+    \fill[importantrouge] (4,0) circle (3.5pt);
+    
+    % Labels des sommets avec valeurs
+    \node[below left,font=\small] at (0,0) {A $(0,0)$};
+    \node[below left,font=\small] at (0,0.3) {$z=0$};
+    
+    \node[left,font=\small] at (0,3) {B $(0,3)$};
+    \node[left,font=\small] at (-0.3,2.7) {$z=6$};
+    
+    \node[above,font=\small] at (2,2) {C $(2,2)$};
+    \node[above,font=\small] at (2,2.3) {$z=10$};
+    
+    \node[below right,font=\small] at (4,0) {D $(4,0)$};
+    \node[below right,font=\small,importantrouge] at (4.3,-0.3) {\textbf{$z=12$ ★}};
+    
+    % Courbes de niveau de z (lignes pointillées)
+    \draw[dashed,exempleorange,thick] (-0.3,1.5) -- (1,0);
+    \node[exempleorange,right,font=\small] at (1,0) {$z=3$};
+    
+    \draw[dashed,exempleorange,thick] (0,3) -- (2,0);
+    \node[exempleorange,right,font=\small] at (2,0.1) {$z=6$};
+    
+    \draw[dashed,exempleorange,thick] (0.67,3) -- (3.33,0);
+    \node[exempleorange,right,font=\small] at (3.3,0.1) {$z=10$};
+    
+    \draw[dashed,importantrouge,ultra thick] (1.33,3.5) -- (4,0) -- (5.5,-0.75);
+    \node[importantrouge,right,font=\small] at (4.3,0.3) {\textbf{$z=12$ (optimal)}};
+    
+    % Vecteur gradient
+    \draw[->,ultra thick,algoviolet] (3,1.5) -- (3.9,2.1);
+    \node[algoviolet,right,font=\small] at (3.9,2.1) {$\nabla z = (3,2)$};
+    \node[algoviolet,below,font=\small] at (3.5,1.5) {Direction};
+    \node[algoviolet,below,font=\small] at (3.5,1.2) {de croissance};
+    
+    % Zone réalisable label
+    \node[defvert,font=\small] at (1.5,1) {\textbf{Région}};
+    \node[defvert,font=\small] at (1.5,0.7) {\textbf{réalisable}};
+\end{tikzpicture}
+\end{center}
+\end{solution}
+
+\newpage
+\subsection{Méthode des Courbes de Niveau}
+
+\begin{methode}
+\textbf{Principe des courbes de niveau :}
+
+Pour maximiser $z = 3x_1 + 2x_2$, on cherche la courbe de niveau $3x_1 + 2x_2 = k$ avec la plus grande valeur de $k$ qui intersecte encore la région réalisable.
+
+\textbf{Procédure :}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{Tracer une courbe de niveau} passant par la région réalisable (par exemple $z = 6$)
+    
+    \item \textcolor{defvert}{Identifier la direction de croissance} : le gradient $\nabla z = (3, 2)$
+    
+    \item \textcolor{algoviolet}{Déplacer la courbe de niveau} dans la direction du gradient (vers le haut à droite)
+    
+    \item \textcolor{exempleorange}{Continuer} tant que la courbe intersecte la région réalisable
+    
+    \item \textcolor{importantrouge}{S'arrêter} au dernier point de contact : c'est le point optimal
+\end{enumerate}
+
+\textbf{Observation importante :}
+
+Le dernier point de contact est toujours un \textcolor{importantrouge}{\textbf{sommet}} du polygone (sauf cas dégénéré où toute une arête est optimale).
+\end{methode}
+
+\begin{remarque}
+\textbf{Pourquoi évaluer tous les sommets ?}
+
+\textbf{Théorème fondamental de la programmation linéaire :}
+
+\textit{Si un problème de PL a une solution optimale, alors au moins un sommet de la région réalisable est optimal.}
+
+\textbf{Conséquence pratique :}
+\begin{itemize}
+    \item Il suffit d'évaluer la fonction objectif à tous les sommets
+    \item Le sommet avec la meilleure valeur est optimal
+    \item C'est le principe de la \textcolor{algoviolet}{\textbf{méthode du simplexe}}
+\end{itemize}
+\end{remarque}
+
+\newpage
+\subsection{Cas Particuliers}
+
+\begin{remarque}
+\textbf{Que se passe-t-il si on change la fonction objectif ?}
+
+Considérons le même problème avec différentes fonctions objectifs :
+
+\textbf{Cas 1 :} $\max z = x_1 + 2x_2$
+\begin{itemize}
+    \item Gradient : $(1, 2)$
+    \item Solution optimale : sommet B = $(0, 3)$ avec $z^* = 6$
+\end{itemize}
+
+\textbf{Cas 2 :} $\max z = x_1 + x_2$
+\begin{itemize}
+    \item Gradient : $(1, 1)$
+    \item La courbe de niveau $x_1 + x_2 = 4$ est parallèle à la contrainte 1
+    \item \textcolor{importantrouge}{\textbf{Solutions multiples :}} tous les points du segment $[C, D]$ sont optimaux
+    \item Valeur optimale : $z^* = 4$
+\end{itemize}
+
+\textbf{Cas 3 :} $\max z = x_1$
+\begin{itemize}
+    \item Gradient : $(1, 0)$
+    \item Solution optimale : sommet D = $(4, 0)$ avec $z^* = 4$
+\end{itemize}
+\end{remarque}
+
+\begin{important}
+\textbf{Résumé de l'exercice 3 :}
+
+\begin{center}
+\fcolorbox{titrebleu}{fondbleu}{
+\begin{minipage}{0.85\textwidth}
+\textbf{Problème :}
+\begin{align*}
+\max \quad & z = 3x_1 + 2x_2\\
+\text{s.c.} \quad & x_1 + x_2 \leq 4\\
+& x_1 + 2x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\textbf{Solution optimale :}
+$$\boxed{x_1^* = 4, \quad x_2^* = 0, \quad z^* = 12}$$
+
+\textbf{Contraintes actives au point optimal :}
+\begin{itemize}
+    \item $x_1 + x_2 = 4$ (saturée)
+    \item $x_2 = 0$ (saturée)
+\end{itemize}
+
+\textbf{Contraintes inactives :}
+\begin{itemize}
+    \item $x_1 + 2x_2 = 4 < 6$ (marge de 2)
+\end{itemize}
+\end{minipage}
+}
+\end{center}
+\end{important}
+
+\newpage
+\section{Exercices Supplémentaires}
+
+\begin{exercice}
+\textbf{Exercice 4 : Détection d'infaisabilité}
+
+Montrez graphiquement que le problème suivant est infaisable :
+
+\begin{align*}
+\max \quad & z = x_1 + x_2\\
+\text{s.c.} \quad & x_1 + x_2 \leq 2\\
+& x_1 + x_2 \geq 5\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{exercice}
+
+\begin{exercice}
+\textbf{Exercice 5 : Problème non borné}
+
+Montrez graphiquement que le problème suivant est non borné :
+
+\begin{align*}
+\max \quad & z = 2x_1 + x_2\\
+\text{s.c.} \quad & x_1 - x_2 \leq 1\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{exercice}
+
+\begin{exercice}
+\textbf{Exercice 6 : Solutions multiples}
+
+Résolvez graphiquement et montrez qu'il existe une infinité de solutions optimales :
+
+\begin{align*}
+\max \quad & z = 2x_1 + 4x_2\\
+\text{s.c.} \quad & x_1 + 2x_2 \leq 8\\
+& 2x_1 + x_2 \leq 10\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{exercice}
+
+\newpage
+\section{Conseils et Erreurs Courantes}
+
+\begin{important}
+\textbf{Erreurs fréquentes à éviter :}
+
+\begin{enumerate}
+    \item \textcolor{importantrouge}{\textbf{Oublier de vérifier tous les sommets}}
+    \begin{itemize}
+        \item Toujours identifier TOUS les sommets de la région réalisable
+        \item Évaluer la fonction objectif à TOUS ces sommets
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Confondre sommet et point optimal}}
+    \begin{itemize}
+        \item Un sommet peut ne pas être optimal
+        \item Mais un point optimal est toujours un sommet (ou sur une arête dans le cas de solutions multiples)
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Mal tracer les demi-plans}}
+    \begin{itemize}
+        \item Pour $ax + by \leq c$ : choisir un point test (souvent l'origine)
+        \item Si le point satisfait l'inégalité, le demi-plan contient ce point
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Erreur dans le calcul des intersections}}
+    \begin{itemize}
+        \item Vérifier les calculs algébriques
+        \item Vérifier que le point appartient bien aux deux contraintes
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Ne pas vérifier la faisabilité}}
+    \begin{itemize}
+        \item Un point d'intersection de deux contraintes n'est pas forcément dans la région réalisable
+        \item Il faut vérifier TOUTES les contraintes
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\begin{methode}
+\textbf{Checklist pour la méthode graphique :}
+
+\begin{enumerate}
+    \item[$\square$] Tracer les axes et identifier le premier quadrant ($x_1, x_2 \geq 0$)
+    \item[$\square$] Pour chaque contrainte :
+    \begin{itemize}
+        \item[$\square$] Tracer la ligne d'égalité
+        \item[$\square$] Identifier le bon demi-plan
+    \end{itemize}
+    \item[$\square$] Identifier la région réalisable (intersection)
+    \item[$\square$] Lister tous les sommets de la région
+    \item[$\square$] Pour chaque sommet :
+    \begin{itemize}
+        \item[$\square$] Calculer ses coordonnées (intersection de deux contraintes)
+        \item[$\square$] Vérifier qu'il satisfait toutes les contraintes
+        \item[$\square$] Calculer la valeur de la fonction objectif
+    \end{itemize}
+    \item[$\square$] Identifier le sommet avec la meilleure valeur
+    \item[$\square$] Vérifier graphiquement avec les courbes de niveau
+\end{enumerate}
+\end{methode}
+
+\end{document} 

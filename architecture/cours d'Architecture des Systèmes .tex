@@ -1,0 +1,357 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{array}
+\geometry{margin=2.5cm}
+% Définition des couleurs
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+% Boîtes colorées
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=�� Définition,
+    arc=3mm
+}
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=�� Exemple,
+    arc=3mm
+}
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=⚙️ Méthode,
+    arc=3mm
+}
+\newtcolorbox{remarque}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=�� Remarque,
+    arc=3mm
+}
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\LARGE\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}
+{\color{defvert}\normalfont\Large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\color{algoviolet}\normalfont\large\bfseries}
+{\color{algoviolet}\thesubsubsection}{1em}{}
+\title{\textbf{\Huge\color{titrebleu}Fiche de Cours}\\[0.5em]
+\large\color{defvert}Architecture des Systèmes\\
+Chapitre 1 : Fonctionnement d'un ordinateur}
+\author{\large Alexandre Guitton}
+\date{\large Version 2024-2025}
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Objectifs du Chapitre}
+\begin{definition}
+\begin{itemize}
+    \item Fonctionnement d'un ordinateur
+    \item Stockage : des bits aux valeurs
+    \item Traitement :
+    \begin{itemize}
+        \item Par des circuits simples (sans notion de temps et sans stockage)
+        \item Par des circuits complexes (avec notions de temps et de stockage)
+        \item Entre circuits complexes
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+\section{Plan du Chapitre}
+\begin{itemize}
+    \item 1. Représentation des valeurs
+    \item 2. Circuits logiques
+    \item 3. Circuits séquentiels
+    \item 4. Architecture d'un ordinateur
+\end{itemize}
+
+\newpage
+\section{Représentation des valeurs}
+
+\subsection{Bit et Stockage}
+\begin{definition}
+\textbf{Bit} : Unité de stockage de l'information, peut être 0 ou 1.
+\end{definition}
+
+\begin{remarque}
+Stockage de valeurs complexes comme nombres, textes, images, sons, vidéos via :
+\begin{itemize}
+    \item Entiers positifs, entiers naturels
+    \item Nombres réels
+    \item Caractères, chaînes de caractères
+\end{itemize}
+\end{remarque}
+
+\subsection{Entiers positifs}
+
+\subsubsection{Bases}
+\begin{definition}
+\textbf{Base} : Nombre de chiffres différents autorisés.
+\begin{itemize}
+    \item Base 2 (binaire) : 0 et 1
+    \item Base 10 (décimale) : 0 à 9
+    \item Base 16 (hexadécimale) : 0 à 9, A à F
+\end{itemize}
+\end{definition}
+
+\begin{remarque}
+Notation : Base en indice, hexadécimal précédé de 0x. Par défaut, base 10.
+\end{remarque}
+
+\subsubsection{Conversion base b vers base 10}
+\begin{methode}
+Pour $(a_{n-1} \dots a_0)_b$ : $\sum_{i=0}^{n-1} a_i \cdot b^i$
+\end{methode}
+
+\begin{exemple}
+$110101_2 = 1\cdot2^5 + 1\cdot2^4 + 0\cdot2^3 + 1\cdot2^2 + 0\cdot2^1 + 1\cdot2^0 = 53_{10}$
+\end{exemple}
+
+\subsubsection{Conversion base 10 vers base b}
+\begin{methode}
+\begin{enumerate}
+    \item Écrire puissances de b
+    \item Trouver c (0 à b-1) et k tels que $c \cdot b^k \leq n < (c+1) \cdot b^k$
+    \item Soustraire $c \cdot b^k$, répéter jusqu'à 0
+\end{enumerate}
+\end{methode}
+
+\begin{exemple}
+39 en base 2 : 100111$_2$
+\end{exemple}
+
+\subsubsection{Conversions entre bases}
+\begin{methode}
+Passer via base 10. Pour base 16 ↔ base 2 : 4 bits par chiffre hex.
+\end{methode}
+
+\subsubsection{Addition}
+\begin{methode}
+Comme en décimal, avec retenues. Attention aux débordements.
+\end{methode}
+
+\begin{exemple}
+$100111_2 + 101110_2 = 1010101_2$ (39 + 46 = 85)
+\end{exemple}
+
+\newpage
+\subsection{Entiers naturels}
+
+\begin{remarque}
+Problème : Représenter nombres négatifs.
+\end{remarque}
+
+\subsubsection{Bit de signe}
+\begin{exemple}
+39 sur 8 bits : 00100111 ; -39 : 10100111
+\end{exemple}
+
+\begin{remarque}
+Problèmes : Additions/soustractions différentes, 0 et -0 distincts.
+\end{remarque}
+
+\subsubsection{Complément logique (à 1)}
+\begin{methode}
+Inverser bits pour négatifs.
+\end{methode}
+
+\begin{exemple}
+-39 sur 8 bits : 11011000
+\end{exemple}
+
+\begin{methode}
+Addition : Addition base 2, réajouter retenue débordante.
+\end{methode}
+
+\begin{remarque}
+Problèmes : Addition complexe, 0 et -0 distincts.
+\end{remarque}
+
+\subsubsection{Complément arithmétique (à 2)}
+\begin{methode}
+Ajouter 1 au complément logique pour négatifs.
+\end{methode}
+
+\begin{exemple}
+-39 sur 8 bits : 11011001
+\end{exemple}
+
+\begin{methode}
+Addition : Addition base 2, ignorer retenue débordante.
+\end{methode}
+
+\newpage
+\subsection{Nombres réels}
+
+\begin{definition}
+Format IEEE 754 (simple/double précision) :
+\begin{itemize}
+    \item Signe : 1 bit
+    \item Mantisse normalisée : $m \cdot 2^e$, $0.5 \leq m < 1$
+    \item Bit caché : Premier bit (1) non stocké
+    \item Exposant biaisé
+\end{itemize}
+\end{definition}
+
+\begin{remarque}
+Simple : 1 signe, 23 mantisse, 8 exposant (biais -127). Double : 1, 52, 11 (-1023).
+\end{remarque}
+
+\begin{exemple}
+11000000 00110000 00000000 00000000 = -2.75
+\end{exemple}
+
+\begin{exemple}
+4.25 = 01000000 10001000 00000000 00000000$_2$
+\end{exemple}
+
+\subsection{Caractères}
+
+\begin{definition}
+Encodages : ASCII, UTF-8, etc.
+\end{definition}
+
+\begin{remarque}
+ASCII : 128 caractères sur 1 octet. Ex : 'A' = 65.
+\end{remarque}
+
+\begin{remarque}
+Propriétés : Suites pour minuscules/majuscules/chiffres. Problèmes : Pas d'accents, caractères non affichables.
+\end{remarque}
+
+\subsection{Chaînes de caractères}
+\begin{methode}
+\begin{itemize}
+    \item Longueur + liste (Pascal)
+    \item Caractère terminal (C)
+\end{itemize}
+\end{methode}
+
+\newpage
+\section{Circuits logiques}
+
+\begin{definition}
+Circuit électronique calculant sortie binaire en fonction d'entrées binaires.
+\end{definition}
+
+\begin{definition}
+Fonctions : NOT, OR, AND, XOR, NOR, NAND.
+\end{definition}
+
+\subsection{Algèbre de Boole}
+\begin{definition}
+Opérations : NOT ($\overline{A}$), OR (+), AND ($\cdot$).
+\end{definition}
+
+\begin{remarque}
+Lois de De Morgan : $\overline{A+B} = \overline{A} \cdot \overline{B}$, etc.
+\end{remarque}
+
+\subsection{Table de vérité}
+\begin{methode}
+Liste exhaustive entrées/sorties.
+\end{methode}
+
+\begin{exemple}
+L allumée si A ou B ouverts, sauf si S ouvert : L = $\overline{S} \cdot (A + B)$
+\end{exemple}
+
+\subsection{Synthèse}
+\begin{methode}
+Table de vérité → expression → circuit.
+\end{methode}
+
+\subsection{Analyse}
+\begin{methode}
+Circuit → expression.
+\end{methode}
+
+\subsection{Simplification}
+\begin{methode}
+Observation, propriétés Boole, Karnaugh.
+\end{methode}
+
+\newpage
+\section{Circuits séquentiels}
+
+\begin{definition}
+Intègrent temps (horloge) et mémoire (bascule).
+\end{definition}
+
+\subsection{Bascule RS}
+\begin{definition}
+Entrées R (reset à 0), S (set à 1).
+\end{definition}
+
+\begin{methode}
+Table : Si R=1 S=0 → 0 ; R=0 S=1 → 1 ; R=0 S=0 → maintient ; R=1 S=1 → indéterminé.
+\end{methode}
+
+\begin{definition}
+$Q_{new} = \overline{R} \cdot (S + Q_{old})$
+\end{definition}
+
+\newpage
+\section{Architecture d'un ordinateur}
+
+\begin{definition}
+Interconnexion circuits séquentiels + horloge + bus. Modèle Von Neumann.
+\end{definition}
+
+\subsection{Types de circuits}
+\begin{itemize}
+    \item Mémoire
+    \item Unités de calculs
+    \item Unités de traitement
+    \item Périphériques externes
+\end{itemize}
+
+\subsection{Mots-clés}
+\begin{definition}
+\begin{itemize}
+    \item RAM : Mémoire principale lecture/écriture
+    \item ROM : Lecture seule
+    \item BIOS : Primitives E/S en ROM
+    \item CMOS : Sauvegarde BIOS éteint
+    \item Circuit intégré : Fonctions sur puce
+    \item Processeur : Traitements programmables
+    \item Microprocesseur : Processeur sur un circuit intégré
+\end{itemize}
+\end{definition}
+
+\section{Résumé des connaissances}
+\begin{itemize}
+    \item Codage : Entiers positifs/naturels, réels, caractères
+    \item Circuits logiques : Synthèse, analyse
+    \item Circuits séquentiels : Principe
+    \item Ordinateur : Organisation
+\end{itemize}
+
+\end{document}

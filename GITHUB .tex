@@ -1,0 +1,814 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[margin=2cm]{geometry}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{tcolorbox}
+
+% Définition des couleurs
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondgris}{RGB}{245,245,245}
+
+% Boîtes colorées
+\newtcolorbox{important}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+
+\newtcolorbox{conseil}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Conseil,
+    arc=3mm
+}
+
+\newtcolorbox{info}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=Information,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\LARGE\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\Large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Guide GitHub Student Pack}\\[0.5em]
+\large\color{defvert}Carte de Navigation Complète\\
+Pour Étudiants en Médecine et Informatique}
+\author{\large Guide Pratique}
+\date{\large Année 2024-2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{info}
+\textbf{Qu'est-ce que le GitHub Student Pack ?}
+
+Le GitHub Student Pack est un ensemble d'outils et services gratuits offerts aux étudiants. Il comprend plus de 100 offres dans différents domaines : développement, design, déploiement, apprentissage, etc.
+
+\textbf{Comment l'obtenir ?}
+\begin{enumerate}
+    \item Aller sur \url{https://education.github.com/pack}
+    \item S'inscrire avec votre email étudiant (@univ-*.fr)
+    \item Valider votre statut d'étudiant
+\end{enumerate}
+\end{info}
+
+\tableofcontents
+\newpage
+
+\section{Organisation et Productivité}
+
+\subsection{Notion + Notion Template Collection}
+
+\textbf{Ce que c'est :} Espace de travail tout-en-un pour notes, bases de données, wikis, tableaux Kanban.
+
+\textbf{Offre Student Pack :}
+\begin{itemize}
+    \item Plan Plus gratuit (valeur 8\$/mois)
+    \item Collection de templates étudiants
+\end{itemize}
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Centraliser cours, fiches de révision, QCM
+    \item Planning de révisions et projets
+    \item Organisation cours médecine + informatique au même endroit
+    \item Templates prêts à l'emploi
+\end{itemize}
+
+\begin{conseil}
+Idéal pour créer une base de connaissances personnelle avec système de tags et recherche rapide.
+\end{conseil}
+
+\subsection{PomoDone + HazeOver}
+
+\textbf{PomoDone :} Application Pomodoro (technique 25 min travail + 5 min pause)
+
+\textbf{HazeOver :} Réduit les distractions en assombrissant les fenêtres en arrière-plan
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Maintenir la concentration pendant longues sessions
+    \item Parfait pour révisions médecine et sessions de code
+    \item Éviter la fatigue mentale
+\end{itemize}
+
+\newpage
+\section{Sécurité et Gestion de Comptes}
+
+\subsection{1Password + Dashlane}
+
+\textbf{Ce que c'est :} Gestionnaires de mots de passe sécurisés
+
+\textbf{Offre Student Pack :}
+\begin{itemize}
+    \item 1Password : 6 mois gratuits
+    \item Dashlane : 1 an gratuit
+\end{itemize}
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Beaucoup d'outils = beaucoup de comptes
+    \item Mots de passe forts et uniques automatiquement
+    \item Gain de temps (auto-remplissage)
+    \item Protection contre le piratage
+\end{itemize}
+
+\begin{important}
+Avec tous les outils du Student Pack, vous aurez des dizaines de comptes. Un gestionnaire de mots de passe est ESSENTIEL.
+\end{important}
+
+\subsection{Doppler}
+
+\textbf{Ce que c'est :} Gestion de secrets et variables d'environnement
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Gérer clés API, tokens, mots de passe de BDD
+    \item Travailler en équipe sans partager secrets par email
+    \item Synchronisation automatique entre environnements
+\end{itemize}
+
+\begin{conseil}
+Plus avancé. Utile quand vous gérez des projets avec bases de données ou APIs externes.
+\end{conseil}
+
+\newpage
+\section{Développement et Programmation}
+
+\subsection{GitHub Copilot}
+
+\textbf{Ce que c'est :} Assistant IA qui aide à écrire du code
+
+\textbf{Offre Student Pack :} Gratuit pendant vos études
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Autocomplétion intelligente du code
+    \item Explications de code existant
+    \item Génération de tests
+    \item Correction de bugs
+    \item Gain de temps énorme en TD et projets
+\end{itemize}
+
+\begin{important}
+L'un des outils les PLUS utiles du pack pour les cours d'informatique. À activer en priorité !
+\end{important}
+
+\subsection{JetBrains Suite}
+
+\textbf{Ce que c'est :} Suite d'IDEs professionnels (PyCharm, IntelliJ IDEA, WebStorm, etc.)
+
+\textbf{Offre Student Pack :} Tous les IDEs gratuits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Environnements de développement professionnels
+    \item Débogueur puissant
+    \item Refactoring automatique
+    \item PyCharm pour Python, IntelliJ pour Java
+\end{itemize}
+
+\subsection{Visual Studio Code}
+
+\textbf{Ce que c'est :} Éditeur de code léger et extensible
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Plus léger que JetBrains
+    \item Extensions pour tous les langages
+    \item Intégration Git native
+    \item Gratuit de base, mais extensions premium avec Student Pack
+\end{itemize}
+
+\subsection{GitHub Codespaces}
+
+\textbf{Ce que c'est :} Environnement de développement dans le cloud
+
+\textbf{Offre Student Pack :} 180 heures/mois gratuites
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Coder depuis n'importe quel ordinateur
+    \item Pas d'installation locale nécessaire
+    \item Configuration automatique de l'environnement
+    \item Idéal si vous changez souvent de PC (fac/maison)
+\end{itemize}
+
+\subsection{GitHub Pro}
+
+\textbf{Ce que c'est :} Version premium de GitHub
+
+\textbf{Offre Student Pack :} Gratuit pendant vos études
+
+\textbf{Fonctionnalités :}
+\begin{itemize}
+    \item Repos privés illimités
+    \item GitHub Pages sur repos privés
+    \item Actions minutes augmentées
+    \item Insights avancés
+\end{itemize}
+
+\newpage
+\section{Gestion de Versions (Git)}
+
+\subsection{GitLens}
+
+\textbf{Ce que c'est :} Extension VS Code pour visualiser l'historique Git
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Voir qui a modifié chaque ligne
+    \item Historique des fichiers clair
+    \item Navigation dans les commits
+\end{itemize}
+
+\subsection{GitHub Desktop + GitKraken + Tower}
+
+\textbf{Ce que c'est :} Interfaces graphiques pour Git
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Visualiser branches et merges facilement
+    \item Pas besoin de commandes en ligne
+    \item Éviter les erreurs Git
+    \item Idéal pour débutants
+\end{itemize}
+
+\begin{conseil}
+\textbf{Recommandation :}
+\begin{itemize}
+    \item Débutant : GitHub Desktop (simple)
+    \item Intermédiaire : GitKraken (visuel)
+    \item Avancé : Tower (puissant)
+\end{itemize}
+\end{conseil}
+
+\subsection{Working Copy (mobile)}
+
+\textbf{Ce que c'est :} Client Git pour iOS
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Modifier code depuis téléphone/tablette
+    \item Faire commits en déplacement
+    \item Utile pour petites corrections urgentes
+\end{itemize}
+
+\newpage
+\section{Apprentissage et Formation}
+
+\subsection{DataCamp}
+
+\textbf{Ce que c'est :} Plateforme d'apprentissage data science et programmation
+
+\textbf{Offre Student Pack :} 3 mois gratuits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Cours Python, R, SQL
+    \item Data analysis et statistiques
+    \item Machine Learning
+    \item Très pertinent pour projets santé/bio-informatique
+\end{itemize}
+
+\begin{conseil}
+EXCELLENT pour médecine + informatique : analyse de données médicales, statistiques, recherche.
+\end{conseil}
+
+\subsection{Educative}
+
+\textbf{Ce que c'est :} Cours de programmation interactifs
+
+\textbf{Offre Student Pack :} 6 mois gratuits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Cours structurés avec exercices
+    \item Pas besoin d'installer quoi que ce soit
+    \item Sujets variés : web, algorithmes, systèmes
+\end{itemize}
+
+\subsection{Codédex}
+
+\textbf{Ce que c'est :} Apprentissage ludique de la programmation
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Gamification de l'apprentissage
+    \item Motivation par badges et niveaux
+    \item Bon pour débutants
+\end{itemize}
+
+\subsection{Scrimba + FrontendMasters}
+
+\textbf{Ce que c'est :} Formations développement web
+
+\textbf{Scrimba :} Vidéos interactives où on peut modifier le code en direct
+
+\textbf{FrontendMasters :} Cours avancés front-end et JavaScript
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Créer des sites web modernes
+    \item React, Vue, Angular
+    \item Portfolio professionnel
+\end{itemize}
+
+\newpage
+\section{Entraînement Algorithmes}
+
+\subsection{AlgoExpert + Interview Cake}
+
+\textbf{Ce que c'est :} Plateformes d'entraînement aux algorithmes et entretiens techniques
+
+\textbf{Offre Student Pack :}
+\begin{itemize}
+    \item AlgoExpert : réduction
+    \item Interview Cake : accès premium
+\end{itemize}
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Préparer entretiens techniques
+    \item Stages et alternances en informatique
+    \item Améliorer logique algorithmique
+\end{itemize}
+
+\begin{conseil}
+Prioritaire si vous visez stages/alternance en entreprise tech. Moins urgent si objectif = seulement réussir examens de fac.
+\end{conseil}
+
+\newpage
+\section{Data Science et Intelligence Artificielle}
+
+\subsection{Deepnote}
+
+\textbf{Ce que c'est :} Notebooks collaboratifs (comme Jupyter) dans le cloud
+
+\textbf{Offre Student Pack :} Plan éducation gratuit
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Analyse de données
+    \item Visualisations interactives
+    \item Collaboration en temps réel
+    \item Machine Learning
+\end{itemize}
+
+\begin{conseil}
+TRÈS pertinent pour projets santé : analyse données patients, stats biomédicales, recherche.
+\end{conseil}
+
+\subsection{Microsoft Azure}
+
+\textbf{Ce que c'est :} Cloud computing (serveurs, IA, bases de données)
+
+\textbf{Offre Student Pack :} 100\$ de crédits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Services d'IA (vision, NLP)
+    \item Hébergement applications
+    \item Calcul haute performance
+    \item Bases de données
+\end{itemize}
+
+\newpage
+\section{Hébergement et Déploiement}
+
+\subsection{GitHub Pages}
+
+\textbf{Ce que c'est :} Hébergement gratuit de sites statiques
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Portfolio personnel
+    \item Documentation de projets
+    \item Sites vitrines
+    \item Gratuit et illimité
+\end{itemize}
+
+\subsection{Noms de Domaine (Name.com, Namecheap, .TECH)}
+
+\textbf{Ce que c'est :} Votre propre nom de domaine
+
+\textbf{Offre Student Pack :}
+\begin{itemize}
+    \item Name.com : 1 domaine .me gratuit
+    \item Namecheap : 1 an gratuit .me
+    \item .TECH : 1 domaine .tech gratuit
+\end{itemize}
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Portfolio professionnel : prenom-nom.tech
+    \item Plus crédible qu'un sous-domaine GitHub
+    \item Email personnalisé possible
+\end{itemize}
+
+\subsection{Heroku + DigitalOcean}
+
+\textbf{Ce que c'est :} Hébergement d'applications avec backend
+
+\textbf{Offre Student Pack :}
+\begin{itemize}
+    \item Heroku : crédits gratuits
+    \item DigitalOcean : 200\$ de crédits
+\end{itemize}
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Déployer applications Django, Flask, Node.js
+    \item APIs
+    \item Applications avec base de données
+\end{itemize}
+
+\subsection{MongoDB Atlas + Appwrite}
+
+\textbf{Ce que c'est :} Bases de données dans le cloud
+
+\textbf{MongoDB Atlas :} Base NoSQL
+
+\textbf{Appwrite :} Backend as a Service (BDD + Auth + Storage)
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Pas besoin de gérer serveur
+    \item Scalabilité automatique
+    \item Backend prêt rapidement
+\end{itemize}
+
+\newpage
+\section{Tests et Qualité}
+
+\subsection{BrowserStack + LambdaTest + Polypane}
+
+\textbf{Ce que c'est :} Tests multi-navigateurs et appareils
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Tester site sur Safari/iOS sans iPhone
+    \item Compatibilité tous navigateurs
+    \item Tests responsive design
+\end{itemize}
+
+\begin{conseil}
+Utile quand votre site devient public et utilisé par d'autres personnes.
+\end{conseil}
+
+\subsection{Travis CI + Codecov + DeepScan}
+
+\textbf{Travis CI :} Intégration continue (tests automatiques)
+
+\textbf{Codecov :} Couverture de tests
+
+\textbf{DeepScan :} Analyse qualité JavaScript
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Tests automatiques à chaque push
+    \item Détecter bugs avant mise en production
+    \item Qualité de code
+\end{itemize}
+
+\subsection{Sentry + Honeybadger + New Relic + Datadog}
+
+\textbf{Ce que c'est :} Monitoring d'applications en production
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Détecter erreurs en temps réel
+    \item Monitoring des performances
+    \item Logs centralisés
+\end{itemize}
+
+\begin{conseil}
+Niveau production/professionnel. Utile quand vous avez des utilisateurs réels. Pour TD : souvent inutile.
+\end{conseil}
+
+\newpage
+\section{Design et Création}
+
+\subsection{Icons8 + IconScout + Octicons}
+
+\textbf{Ce que c'est :} Bibliothèques d'icônes
+
+\textbf{Offre Student Pack :} Accès premium
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Rendre projets plus professionnels
+    \item Interfaces utilisateur
+    \item Présentations
+\end{itemize}
+
+\subsection{Bootstrap Studio}
+
+\textbf{Ce que c'est :} Outil visuel pour créer sites Bootstrap
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Créer sites rapidement
+    \item Design responsive automatique
+    \item Pas besoin d'écrire tout le HTML/CSS
+\end{itemize}
+
+\subsection{Visme}
+
+\textbf{Ce que c'est :} Création de présentations, infographies, rapports
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Présentations professionnelles
+    \item Exposés de projets
+    \item Infographies pour rapports
+\end{itemize}
+
+\subsection{ToDiagram}
+
+\textbf{Ce que c'est :} Création de diagrammes et schémas
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Schématiser algorithmes
+    \item Architecture d'applications
+    \item Diagrammes de révision (médecine)
+    \item Organigrammes
+\end{itemize}
+
+\newpage
+\section{Outils Spécialisés}
+
+\subsection{POEditor}
+
+\textbf{Ce que c'est :} Gestion de traductions pour applications
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Applications multilingues
+    \item Collaboration avec traducteurs
+\end{itemize}
+
+\begin{conseil}
+Non prioritaire sauf si vous créez une app multilingue.
+\end{conseil}
+
+\subsection{Stripe}
+
+\textbf{Ce que c'est :} Gestion de paiements en ligne
+
+\textbf{Offre Student Pack :} Frais réduits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Projets commerciaux
+    \item Abonnements
+    \item Marketplace
+\end{itemize}
+
+\begin{conseil}
+Uniquement si projet commercial. Sinon pas nécessaire.
+\end{conseil}
+
+\subsection{Zyte + Requestly}
+
+\textbf{Zyte :} Web scraping (collecte de données web)
+
+\textbf{Requestly :} Debug HTTP, modification de requêtes
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Collecte automatique de données
+    \item Analyse de sites web
+    \item Debug avancé
+\end{itemize}
+
+\begin{important}
+Attention aux règles légales et CGU des sites lors du scraping !
+\end{important}
+
+\subsection{Arduino + Adafruit}
+
+\textbf{Ce que c'est :} Électronique et IoT
+
+\textbf{Offre Student Pack :} Réductions sur matériel
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Projets hardware
+    \item Systèmes embarqués
+    \item Robotique
+\end{itemize}
+
+\newpage
+\section{Communauté et Certifications}
+
+\subsection{GitHub Community Exchange}
+
+\textbf{Ce que c'est :} Plateforme pour trouver des projets open source étudiants
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Collaborer avec autres étudiants
+    \item Contribuer à projets réels
+    \item Construire portfolio
+    \item Networking
+\end{itemize}
+
+\subsection{GitHub Campus Experts}
+
+\textbf{Ce que c'est :} Programme de leadership technique
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Former communauté tech dans votre fac
+    \item Organiser événements
+    \item Accès ressources exclusives
+    \item Reconnaissance officielle
+\end{itemize}
+
+\subsection{GitHub Certification Offer 2025}
+
+\textbf{Ce que c'est :} Certifications officielles GitHub
+
+\textbf{Offre Student Pack :} Examens gratuits ou réduits
+
+\textbf{Pourquoi c'est utile :}
+\begin{itemize}
+    \item Valider compétences Git/GitHub
+    \item Badge officiel sur CV
+    \item Crédibilité professionnelle
+\end{itemize}
+
+\newpage
+\section{Guide de Priorités}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{fondjaune}
+\textbf{PRIORITÉ HAUTE} & \textbf{À activer dès maintenant} \\
+\hline
+GitHub Copilot & Aide énorme pour coder \\
+GitHub Pro & Fonctionnalités essentielles \\
+1Password/Dashlane & Sécurité des comptes \\
+JetBrains/VS Code & Environnement de dev \\
+GitHub Desktop & Interface Git simple \\
+DataCamp & Apprentissage data/Python \\
+\hline
+\rowcolor{fondvert}
+\textbf{PRIORITÉ MOYENNE} & \textbf{Activer selon besoins} \\
+\hline
+Notion & Si besoin organisation \\
+GitHub Pages + Domaine & Si vous créez portfolio \\
+Deepnote & Si projets data \\
+Educative & Si apprentissage structuré \\
+Icons8/Visme & Si présentations \\
+\hline
+\rowcolor{fondbleu}
+\textbf{PRIORITÉ BASSE} & \textbf{Activer plus tard} \\
+\hline
+AlgoExpert & Seulement si entretiens tech \\
+Heroku/DigitalOcean & Quand app à déployer \\
+BrowserStack & Quand site public \\
+Sentry/Monitoring & Niveau production \\
+Arduino/Adafruit & Si projets hardware \\
+\hline
+\end{tabularx}
+\end{table}
+
+\newpage
+\section{Récapitulatif par Profil}
+
+\subsection{Profil : Débutant en Programmation}
+
+\textbf{Outils recommandés :}
+\begin{enumerate}
+    \item GitHub Copilot (aide à écrire)
+    \item GitHub Desktop (Git facile)
+    \item VS Code (éditeur simple)
+    \item DataCamp ou Codédex (apprentissage)
+    \item 1Password (sécurité)
+\end{enumerate}
+
+\subsection{Profil : Étudiant Médecine + Informatique}
+
+\textbf{Outils recommandés :}
+\begin{enumerate}
+    \item Notion (organisation cours)
+    \item DataCamp (data science santé)
+    \item Deepnote (analyse données)
+    \item GitHub Copilot (projets)
+    \item Visme (présentations)
+\end{enumerate}
+
+\subsection{Profil : Projets Web}
+
+\textbf{Outils recommandés :}
+\begin{enumerate}
+    \item GitHub Copilot
+    \item VS Code + Extensions
+    \item GitHub Pages + Domaine
+    \item Bootstrap Studio
+    \item Icons8/IconScout
+    \item Heroku (déploiement)
+\end{enumerate}
+
+\subsection{Profil : Data Science / IA}
+
+\textbf{Outils recommandés :}
+\begin{enumerate}
+    \item DataCamp
+    \item Deepnote
+    \item GitHub Copilot
+    \item Azure (crédits IA)
+    \item MongoDB Atlas
+\end{enumerate}
+
+\newpage
+\section{Conseils Finaux}
+
+\begin{important}
+\textbf{N'activez pas tout d'un coup !}
+
+Stratégie recommandée :
+\begin{enumerate}
+    \item Semaine 1 : Activer les 5 outils prioritaires
+    \item Mois 1 : Apprendre à les utiliser correctement
+    \item Mois 2+ : Ajouter outils selon besoins réels
+\end{enumerate}
+\end{important}
+
+\begin{conseil}
+\textbf{Astuces :}
+\begin{itemize}
+    \item Créez un document pour noter vos identifiants
+    \item Utilisez 1Password/Dashlane dès le début
+    \item Lisez la documentation de chaque outil activé
+    \item Commencez par des projets simples
+    \item N'hésitez pas à demander de l'aide sur les forums
+\end{itemize}
+\end{conseil}
+
+\subsection{Ressources Supplémentaires}
+
+\textbf{Documentation officielle :}
+\begin{itemize}
+    \item GitHub Education : \url{https://education.github.com}
+    \item Student Pack : \url{https://education.github.com/pack}
+    \item GitHub Docs : \url{https://docs.github.com}
+\end{itemize}
+
+\textbf{Communauté :}
+\begin{itemize}
+    \item GitHub Community Forum
+    \item Discord GitHub Education
+    \item Stack Overflow
+\end{itemize}
+
+\vspace{2cm}
+
+\begin{center}
+\textcolor{titrebleu}{\Large\textbf{Fin du Guide}}
+
+\vspace{0.5cm}
+
+\textcolor{defvert}{\large Bon développement et bon apprentissage !}
+
+\vspace{1cm}
+
+\textcolor{importantrouge}{\small N'oubliez pas : Le Student Pack est valide pendant toutes vos études.\\
+Profitez-en au maximum !}
+\end{center}
+
+\end{document}

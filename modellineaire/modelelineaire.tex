@@ -1,0 +1,843 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usetikzlibrary{arrows,positioning}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs personnalisées
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+
+% Boîtes colorées
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=�� Définition,
+    arc=3mm
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=�� Exemple,
+    arc=3mm
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=⚠️ Important,
+    arc=3mm
+}
+
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=�� À savoir,
+    arc=3mm
+}
+
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=⚙️ Méthode,
+    arc=3mm
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Programmation Linéaire}\\[0.5em]
+\large\color{defvert}Modèles Linéaires de la Recherche Opérationnelle\\
+\small Introduction et Formulation}
+\author{\large Prof. Hervé KERIVIN, PhD\\
+\small Université Clermont Auvergne\\
+Clermont Auvergne INP - ISIMA\\
+LIMOS UMR 6158 CNRS}
+\date{\large Version 2024-2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\needspace{10\baselineskip}
+\subsection{Informations Pratiques}
+
+\begin{astuce}
+\textbf{Horaires des cours :}
+\begin{itemize}
+    \item \textbf{Cours magistraux} : 10.5 heures (7 séances de 90 min) du 15 janvier au 4 mars
+    \item \textbf{Travaux dirigés} : 10.5 heures (7 séances de 90 min) du 19 janvier au 6 mars
+    \begin{itemize}
+        \item Groupe 1 : Hervé KERIVIN
+        \item Groupe 2 : Fatiha BENDALI-MAILFERT
+        \item Groupe 3 : Hervé KERIVIN
+    \end{itemize}
+    \item \textbf{Travaux pratiques} : 9 heures (3 séances de 3h) du 2 au 27 février
+    \begin{itemize}
+        \item Groupes A, B, C : Rafael COLARES
+    \end{itemize}
+\end{itemize}
+\end{astuce}
+
+\needspace{10\baselineskip}
+\subsection{Évaluation}
+
+\begin{important}
+\textbf{Notes finales basées sur :}
+\begin{itemize}
+    \item \textbf{Examen final} (9 ou 10 mars) : \textcolor{importantrouge}{\textbf{67\%}}
+    \begin{itemize}
+        \item Durée : 90 minutes
+        \item Interdits : livres, notes, calculatrices, téléphones, ordinateurs
+    \end{itemize}
+    \item \textbf{Contrôle continu + TP} : \textcolor{defvert}{\textbf{33\%}}
+    \begin{itemize}
+        \item Examen TP : 75\%
+        \item Travail TP : 25\%
+    \end{itemize}
+\end{itemize}
+\end{important}
+
+\needspace{8\baselineskip}
+\subsection{Prérequis}
+
+\begin{astuce}
+\textbf{Prérequis :} Algèbre linéaire
+\end{astuce}
+
+\newpage
+\subsection{Objectifs et Attentes}
+
+\begin{important}
+\textbf{Objectif :} Comprendre les principes de la programmation linéaire
+
+\textbf{Focus sur :}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{Formulations}
+    \item \textcolor{defvert}{Méthode du simplexe}
+    \item \textcolor{algoviolet}{Théorie de la dualité}
+    \item \textcolor{exempleorange}{Simplexe révisé}
+    \item \textcolor{importantrouge}{Analyse de sensibilité}
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Chaque étudiant doit :}
+\begin{itemize}
+    \item Comprendre tout le matériel couvert (définitions, théorèmes, preuves, intuition géométrique, etc.)
+    \item Être capable d'utiliser les concepts et techniques pour résoudre des problèmes nouveaux
+\end{itemize}
+\end{astuce}
+
+\needspace{12\baselineskip}
+\subsection{Références Bibliographiques}
+
+\begin{astuce}
+\textbf{Ouvrages de référence :}
+\begin{enumerate}
+    \item \textbf{Linear Programming} par Vasek Chvátal, W.H. Freeman and Company, New York, 1983
+    \item \textbf{A First Course in Linear Optimization} par Jon Lee, Fourth Edition, Version 4.08, Reex Press, 2013-24\\
+    \url{https://sites.google.com/site/jonleewebpage/home/publications}
+    \item \textbf{Combinatorial Optimization} par William J. Cook, William H. Cunningham, William R. Pulleyblank et Alexander Schrijver, Wiley-Interscience, 1998
+    \item \textbf{Linear Programming and Network Flows} par Mokhtar S. Bazaaa, John J. Jarvis, and Hanif D. Sherali, Wiley \& Sons, NY (1990)
+\end{enumerate}
+\end{astuce}
+
+\newpage
+\section{Programmation Linéaire : Concepts de Base}
+
+\needspace{10\baselineskip}
+\subsection{Définitions Fondamentales}
+
+\begin{definition}
+\textbf{Modèle mathématique :}
+
+Collection de variables et de relations nécessaires pour décrire les caractéristiques pertinentes de problèmes du monde réel.
+\end{definition}
+
+\begin{definition}
+\textbf{Recherche opérationnelle (Operations Research) :}
+
+Étude de la façon de former des modèles mathématiques de problèmes complexes d'ingénierie et de gestion, et de la façon de les analyser pour obtenir des informations sur les solutions possibles.
+\end{definition}
+
+\begin{definition}
+\textbf{Programmation linéaire (Linear Programming - LP) :}
+
+La programmation linéaire concerne l'\textcolor{importantrouge}{\textbf{optimisation}} (minimisation ou maximisation) d'une \textcolor{defvert}{\textbf{fonction linéaire}} tout en satisfaisant un ensemble de \textcolor{algoviolet}{\textbf{contraintes linéaires}} (égalités et/ou inégalités).
+\end{definition}
+
+\needspace{15\baselineskip}
+\subsection{Applications}
+
+\begin{exemple}
+\textbf{Exemples d'applications de la programmation linéaire :}
+
+\begin{itemize}
+    \item \textcolor{titrebleu}{\textbf{Problème de diète}} : Trouver la combinaison d'aliments la moins chère qui satisfait tous les besoins nutritionnels
+    
+    \item \textcolor{defvert}{\textbf{Optimisation de portefeuille}} : Minimiser le risque dans un portefeuille d'investissement tout en atteignant un certain rendement
+    
+    \item \textcolor{algoviolet}{\textbf{Planification d'équipages aériens}} : Affecter des équipages aux vols de sorte que :
+    \begin{itemize}
+        \item Chaque vol est couvert
+        \item Chaque pilote ne vole pas plus qu'un certain temps par jour
+        \item Les coûts sont minimisés (hébergement, etc.)
+        \item L'horaire est robuste
+    \end{itemize}
+    
+    \item \textcolor{exempleorange}{\textbf{Fabrication et transport}} : Comment une entreprise doit-elle approvisionner tous ses clients ? Combien de chaque produit fabriquer ?
+    
+    \item \textcolor{importantrouge}{\textbf{Télécommunications}} : Routage d'appels, conception de réseau, trafic Internet
+\end{itemize}
+\end{exemple}
+
+\newpage
+\section{Linéarité}
+
+\needspace{12\baselineskip}
+\subsection{Fonction Linéaire}
+
+\begin{definition}
+\textbf{Fonction linéaire :}
+
+Soient $a_1, a_2, \ldots, a_n, b$ des nombres réels (paramètres déterministes). Une fonction linéaire $f : \mathbb{R}^n \to \mathbb{R}$ de variables réelles $x_1, x_2, \ldots, x_n$ est :
+
+$$f(x_1, x_2, \ldots, x_n) = a_1x_1 + a_2x_2 + \cdots + a_nx_n = \sum_{j=1}^{n} a_jx_j = \mathbf{a}^T\mathbf{x}$$
+
+où $\mathbf{a} = \begin{pmatrix} a_1 \\ \vdots \\ a_n \end{pmatrix}$ et $\mathbf{x} = \begin{pmatrix} x_1 \\ \vdots \\ x_n \end{pmatrix}$ sont des vecteurs colonnes de $\mathbb{R}^n$.
+\end{definition}
+
+\needspace{12\baselineskip}
+\subsection{Contraintes Linéaires}
+
+\begin{definition}
+\textbf{Contraintes linéaires :}
+
+Soit $f : \mathbb{R}^n \to \mathbb{R}$ une fonction linéaire et $b$ un nombre réel. Les contraintes linéaires de variables réelles $x_1, x_2, \ldots, x_n$ sont :
+
+\begin{align*}
+f(x_1, x_2, \ldots, x_n) &= b \quad \text{(contrainte d'égalité)}\\
+f(x_1, x_2, \ldots, x_n) &\geq b \quad \text{(contrainte d'inégalité)}\\
+f(x_1, x_2, \ldots, x_n) &\leq b \quad \text{(contrainte d'inégalité)}
+\end{align*}
+\end{definition}
+
+\newpage
+\section{Problème de Programmation Linéaire}
+
+\needspace{10\baselineskip}
+\subsection{Définition}
+
+\begin{definition}
+\textbf{Problème de programmation linéaire :}
+
+Un problème de PL est le problème de \textcolor{importantrouge}{\textbf{maximiser}} (ou \textcolor{defvert}{\textbf{minimiser}}) une fonction linéaire sujet à un nombre fini de contraintes linéaires.
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple de problème de PL :}
+
+\begin{align*}
+\text{maximiser} \quad & x_1 + 0.64x_2\\
+\text{sujet à} \quad & 50x_1 + 31x_2 \leq 250\\
+& -3x_1 + 2x_2 \leq 4\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+\end{exemple}
+
+\newpage
+\subsection{Premier Exemple : Le Forestier}
+
+\begin{exemple}
+\textbf{Énoncé du problème :}
+
+Un forestier possède 100 acres de bois dur. Abattre le bois dur et laisser la zone se régénérer coûterait 10\$ par acre en ressources immédiates et rapporterait un retour ultérieur de 50\$ par acre. 
+
+Une autre option est d'abattre le bois dur et de planter la zone avec du pin ; cela coûterait 50\$ par acre avec un retour ultérieur de 120\$ par acre. 
+
+Seulement 4 000\$ sont disponibles pour couvrir les coûts immédiats. 
+
+\textbf{Question :} Quel est le programme optimal que le forestier devrait suivre pour maximiser son profit net ?
+\end{exemple}
+
+\begin{methode}
+\textbf{Modélisation :}
+
+\textbf{Variables de décision :}
+\begin{itemize}
+    \item $x_1$ : nombre d'acres à régénérer naturellement
+    \item $x_2$ : nombre d'acres à planter avec du pin
+\end{itemize}
+
+\textbf{Fonction objectif :}
+\begin{itemize}
+    \item Profit de régénération : $50 - 10 = 40$\$ par acre
+    \item Profit de plantation : $120 - 50 = 70$\$ par acre
+    \item Maximiser : $z = 40x_1 + 70x_2$
+\end{itemize}
+
+\textbf{Contraintes :}
+\begin{itemize}
+    \item Superficie totale : $x_1 + x_2 \leq 100$
+    \item Budget : $10x_1 + 50x_2 \leq 4000$
+    \item Non-négativité : $x_1 \geq 0, x_2 \geq 0$
+\end{itemize}
+\end{methode}
+
+\begin{exemple}
+\textbf{Modèle mathématique complet :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 40x_1 + 70x_2\\
+\text{sujet à} \quad & x_1 + x_2 \leq 100\\
+& 10x_1 + 50x_2 \leq 4000\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+\end{exemple}
+
+\newpage
+\section{Formulation d'un Problème}
+
+\needspace{10\baselineskip}
+\subsection{Méthodologie}
+
+\begin{methode}
+\textbf{Traduire une description de problème (réel) en modèle mathématique}
+
+\textbf{Trois étapes :}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Définir les variables nécessaires}}\\
+    Quelles décisions devons-nous prendre ?
+    
+    \item \textcolor{defvert}{\textbf{Utiliser ces variables pour définir les contraintes (linéaires)}}\\
+    Les points réalisables pour les contraintes correspondent aux solutions réalisables du problème, et vice versa.\\
+    Quelles sont les exigences ?
+    
+    \item \textcolor{algoviolet}{\textbf{Utiliser ces variables pour définir la fonction objectif}}\\
+    Qu'est-ce qui doit être optimisé ?
+\end{enumerate}
+\end{methode}
+
+\newpage
+\section{Forme Standard}
+
+\needspace{12\baselineskip}
+\subsection{Définition}
+
+\begin{definition}
+\textbf{Forme standard :}
+
+Soient :
+\begin{itemize}
+    \item $a_{ij} \in \mathbb{R}$ pour $i = 1, 2, \ldots, m$ et $j = 1, 2, \ldots, n$
+    \item $b_i \in \mathbb{R}$ pour $i = 1, 2, \ldots, m$
+    \item $c_j \in \mathbb{R}$ pour $j = 1, 2, \ldots, n$
+\end{itemize}
+
+La forme standard d'un problème de PL est :
+
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet à} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+\end{definition}
+
+\begin{astuce}
+\textbf{Terminologie :}
+\begin{itemize}
+    \item \textbf{Fonction objectif :} La fonction linéaire à optimiser
+    \item \textbf{Contraintes de non-négativité :} Les $n$ dernières contraintes parmi les $m + n$ contraintes linéaires
+\end{itemize}
+\end{astuce}
+
+\newpage
+\subsection{Conversion vers la Forme Standard}
+
+\begin{methode}
+\textbf{Conversion des différentes formes :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Fonction objectif}}
+    $$\min w \equiv \max (-w)$$
+    
+    \item \textcolor{defvert}{\textbf{Inégalités}}
+    $$\sum_{j=1}^{n} a_{ij}x_j \geq b_i \equiv -\sum_{j=1}^{n} a_{ij}x_j \leq -b_i$$
+    
+    \item \textcolor{algoviolet}{\textbf{Égalités}}
+    $$\sum_{j=1}^{n} a_{ij}x_j = b_i \equiv \begin{cases}
+    \sum_{j=1}^{n} a_{ij}x_j \leq b_i\\
+    -\sum_{j=1}^{n} a_{ij}x_j \leq -b_i
+    \end{cases}$$
+    
+    \item \textcolor{exempleorange}{\textbf{Variables}}
+    \begin{itemize}
+        \item $x_j \leq 0$ peut être remplacé par $-x_j \geq 0$
+        \item $x_j$ sans restriction peut être remplacé par $x_j^+ - x_j^-$ avec $x_j^+ \geq 0$ et $x_j^- \geq 0$
+    \end{itemize}
+\end{enumerate}
+\end{methode}
+
+\newpage
+\section{Terminologie}
+
+\needspace{10\baselineskip}
+\subsection{Solutions}
+
+\begin{definition}
+\textbf{Solution réalisable (Feasible solution) :}
+
+Des nombres $x_1, x_2, \ldots, x_n$ qui satisfont toutes les contraintes d'un problème de PL constituent une \textcolor{defvert}{\textbf{solution réalisable}}.
+\end{definition}
+
+\begin{definition}
+\textbf{Solution optimale (Optimal solution) :}
+
+Une solution réalisable qui maximise la fonction objectif (ou la minimise, selon la forme du problème) est appelée \textcolor{importantrouge}{\textbf{solution optimale}}.
+\end{definition}
+
+\begin{definition}
+\textbf{Valeur optimale (Optimal value) :}
+
+La valeur de la fonction objectif correspondant à une solution optimale est appelée \textcolor{titrebleu}{\textbf{valeur optimale}}.
+\end{definition}
+
+\newpage
+\section{Solution Géométrique}
+
+\needspace{10\baselineskip}
+\subsection{Procédure Géométrique}
+
+\begin{important}
+\textbf{Procédure géométrique pour résoudre un problème de PL :}
+
+\begin{align*}
+\text{maximiser} \quad & z = \sum_{j=1}^{n} c_jx_j\\
+\text{sujet à} \quad & \sum_{j=1}^{n} a_{ij}x_j \leq b_i \quad \text{pour } i = 1, 2, \ldots, m\\
+& x_j \geq 0 \quad \text{pour } j = 1, 2, \ldots, n
+\end{align*}
+
+\textcolor{importantrouge}{\textbf{Attention :}} Méthode seulement adaptée pour des problèmes très petits (ex : deux ou trois variables).
+\end{important}
+
+\newpage
+\subsection{Demi-Espaces}
+
+\begin{definition}
+\textbf{Demi-espaces (Half-spaces) :}
+
+Soient $a_1, a_2, \ldots, a_n, b$ des nombres réels.
+
+\begin{itemize}
+    \item Toutes les solutions de $a_1x_1 + a_2x_2 = b$ sont représentées par une \textcolor{titrebleu}{\textbf{ligne}}, tandis que toutes les solutions de $a_1x_1 + a_2x_2 \leq b$ sont représentées par un \textcolor{titrebleu}{\textbf{demi-plan}} délimité par cette ligne
+    
+    \item Toutes les solutions de $a_1x_1 + a_2x_2 + a_3x_3 = b$ sont représentées par un \textcolor{defvert}{\textbf{plan}}, tandis que toutes les solutions de $a_1x_1 + a_2x_2 + a_3x_3 \leq b$ sont représentées par un \textcolor{defvert}{\textbf{demi-espace}} délimité par ce plan
+\end{itemize}
+
+\textbf{Définition générale :}
+
+L'ensemble de toutes les solutions de $a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b$ est appelé un \textcolor{importantrouge}{\textbf{demi-espace}} de l'espace $n$-dimensionnel $\mathbb{R}^n$. (Au moins un $a_j$ n'est pas zéro.)
+\end{definition}
+
+\needspace{12\baselineskip}
+\subsection{Région Réalisable}
+
+\begin{definition}
+\textbf{Région réalisable (Feasible region) :}
+
+Chaque contrainte d'un problème de PL détermine un certain demi-espace.
+
+La \textcolor{defvert}{\textbf{région réalisable}} (c'est-à-dire la contrepartie géométrique de l'ensemble de toutes les solutions réalisables) est l'\textcolor{importantrouge}{\textbf{intersection}} des demi-espaces correspondant aux contraintes (y compris les contraintes de non-négativité sur les variables).
+
+En général, l'intersection d'un nombre fini de demi-espaces est appelée un \textcolor{algoviolet}{\textbf{polyèdre}}.
+\end{definition}
+
+\begin{definition}
+\textbf{Polyèdre (Polyhedron) :}
+
+Un polyèdre $P \subseteq \mathbb{R}^n$ est l'ensemble des vecteurs qui satisfont un nombre fini d'inégalités linéaires, c'est-à-dire :
+
+$$P = \{\mathbf{x} \in \mathbb{R}^n : A\mathbf{x} \leq \mathbf{b}\}$$
+
+où $A \in \mathbb{R}^{m \times n}$ et $\mathbf{b} \in \mathbb{R}^m$.
+\end{definition}
+
+\newpage
+\subsection{Méthode Graphique}
+
+\begin{methode}
+\textbf{Méthode graphique (Problèmes de PL avec $n \leq 3$) :}
+
+Soit $\max c_1x_1 + c_2x_2 + \cdots + c_nx_n$ la fonction objectif.
+
+Chaque équation $c_1x_1 + c_2x_2 + \cdots + c_nx_n = z$ définit un \textcolor{titrebleu}{\textbf{ensemble de niveau}} de la fonction objectif.
+
+Le \textcolor{defvert}{\textbf{gradient}} (ou vecteur de dérivée partielle) de la fonction objectif correspond à la direction de plus grande augmentation.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item \textcolor{titrebleu}{Tracer la région de faisabilité}
+    \item \textcolor{defvert}{Dessiner un ensemble de niveau} $c_1x_1 + c_2x_2 + \cdots + c_nx_n = d$ passant par la région réalisable
+    \item \textcolor{algoviolet}{Déplacer l'ensemble de niveau} en augmentant la valeur de $d$
+    \item \textcolor{exempleorange}{Arrêter} lorsque l'ensemble de niveau est sur le point de quitter la région réalisable
+    \item \textcolor{importantrouge}{Le dernier point de contact} représente la solution optimale
+\end{enumerate}
+\end{methode}
+
+\newpage
+\subsection{Exemple Graphique}
+
+\begin{exemple}
+\textbf{Considérons le problème de PL :}
+
+\begin{align*}
+\text{maximiser} \quad & x_1 + 0.64x_2\\
+\text{sujet à} \quad & 50x_1 + 31x_2 \leq 250\\
+& -3x_1 + 2x_2 \leq 4\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+
+\textbf{Solution graphique :}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+    % Axes
+    \draw[->] (-0.5,0) -- (6,0) node[right] {$x_1$};
+    \draw[->] (0,-0.5) -- (0,6) node[above] {$x_2$};
+    
+    % Grid
+    \foreach \x in {1,2,3,4,5} {
+        \draw[thin,gray!40] (\x,0) -- (\x,5.5);
+        \node[below] at (\x,0) {\x};
+    }
+    \foreach \y in {1,2,3,4,5} {
+        \draw[thin,gray!40] (0,\y) -- (5.5,\y);
+        \node[left] at (0,\y) {\y};
+    }
+    
+    % Contraintes
+    \draw[thick,defvert] (0,8.06) -- (5,0); % 50x1 + 31x2 = 250
+    \draw[thick,algoviolet] (0,2) -- (4,8); % -3x1 + 2x2 = 4
+    
+    % Zone réalisable (approximative)
+    \fill[fondbleu,opacity=0.3] (0,0) -- (0,2) -- (1.95,4.92) -- (5,0) -- cycle;
+    
+    % Point optimal
+    \fill[importantrouge] (1.95,4.92) circle (2pt);
+    \node[importantrouge,above right] at (1.95,4.92) {$\left(\frac{376}{193}, \frac{950}{193}\right)$};
+    
+    % Labels des contraintes
+    \node[defvert] at (4.5,1) {$50x_1 + 31x_2 \leq 250$};
+    \node[algoviolet] at (1,4) {$-3x_1 + 2x_2 \leq 4$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Solution optimale :} $x_1^* = \frac{376}{193} \approx 1.95$, $x_2^* = \frac{950}{193} \approx 4.92$
+
+\textbf{Valeur optimale :} $z^* = \frac{376}{193} + 0.64 \times \frac{950}{193} \approx 5.10$
+\end{exemple}
+
+\newpage
+\section{Optimalité et Unicité}
+
+\needspace{12\baselineskip}
+\subsection{Unicité de la Solution}
+
+\begin{important}
+\textbf{Unicité :}
+
+Tout problème de PL n'a pas nécessairement une solution optimale unique ; cependant, \textcolor{importantrouge}{\textbf{s'il existe une solution optimale, alors la valeur optimale est unique}}.
+\end{important}
+
+\begin{exemple}
+\textbf{Exemple avec plusieurs solutions optimales :}
+
+\begin{align*}
+\text{maximiser} \quad & z = x_2\\
+\text{sujet à} \quad & 2x_1 + x_2 \geq 8\\
+& 9x_1 - 2x_2 \leq 63\\
+& x_2 \leq 4\\
+& x_2 \geq 0
+\end{align*}
+
+Dans ce cas, tous les points sur le segment reliant deux solutions optimales sont également optimaux.
+\end{exemple}
+
+\begin{astuce}
+\textbf{Trois cas possibles :}
+\begin{itemize}
+    \item \textcolor{defvert}{Certains problèmes ont exactement une solution optimale}
+    \item \textcolor{titrebleu}{Certains problèmes ont plusieurs solutions optimales différentes}
+    \item \textcolor{importantrouge}{Certains problèmes n'ont aucune solution optimale}
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Trois Catégories de Problèmes}
+
+\needspace{10\baselineskip}
+\subsection{Problème Infaisable}
+
+\begin{definition}
+\textbf{Problème de PL infaisable (Infeasible LP problem) :}
+
+Un problème de PL qui n'a \textcolor{importantrouge}{\textbf{aucune solution réalisable}} est appelé \textcolor{importantrouge}{\textbf{infaisable}}.
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple :}
+
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 - x_2\\
+\text{sujet à} \quad & x_1 + x_2 \leq 2\\
+& -2x_1 - x_2 \leq -8\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    \draw[->] (-0.5,0) -- (5,0) node[right] {$x_1$};
+    \draw[->] (0,-0.5) -- (0,5) node[above] {$x_2$};
+    
+    % Contraintes
+    \draw[thick,defvert] (0,2) -- (2,0); % x1 + x2 = 2
+    \draw[thick,importantrouge] (0,8) -- (4,0); % -2x1 - x2 = -8
+    
+    % Zones
+    \fill[fondvert,opacity=0.2] (0,0) -- (2,0) -- (0,2) -- cycle;
+    \fill[fondjaune!50,opacity=0.2] (4,0) -- (5,0) -- (5,5) -- (0,5) -- (0,8);
+    
+    \node at (2.5,3) {\Huge \textcolor{importantrouge}{$\emptyset$}};
+    \node[defvert] at (1,1.5) {$x_1 + x_2 \leq 2$};
+    \node[importantrouge] at (3.5,1) {$-2x_1 - x_2 \leq -8$};
+\end{tikzpicture}
+\end{center}
+
+\textcolor{importantrouge}{\textbf{Région réalisable vide !}}
+\end{exemple}
+
+\begin{important}
+\textbf{Remarque importante :}
+
+L'infaisabilité \textcolor{importantrouge}{\textbf{ne dépend pas}} de la fonction objectif. Elle dépend uniquement des contraintes.
+\end{important}
+
+\newpage
+\subsection{Problème Non Borné}
+
+\begin{definition}
+\textbf{Problème de PL non borné (Unbounded LP problem) :}
+
+Un problème de PL qui a des solutions réalisables mais \textcolor{importantrouge}{\textbf{aucune solution optimale}} est appelé \textcolor{importantrouge}{\textbf{non borné}}.
+\end{definition}
+
+\begin{exemple}
+\textbf{Exemple :}
+
+\begin{align*}
+\text{maximiser} \quad & z = x_1 - x_2\\
+\text{sujet à} \quad & -2x_1 + x_2 \leq -1\\
+& -x_1 - 2x_2 \leq -2\\
+& x_1 \geq 0\\
+& x_2 \geq 0
+\end{align*}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    \draw[->] (-0.5,0) -- (5,0) node[right] {$x_1$};
+    \draw[->] (0,-0.5) -- (0,4) node[above] {$x_2$};
+    
+    % Contraintes
+    \draw[thick,defvert] (0.5,0) -- (4,7); % -2x1 + x2 = -1
+    \draw[thick,algoviolet] (2,0) -- (0,1); % -x1 - 2x2 = -2
+    
+    % Région non bornée
+    \fill[fondbleu,opacity=0.2] (2,0) -- (5,0) -- (5,4) -- (4,7);
+    \fill[fondbleu,opacity=0.2] (2,0) -- (4,7) -- (0,4) -- (0,1) -- cycle;
+    
+    % Flèche de croissance
+    \draw[->,ultra thick,importantrouge] (2.5,1) -- (4,2);
+    \node[importantrouge,right] at (4,2) {$z \to +\infty$};
+    
+    \node[defvert,rotate=60] at (1.5,2) {$-2x_1 + x_2 \leq -1$};
+    \node[algoviolet] at (1.5,0.3) {$-x_1 - 2x_2 \leq -2$};
+\end{tikzpicture}
+\end{center}
+
+\textcolor{importantrouge}{\textbf{La fonction objectif peut croître indéfiniment !}}
+\end{exemple}
+
+\begin{important}
+\textbf{Remarque importante :}
+
+Le caractère non borné \textcolor{importantrouge}{\textbf{dépend}} de la fonction objectif. Le même ensemble de contraintes peut donner un problème borné ou non borné selon la fonction objectif choisie.
+\end{important}
+
+\newpage
+\subsection{Classification Complète}
+
+\begin{definition}
+\textbf{Trois catégories :}
+
+Soit $S \subseteq \mathbb{R}^n$ la région réalisable d'un programme linéaire.
+
+Un programme linéaire appartient \textcolor{importantrouge}{\textbf{exactement}} à l'une des trois catégories suivantes :
+
+\begin{enumerate}
+    \item \textcolor{importantrouge}{\textbf{Il est infaisable}} 
+    $S = \emptyset$
+    (aucune solution réalisable)
+    
+    \item \textcolor{algoviolet}{\textbf{Il est non borné}} 
+    $\text{Pour tout } \alpha \in \mathbb{R}, \exists \mathbf{x} \in S \text{ tel que } \mathbf{c}^T\mathbf{x} > \alpha$
+    (la fonction objectif peut croître indéfiniment)
+    
+    \item \textcolor{defvert}{\textbf{Il a une solution optimale}}
+    $\exists \mathbf{x}^* \in S \text{ tel que } \mathbf{c}^T\mathbf{x}^* \geq \mathbf{c}^T\mathbf{x}, \forall \mathbf{x} \in S$
+    (il existe au moins un point optimal)
+\end{enumerate}
+\end{definition}
+
+\begin{astuce}
+\textbf{Résumé visuel :}
+
+\begin{center}
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=5cm},
+    level 2/.style={sibling distance=2.5cm},
+    every node/.style={rectangle,draw,align=center}
+]
+
+\node[fill=titrebleu!20] {Problème de PL}
+    child {node[fill=importantrouge!20] {Infaisable\\$S = \emptyset$}}
+    child {node[fill=defvert!20] {Faisable\\$S \neq \emptyset$}
+        child {node[fill=algoviolet!20] {Non borné\\$z \to +\infty$}}
+        child {node[fill=defvert!30] {Solution\\optimale\\existe}}
+    };
+\end{tikzpicture}
+\end{center}
+\end{astuce}
+
+\newpage
+\section{Résumé du Chapitre}
+
+\begin{important}
+\textbf{Points clés à retenir :}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{\textbf{Définition de la PL}} : Optimisation d'une fonction linéaire sous contraintes linéaires
+    
+    \item \textcolor{defvert}{\textbf{Formulation}} : 3 étapes (variables, contraintes, objectif)
+    
+    \item \textcolor{algoviolet}{\textbf{Forme standard}} : 
+    \begin{itemize}
+        \item Maximisation
+        \item Contraintes $\leq$
+        \item Variables $\geq 0$
+    \end{itemize}
+    
+    \item \textcolor{exempleorange}{\textbf{Interprétation géométrique}} :
+    \begin{itemize}
+        \item Demi-espaces
+        \item Polyèdre
+        \item Méthode graphique
+    \end{itemize}
+    
+    \item \textcolor{importantrouge}{\textbf{Trois catégories}} :
+    \begin{itemize}
+        \item Infaisable ($S = \emptyset$)
+        \item Non borné ($z \to \pm\infty$)
+        \item Solution optimale existe
+    \end{itemize}
+\end{enumerate}
+\end{important}
+
+\begin{astuce}
+\textbf{Prochaines étapes :}
+
+Dans les prochains chapitres, nous étudierons :
+\begin{itemize}
+    \item La méthode du simplexe (algorithme de résolution)
+    \item La théorie de la dualité
+    \item Le simplexe révisé
+    \item L'analyse de sensibilité
+\end{itemize}
+\end{astuce}
+
+\newpage
+\section{Exercices}
+
+\begin{exemple}
+\textbf{Exercice 1 : Formulation}
+
+Une entreprise fabrique deux produits A et B. Le produit A nécessite 2 heures de main-d'œuvre et rapporte 30€ de profit. Le produit B nécessite 3 heures et rapporte 40€. L'entreprise dispose de 120 heures de main-d'œuvre par semaine. De plus, elle doit produire au moins 10 unités de A et 15 unités de B.
+
+Formulez ce problème comme un programme linéaire.
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 : Conversion en forme standard}
+
+Convertissez le problème suivant en forme standard :
+
+\begin{align*}
+\text{minimiser} \quad & z = 2x_1 - 3x_2 + x_3\\
+\text{sujet à} \quad & x_1 + x_2 - x_3 = 5\\
+& 2x_1 - x_2 + 3x_3 \geq 10\\
+& x_1 \geq 0, x_2 \leq 0, x_3 \text{ libre}
+\end{align*}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 3 : Résolution graphique}
+
+Résolvez graphiquement :
+
+\begin{align*}
+\text{maximiser} \quad & z = 3x_1 + 2x_2\\
+\text{sujet à} \quad & x_1 + x_2 \leq 4\\
+& x_1 + 2x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{exemple}
+
+\end{document}

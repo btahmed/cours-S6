@@ -1,0 +1,487 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usetikzlibrary{arrows,positioning}
+\geometry{margin=2.5cm}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+\newtcolorbox{correction}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Correction,
+    arc=3mm
+}
+\newtcolorbox{methode}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Methode,
+    arc=3mm
+}
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm
+}
+\newtcolorbox{astuce}{
+    colback=fondbleu,
+    colframe=titrebleu,
+    fonttitle=\bfseries,
+    title=A savoir,
+    arc=3mm
+}
+\newtcolorbox{enonce}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Enonce,
+    arc=3mm
+}
+
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Corrections des Exercices}\\[0.5em]
+\large\color{defvert}La Theorie de la Dualite\\
+\small Modeles Lineaires de la Recherche Operationnelle}
+\author{\large Universite Clermont Auvergne\\
+\small Clermont Auvergne INP - ISIMA}
+\date{\large Version 2024-2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================
+\section{Exercice 1 -- Ecriture du Dual}
+%=============================================
+
+\begin{enonce}
+\begin{align*}
+\text{maximiser} \quad & z = 2x_1 + 3x_2 - x_3\\
+\text{sujet a} \quad & x_1 + x_2 + x_3 \leq 10\\
+& 2x_1 - x_2 + 3x_3 \leq 15\\
+& x_1, x_2, x_3 \geq 0
+\end{align*}
+\end{enonce}
+
+\subsection{Partie 1 -- Ecriture du dual}
+
+\begin{correction}
+\textbf{On applique la correspondance primal/dual :}
+
+\begin{center}
+\begin{tabular}{l|l}
+\toprule
+\textbf{Primal} & \textbf{Dual} \\
+\midrule
+Maximisation & Minimisation \\
+2 contraintes $\leq$ & 2 variables $y_1, y_2 \geq 0$ \\
+3 variables $x_j \geq 0$ & 3 contraintes $\geq$ \\
+Membres droits $b = (10, 15)$ & Coefficients de l'objectif dual \\
+Coefficients objectif $c = (2, 3, -1)$ & Membres droits des contraintes duales \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Probleme dual :}
+\begin{align*}
+\text{minimiser} \quad & w = 10y_1 + 15y_2\\
+\text{sujet a} \quad & y_1 + 2y_2 \geq 2\\
+& y_1 - y_2 \geq 3\\
+& y_1 + 3y_2 \geq -1\\
+& y_1, y_2 \geq 0
+\end{align*}
+
+La troisieme contrainte ($y_1 + 3y_2 \geq -1$) est \textcolor{defvert}{\textbf{automatiquement satisfaite}} car $y_1, y_2 \geq 0$ implique $y_1 + 3y_2 \geq 0 > -1$.
+\end{correction}
+
+\subsection{Partie 2 -- Le dual du dual est le primal}
+
+\begin{correction}
+Le dual du probleme ci-dessus est :
+
+Le dual d'un probleme de minimisation avec contraintes $\geq$ et variables $\geq 0$ est un probleme de maximisation avec contraintes $\leq$ et variables $\geq 0$.
+
+En appliquant la correspondance (en inversant les roles) :
+
+\begin{align*}
+\text{maximiser} \quad & z' = 2u_1 + 3u_2 - u_3\\
+\text{sujet a} \quad & u_1 + u_2 + u_3 \leq 10\\
+& 2u_1 - u_2 + 3u_3 \leq 15\\
+& u_1, u_2, u_3 \geq 0
+\end{align*}
+
+\textcolor{defvert}{\textbf{On retrouve exactement le primal initial}} (avec $u_j = x_j$). \ding{51}
+\end{correction}
+
+\subsection{Partie 3 -- Solution duale via les ecarts complementaires}
+
+\begin{correction}
+\textbf{Solution primale donnee :} $x_1^* = 5, x_2^* = 5, x_3^* = 0$
+
+\textbf{Verification de la realisabilite primale :}
+\begin{itemize}
+    \item Contrainte 1 : $5 + 5 + 0 = 10 \leq 10$ \checkmark (contrainte \textcolor{importantrouge}{\textbf{saturee}})
+    \item Contrainte 2 : $2(5) - 5 + 0 = 5 \leq 15$ \checkmark (ecart = $10 > 0$, \textcolor{defvert}{\textbf{non saturee}})
+\end{itemize}
+
+\textbf{Application des conditions d'ecarts complementaires :}
+
+\textbf{Condition (2)} -- pour les contraintes primales :
+\begin{itemize}
+    \item Contrainte 1 saturee $\Rightarrow$ $y_1^*$ peut etre quelconque (pas de contrainte sur $y_1^*$)
+    \item Contrainte 2 non saturee ($5 < 15$) $\Rightarrow$ \textcolor{importantrouge}{\textbf{$y_2^* = 0$}}
+\end{itemize}
+
+\textbf{Condition (1)} -- pour les variables primales :
+\begin{itemize}
+    \item $x_1^* = 5 > 0$ $\Rightarrow$ contrainte duale 1 saturee : $y_1^* + 2y_2^* = 2$
+    
+    Comme $y_2^* = 0$ : $\textcolor{importantrouge}{\boldsymbol{y_1^* = 2}}$
+    
+    \item $x_2^* = 5 > 0$ $\Rightarrow$ contrainte duale 2 saturee : $y_1^* - y_2^* = 3$
+    
+    Verification : $2 - 0 = 2 \neq 3$. \textcolor{importantrouge}{\textbf{Contradiction !}}
+\end{itemize}
+
+\textbf{Conclusion :} Le systeme des ecarts complementaires n'admet pas de solution coherente. \textcolor{importantrouge}{\textbf{La solution $x_1^* = 5, x_2^* = 5, x_3^* = 0$ n'est pas optimale.}}
+
+\textbf{Verification directe :} $z = 2(5) + 3(5) - 0 = 25$. En essayant $x_1 = 0, x_2 = 10, x_3 = 0$ : $z = 30 > 25$. \ding{51}
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 2 -- Correspondances Avancees}
+%=============================================
+
+\subsection{Partie a -- Minimisation avec contraintes $\geq$}
+
+\begin{enonce}
+\begin{align*}
+\text{minimiser} \quad & z = 3x_1 + 5x_2\\
+\text{sujet a} \quad & x_1 + 2x_2 \geq 4\\
+& 2x_1 + x_2 \geq 3\\
+& x_1, x_2 \geq 0
+\end{align*}
+\end{enonce}
+
+\begin{correction}
+\textbf{Correspondances :}
+\begin{itemize}
+    \item Minimisation $\Rightarrow$ dual en maximisation
+    \item Contrainte $\geq$ avec variable $y_i \geq 0$ $\Rightarrow$ contrainte duale $\leq$
+    \item Variables primales $x_j \geq 0$ $\Rightarrow$ contraintes duales $\leq$ (puisque dual = max)
+\end{itemize}
+
+\textbf{Dual :}
+\begin{align*}
+\text{maximiser} \quad & w = 4y_1 + 3y_2\\
+\text{sujet a} \quad & y_1 + 2y_2 \leq 3\\
+& 2y_1 + y_2 \leq 5\\
+& y_1, y_2 \geq 0
+\end{align*}
+
+\textbf{Verification intuitive :} Le dual est bien un probleme de maximisation, ce qui est coherent avec le fait que le primal est une minimisation (dualite faible : $w \leq z$).
+\end{correction}
+
+\subsection{Partie b -- Contraintes mixtes et variable libre}
+
+\begin{enonce}
+\begin{align*}
+\text{maximiser} \quad & z = x_1 + 2x_2\\
+\text{sujet a} \quad & x_1 + x_2 = 5\\
+& x_1 - x_2 \leq 3\\
+& x_1 \geq 0, \quad x_2 \text{ libre}
+\end{align*}
+\end{enonce}
+
+\begin{correction}
+\textbf{Tableau de correspondances specifiques :}
+
+\begin{center}
+\begin{tabular}{l|l}
+\toprule
+\textbf{Element primal} & \textbf{Consequence sur le dual} \\
+\midrule
+Contrainte $=$ (ligne 1) & $y_1$ \textbf{libre} (sans contrainte de signe) \\
+Contrainte $\leq$ (ligne 2) & $y_2 \geq 0$ \\
+$x_1 \geq 0$ (max) & Contrainte duale pour col. 1 : $\geq c_1 = 1$ \\
+$x_2$ libre & Contrainte duale pour col. 2 : $= c_2 = 2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Matrice des contraintes :}
+
+$$A = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}, \quad b = \begin{pmatrix} 5 \\ 3 \end{pmatrix}, \quad c = \begin{pmatrix} 1 \\ 2 \end{pmatrix}$$
+
+\textbf{Dual :}
+\begin{align*}
+\text{minimiser} \quad & w = 5y_1 + 3y_2\\
+\text{sujet a} \quad & y_1 + y_2 \geq 1\\
+& y_1 - y_2 = 2\\
+& y_1 \text{ libre}, \quad y_2 \geq 0
+\end{align*}
+
+\textbf{Remarque :} La contrainte $y_1 - y_2 = 2$ est une egalite car $x_2$ est libre dans le primal.
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 3 -- Verification par les Ecarts Complementaires}
+%=============================================
+
+\begin{enonce}
+\begin{align*}
+\text{maximiser} \quad & z = 5x_1 + 4x_2\\
+\text{sujet a} \quad & 6x_1 + 4x_2 \leq 24\\
+& x_1 + 2x_2 \leq 6\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+Solution candidate : $x_1^* = 3, x_2^* = \frac{3}{2}$
+\end{enonce}
+
+\subsection{Partie 1 -- Ecriture du dual}
+
+\begin{correction}
+\begin{align*}
+\text{minimiser} \quad & w = 24y_1 + 6y_2\\
+\text{sujet a} \quad & 6y_1 + y_2 \geq 5\\
+& 4y_1 + 2y_2 \geq 4\\
+& y_1, y_2 \geq 0
+\end{align*}
+\end{correction}
+
+\subsection{Partie 2 -- Solution duale par les ecarts complementaires}
+
+\begin{correction}
+\textbf{Verification de la realisabilite primale :}
+\begin{itemize}
+    \item Contrainte 1 : $6(3) + 4(\frac{3}{2}) = 18 + 6 = 24 \leq 24$ \checkmark \textcolor{importantrouge}{\textbf{Saturee}}
+    \item Contrainte 2 : $3 + 2(\frac{3}{2}) = 3 + 3 = 6 \leq 6$ \checkmark \textcolor{importantrouge}{\textbf{Saturee}}
+\end{itemize}
+
+\textbf{Conditions d'ecarts complementaires :}
+
+\textbf{Condition (2) :} Les deux contraintes primales sont saturees $\Rightarrow$ aucune contrainte sur $y_1^*$ et $y_2^*$ depuis ce cote.
+
+\textbf{Condition (1) :}
+\begin{itemize}
+    \item $x_1^* = 3 > 0$ $\Rightarrow$ contrainte duale 1 saturee : $\textcolor{importantrouge}{\boldsymbol{6y_1^* + y_2^* = 5}}$
+    \item $x_2^* = \frac{3}{2} > 0$ $\Rightarrow$ contrainte duale 2 saturee : $\textcolor{importantrouge}{\boldsymbol{4y_1^* + 2y_2^* = 4}}$
+\end{itemize}
+
+\textbf{Resolution du systeme :}
+\begin{align*}
+6y_1^* + y_2^* &= 5\\
+4y_1^* + 2y_2^* &= 4
+\end{align*}
+
+De la deuxieme equation : $2y_1^* + y_2^* = 2$, donc $y_2^* = 2 - 2y_1^*$.
+
+Substituant dans la premiere : $6y_1^* + (2 - 2y_1^*) = 5 \Rightarrow 4y_1^* = 3 \Rightarrow \textcolor{defvert}{\boldsymbol{y_1^* = \frac{3}{4}}}$
+
+Donc $\textcolor{defvert}{\boldsymbol{y_2^* = 2 - \frac{3}{2} = \frac{1}{2}}}$
+\end{correction}
+
+\subsection{Partie 3 -- Verification de la realisabilite duale}
+
+\begin{correction}
+On verifie que $(y_1^*, y_2^*) = (\frac{3}{4}, \frac{1}{2})$ est realisable pour le dual :
+
+\begin{itemize}
+    \item $y_1^* = \frac{3}{4} \geq 0$ \checkmark
+    \item $y_2^* = \frac{1}{2} \geq 0$ \checkmark
+    \item $6y_1^* + y_2^* = \frac{18}{4} + \frac{1}{2} = \frac{18}{4} + \frac{2}{4} = 5 \geq 5$ \checkmark
+    \item $4y_1^* + 2y_2^* = 3 + 1 = 4 \geq 4$ \checkmark
+\end{itemize}
+
+\textbf{La solution duale est realisable.} \ding{51}
+\end{correction}
+
+\subsection{Partie 4 -- Conclusion sur l'optimalite}
+
+\begin{correction}
+\textbf{Comparaison des valeurs optimales :}
+
+$$z^* = 5(3) + 4\left(\frac{3}{2}\right) = 15 + 6 = 21$$
+
+$$w^* = 24\left(\frac{3}{4}\right) + 6\left(\frac{1}{2}\right) = 18 + 3 = 21$$
+
+Comme $z^* = w^* = 21$ et les deux solutions sont realisables :
+
+\begin{center}
+\textcolor{defvert}{\Large\textbf{$x_1^* = 3$, $x_2^* = \frac{3}{2}$ est bien la solution optimale !}}
+\end{center}
+
+Par le corollaire du theoreme de dualite forte, l'egalite des valeurs objectives garantit l'optimalite simultanee.
+\end{correction}
+
+\newpage
+%=============================================
+\section{Exercice 4 -- Analyse de Combinaisons Primal/Dual}
+%=============================================
+
+\begin{correction}
+On utilise le tableau des combinaisons possibles.
+
+\textbf{1. Primal optimal ($z^* = 10$) et dual optimal ($w^* = 8$) :}
+
+\textcolor{importantrouge}{\textbf{IMPOSSIBLE.}} Par le theoreme de dualite forte, si les deux problemes ont des solutions optimales, alors $z^* = w^*$. Or $10 \neq 8$. \ding{55}
+
+De plus, la dualite faible implique $z \leq w$ pour toutes solutions realisables, donc $z^* \leq w^*$, ce qui donne $10 \leq 8$ : contradiction.
+
+\vspace{0.5em}
+\textbf{2. Primal non borne et dual optimal :}
+
+\textcolor{importantrouge}{\textbf{IMPOSSIBLE.}} Si le dual est realisable (a fortiori optimal), alors par le theoreme de dualite faible, le primal ne peut pas etre non borne. En effet, toute solution duale fournit une borne superieure sur $z$. \ding{55}
+
+\vspace{0.5em}
+\textbf{3. Primal infaisable et dual infaisable :}
+
+\textcolor{defvert}{\textbf{POSSIBLE.}} Ce cas peut se produire. Exemple classique :
+\begin{align*}
+\text{max} \quad & z = x_1\\
+\text{s.c.} \quad & x_1 \leq -1, \quad x_1 \geq 0
+\end{align*}
+(primal infaisable) dont le dual est aussi infaisable. \ding{51}
+
+\vspace{0.5em}
+\textbf{4. Solution primale realisable ($z = 7$) et solution duale realisable ($w = 9$) :}
+
+\textcolor{defvert}{\textbf{POSSIBLE.}} Par la dualite faible, toute solution realisable primale $\leq$ toute solution realisable duale. Ici $7 \leq 9$, c'est coherent. Cela ne signifie pas que l'une ou l'autre est optimale. \ding{51}
+
+\vspace{0.5em}
+\textbf{5. Primal non borne et dual non borne :}
+
+\textcolor{importantrouge}{\textbf{IMPOSSIBLE.}} Si le primal est non borne, cela signifie qu'il est realisable mais que $z$ est non bornee. Par le corollaire du theoreme de dualite forte, si le primal est non borne alors le dual est \textbf{infaisable} (pas non borne). \ding{55}
+\end{correction}
+
+\begin{astuce}
+\textbf{Tableau de reference des combinaisons :}
+
+\begin{center}
+\begin{tabular}{l|c|c|c}
+\toprule
+ & \textbf{Dual Optimal} & \textbf{Dual Infaisable} & \textbf{Dual Non Borne} \\
+\midrule
+\textbf{Primal Optimal} & \textcolor{defvert}{\ding{51}} & \ding{55} & \ding{55} \\
+\textbf{Primal Infaisable} & \ding{55} & \textcolor{defvert}{\ding{51}} & \textcolor{defvert}{\ding{51}} \\
+\textbf{Primal Non Borne} & \ding{55} & \textcolor{defvert}{\ding{51}} & \ding{55} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{astuce}
+
+\newpage
+%=============================================
+\section{Exercice 5 -- Lecture dans le Dictionnaire Optimal}
+%=============================================
+
+\begin{enonce}
+Dictionnaire optimal ($n = 2$ variables de decision, $m = 3$ contraintes, variables d'ecart $x_3, x_4, x_5$) :
+\begin{align*}
+x_1 &= 4 - 2x_3 + x_5\\
+x_2 &= 1 + x_3 - x_4\\
+x_5 &= 2 - x_4 + 3x_5 - x_6\\
+z &= 15 - 3x_4 - 2x_5 - 4x_6
+\end{align*}
+\textit{Note : les variables hors-base sont $x_4, x_5, x_6$ (variables d'ecart des 3 contraintes primales).}
+\end{enonce}
+
+\subsection{Partie 1 -- Solution primale optimale}
+
+\begin{correction}
+On met les variables hors-base a zero : $x_4 = x_5 = x_6 = 0$.
+
+\begin{align*}
+x_1^* &= 4\\
+x_2^* &= 1\\
+z^* &= 15
+\end{align*}
+
+\textbf{Solution primale optimale :} $x_1^* = 4$, $x_2^* = 1$, valeur optimale $z^* = 15$.
+\end{correction}
+
+\subsection{Partie 2 -- Lecture de la solution duale}
+
+\begin{correction}
+\textbf{Regle de lecture :} Dans un dictionnaire optimal, les variables duales $y_i^*$ correspondent aux \textcolor{importantrouge}{\textbf{coefficients opposes}} des variables d'ecart $x_{n+i}$ dans l'equation de $z$.
+
+La correspondance est :
+\begin{itemize}
+    \item Variable d'ecart $x_3$ (contrainte 1) $\leftrightarrow$ $y_1^*$
+    \item Variable d'ecart $x_4$ (contrainte 2) $\leftrightarrow$ $y_2^*$
+    \item Variable d'ecart $x_5$ (contrainte 3) $\leftrightarrow$ $y_3^*$
+\end{itemize}
+
+Dans l'equation de $z$ : $z = 15 - 3x_4 - 2x_5 - 4x_6$
+
+\textbf{Attention :} $x_3$ n'apparait pas dans $z$ (coefficient = 0), $x_4$ a coefficient $-3$, $x_5$ a coefficient $-2$, $x_6$ n'est pas une variable d'ecart primale.
+
+En notant que $x_4, x_5, x_6$ sont les variables d'ecart des 3 contraintes, les coefficients opposes donnent :
+
+$$\textcolor{defvert}{\boldsymbol{y_1^* = 0, \quad y_2^* = 3, \quad y_3^* = 2}}$$
+
+\textbf{Verification :} $w^* = b_1 y_1^* + b_2 y_2^* + b_3 y_3^*$ devrait etre egal a $z^* = 15$ (dualite forte).
+\end{correction}
+
+\subsection{Partie 3 -- Verification des ecarts complementaires}
+
+\begin{correction}
+\textbf{Variables de base :} $x_1^* = 4 > 0$ et $x_2^* = 1 > 0$ $\Rightarrow$ les contraintes duales correspondantes doivent etre saturees.
+
+\textbf{Variables hors-base :} $x_4 = x_5 = x_6 = 0$ (variables d'ecart).
+
+\textbf{Condition (2) :}
+\begin{itemize}
+    \item $x_4 = 0$ (ecart contrainte 2 nul $\Rightarrow$ contrainte 2 saturee) : $y_2^*$ peut etre non nul, ce qui est coherent avec $y_2^* = 3$.
+    \item $x_5 = 0$ (ecart contrainte 3 nul $\Rightarrow$ contrainte 3 saturee) : $y_3^*$ peut etre non nul, coherent avec $y_3^* = 2$.
+    \item $x_3$ : si $x_3 > 0$ en base, alors la contrainte 1 n'est pas saturee $\Rightarrow$ $y_1^* = 0$. \checkmark
+\end{itemize}
+
+\textbf{Condition (1) :}
+\begin{itemize}
+    \item $x_1^* = 4 > 0$ $\Rightarrow$ contrainte duale 1 saturee (coefficient de $x_1$ dans $z$ dual $= c_1$).
+    \item $x_2^* = 1 > 0$ $\Rightarrow$ contrainte duale 2 saturee.
+\end{itemize}
+
+\textcolor{defvert}{\textbf{Les conditions d'ecarts complementaires sont satisfaites.}} La solution est bien optimale avec $z^* = w^* = 15$.
+\end{correction}
+
+\end{document}

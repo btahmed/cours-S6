@@ -1,0 +1,920 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+\usepackage{needspace}
+\usepackage{mdframed}
+\usetikzlibrary{trees,positioning,arrows,shapes}
+\geometry{margin=2.5cm}
+
+% Définition des couleurs personnalisées
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Configuration des listings
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    showstringspaces=false,
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{blue!80!black}\bfseries,
+    stringstyle=\color{red!70!black},
+    backgroundcolor=\color{fondgris},
+    rulecolor=\color{titrebleu}
+}
+
+% Boîtes colorées - AVEC BREAKABLE
+\newtcolorbox{definition}{
+    colback=fondvert,
+    colframe=defvert,
+    fonttitle=\bfseries,
+    title=Définition,
+    arc=3mm,
+    breakable
+}
+
+\newtcolorbox{exemple}{
+    colback=fondjaune,
+    colframe=exempleorange,
+    fonttitle=\bfseries,
+    title=Exemple,
+    arc=3mm,
+    breakable
+}
+
+\newtcolorbox{important}{
+    colback=white,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Important,
+    arc=3mm,
+    breakable
+}
+
+\newtcolorbox{algorithme}{
+    colback=fondbleu,
+    colframe=algoviolet,
+    fonttitle=\bfseries,
+    title=Algorithme,
+    arc=3mm,
+    breakable
+}
+
+\newtcolorbox{notecours}{
+    colback=fondrose,
+    colframe=importantrouge,
+    fonttitle=\bfseries,
+    title=Note de Cours,
+    arc=3mm,
+    breakable
+}
+
+% Style des sections
+\usepackage{titlesec}
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Types Abstraits de Données}\\[0.5em]
+\large\color{defvert}Structures de Données et Implémentations}
+\author{\large Cours détaillé avec exemples et notes complémentaires}
+\date{\large Version 2025 - Édition Complète}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Ce document présente les structures de données fondamentales et les types abstraits de données (TAD).
+
+\subsection{Distinction Structure vs Type Abstrait}
+
+\begin{definition}
+\textbf{Structure de données :} Implémentation concrète en mémoire (tableaux, listes chaînées, arbres).
+
+\textbf{Type Abstrait de Données (TAD) :} Spécification abstraite des opérations, indépendante de l'implémentation.
+\end{definition}
+
+\begin{notecours}
+\textbf{Interface ici, c'est la liste de fonction valides.}
+
+Un TAD définit clairement quelles opérations sont possibles sans se préoccuper de comment elles sont implémentées en interne.
+\end{notecours}
+
+\begin{exemple}
+\begin{itemize}
+    \item \textbf{TAD :} \textit{Pile} (opérations : empiler, dépiler)
+    \item \textbf{Structures possibles :} tableau, liste chaînée
+\end{itemize}
+\end{exemple}
+
+\newpage
+\section{Structures de Données Fondamentales}
+
+\subsection{La Pile (Stack)}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Une \textbf{pile} est une structure de données \textcolor{importantrouge}{\textbf{LIFO}} (Last In, First Out) : le dernier élément inséré sera le premier à être traité.
+
+\textbf{Principe :} Comme une pile d'assiettes - on ajoute et retire toujours par le dessus.
+\end{definition}
+
+\begin{notecours}
+\textbf{Points importants sur la pile :}
+\begin{itemize}
+    \item En \textbf{violet} = \textbf{état temporaire actuel} pour l'exemple
+    \item \textbf{taille\_pile = 5} dans l'exemple illustré
+    \item \textbf{L'index commence toujours par 1} dans ce cours (il n'y a pas d'index 0!)
+\end{itemize}
+
+\textbf{Notes manuscrites :}
+\begin{itemize}
+    \item \textbf{Empiler c'est un procédure}
+    \item \textbf{Dépiler c'est une fonction} qui change l'état du mémoire et retourne la valeur à la tête du pile
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Opérations}
+
+\begin{important}
+\begin{itemize}
+    \item \textbf{empiler(x)} ou \textit{push(x)} : ajoute un élément au sommet
+    \item \textbf{dépiler()} ou \textit{pop()} : retire et retourne l'élément du sommet
+    \item \textbf{pileVide?()} ou \textit{isEmpty()} : teste si la pile est vide
+    \item \textbf{sommet()} ou \textit{peek()} : consulte le sommet sans retirer
+\end{itemize}
+\end{important}
+
+\subsubsection{Implémentation par tableau}
+
+\begin{lstlisting}[language=Pascal]
+Type Pile = Record
+    tab : Array[1..MAX] of Integer;
+    taille : Integer;      // nombre d'elements
+    tailleMax : Integer;   // capacite maximale
+End;
+\end{lstlisting}
+
+\begin{exemple}
+\textbf{Représentation graphique :}
+\begin{verbatim}
+Indices:   1   2   3   4   5   6   7   8   9  10
+        +---+---+---+---+---+---+---+---+---+---+
+tab[]   | 1 | 4 |12 | 8 | 9 |14 |20 | 5 | 6 | 2 |
+        +---+---+---+---+---+---+---+---+---+---+
+                                            ^
+                                        taille=10
+\end{verbatim}
+\end{exemple}
+
+\subsubsection{Algorithmes}
+
+\begin{algorithme}
+\textbf{Empiler :}
+\begin{verbatim}
+Procédure empiler(p : Pile, x : Integer)
+Début
+    Si p.taille >= p.tailleMax Alors
+        Erreur("Pile pleine")
+    Sinon
+        p.taille <- p.taille + 1
+        p.tab[p.taille] <- x
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\begin{algorithme}
+\textbf{Dépiler :}
+\begin{verbatim}
+Fonction dépiler(p : Pile) : Integer
+Début
+    Si p.taille = 0 Alors
+        Erreur("Pile vide")
+    Sinon
+        x <- p.tab[p.taille]
+        p.taille <- p.taille - 1
+        Retourner x
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\subsubsection{Exemple d'utilisation}
+
+\begin{exemple}
+\begin{lstlisting}[language=Python]
+# Creation d'une pile
+pile = []
+
+# Empilement
+pile.append(10)  # [10]
+pile.append(20)  # [10, 20]
+pile.append(30)  # [10, 20, 30]
+
+# Depilement
+x = pile.pop()   # x = 30, pile = [10, 20]
+y = pile.pop()   # y = 20, pile = [10]
+
+# Application : verification de parentheses
+def parentheses_equilibrees(expression):
+    pile = []
+    for char in expression:
+        if char == '(':
+            pile.append(char)
+        elif char == ')':
+            if not pile:
+                return False
+            pile.pop()
+    return len(pile) == 0
+
+# Test
+print(parentheses_equilibrees("((a+b)*(c-d))"))  # True
+print(parentheses_equilibrees("((a+b)"))          # False
+\end{lstlisting}
+\end{exemple}
+
+\subsubsection{Complexités}
+
+\begin{center}
+\colorbox{fondbleu}{
+\begin{tabular}{|l|c|}
+\hline
+\rowcolor{titrebleu!30}
+\textbf{Opération} & \textbf{Complexité} \\
+\hline
+empiler & \textcolor{defvert}{\textbf{O(1)}} \\
+dépiler & \textcolor{defvert}{\textbf{O(1)}} \\
+pileVide? & \textcolor{defvert}{\textbf{O(1)}} \\
+sommet & \textcolor{defvert}{\textbf{O(1)}} \\
+\hline
+\end{tabular}}
+\end{center}
+
+\newpage
+\subsection{La File (Queue)}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Une \textbf{file} est une structure de données \textcolor{importantrouge}{\textbf{FIFO}} (First In, First Out) : le premier élément inséré sera le premier à être traité.
+
+\textbf{Principe :} Comme une file d'attente - on entre par un bout, on sort par l'autre.
+\end{definition}
+
+\subsubsection{Opérations}
+
+\begin{important}
+\begin{itemize}
+    \item \textbf{enfiler(x)} ou \textit{enqueue(x)} : ajoute un élément en fin de file
+    \item \textbf{défiler()} ou \textit{dequeue()} : retire et retourne l'élément en début
+    \item \textbf{fileVide?()} ou \textit{isEmpty()} : teste si la file est vide
+\end{itemize}
+\end{important}
+
+\subsubsection{Implémentation par tableau circulaire}
+
+\begin{lstlisting}[language=Pascal]
+Type File = Record
+    tab : Array[0..MAX-1] of Integer;
+    sortie : Integer;   // indice de sortie
+    entree : Integer;   // indice d'entree
+    taille : Integer;   // nombre d'elements
+End;
+\end{lstlisting}
+
+\begin{exemple}
+\textbf{Représentation graphique :}
+\begin{verbatim}
+        sortie              entree
+          |                   |
+          v                   v
+    +---+---+---+---+---+---+---+---+---+---+
+    | 8 | 9 |14 |20 | 5 | 6 | 2 | 3 |   |   |
+    +---+---+---+---+---+---+---+---+---+---+
+      0   1   2   3   4   5   6   7   8   9
+      
+    taille = 8
+\end{verbatim}
+\end{exemple}
+
+\subsubsection{Algorithmes}
+
+\begin{algorithme}
+\textbf{Enfiler :}
+\begin{verbatim}
+Procédure enfiler(f : File, x : Integer)
+Début
+    Si f.taille = MAX Alors
+        Erreur("File pleine")
+    Sinon
+        f.tab[f.entree] <- x
+        f.entree <- (f.entree + 1) MOD MAX
+        f.taille <- f.taille + 1
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\begin{algorithme}
+\textbf{Défiler :}
+\begin{verbatim}
+Fonction défiler(f : File) : Integer
+Début
+    Si f.taille = 0 Alors
+        Erreur("File vide")
+    Sinon
+        x <- f.tab[f.sortie]
+        f.sortie <- (f.sortie + 1) MOD MAX
+        f.taille <- f.taille - 1
+        Retourner x
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\subsubsection{Implémentation par double pile}
+
+\begin{important}
+Une file peut aussi être implémentée avec deux piles :
+\begin{itemize}
+    \item \textbf{pile\_entree} : pour les enfilements
+    \item \textbf{pile\_sortie} : pour les défilements
+\end{itemize}
+\end{important}
+
+\begin{notecours}
+\textbf{Observations importantes (notes manuscrites) :}
+\begin{itemize}
+    \item \textbf{EN BLEU + BLANCHE = NON UTILISÉ} (zones vides)
+    \item \textbf{VIOLET = UTILISÉ} (zones contenant des données)
+    \item L'implémentation abstraite utilise une \textbf{liste chaînée} $\rightarrow$ code facile
+    \item Le code à faire en copiant sur la pile
+    \item Pour file vide $\rightarrow$ p1 vide ET p2 vide
+    \item \textbf{Pour file vide --> p1 vide p2 vide}
+\end{itemize}
+\end{notecours}
+
+\begin{exemple}
+\begin{lstlisting}[language=Python]
+class FileDoublePile:
+    def __init__(self):
+        self.pile_entree = []
+        self.pile_sortie = []
+    
+    def enfiler(self, x):
+        self.pile_entree.append(x)
+    
+    def defiler(self):
+        # Si pile_sortie vide, transferer pile_entree
+        if not self.pile_sortie:
+            while self.pile_entree:
+                self.pile_sortie.append(
+                    self.pile_entree.pop()
+                )
+        
+        if not self.pile_sortie:
+            raise Exception("File vide")
+        
+        return self.pile_sortie.pop()
+
+# Exemple d'utilisation
+f = FileDoublePile()
+f.enfiler(1)
+f.enfiler(2)
+f.enfiler(3)
+print(f.defiler())  # 1
+print(f.defiler())  # 2
+\end{lstlisting}
+\end{exemple}
+
+\newpage
+\subsection{Arbre Binaire de Recherche (ABR)}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Un \textbf{arbre binaire de recherche} est un arbre binaire tel que pour tout nœud :
+\begin{itemize}
+    \item Les valeurs du sous-arbre \textcolor{defvert}{\textbf{gauche}} sont $\leq$ à la valeur du nœud
+    \item Les valeurs du sous-arbre \textcolor{importantrouge}{\textbf{droit}} sont $>$ à la valeur du nœud
+\end{itemize}
+\end{definition}
+
+\begin{notecours}
+\textbf{Point crucial (notes manuscrites) :}
+
+\textbf{Arbres binaires sont pas équitable} en termes de capacité (log(n) et n).
+
+La complexité est en O($\log n$) pour un arbre équilibré, mais peut dégénérer en O(n) si l'arbre est déséquilibré (forme de liste).
+\end{notecours}
+
+\subsubsection{Structure}
+
+\begin{lstlisting}[language=Pascal]
+Type ABR = ^Noeud;
+     Noeud = Record
+         cle : Integer;
+         sAG : ABR;      // sous-arbre gauche
+         sAD : ABR;      // sous-arbre droit
+         pere : ABR;     // pointeur vers le pere
+     End;
+\end{lstlisting}
+
+\begin{exemple}
+\textbf{Exemple d'ABR :}
+\begin{verbatim}
+           50
+          /  \
+        30    70
+       /  \   / \
+      20  40 60  80
+     /              \
+    10              90
+\end{verbatim}
+\end{exemple}
+
+\subsubsection{Opérations principales}
+
+\begin{algorithme}
+\textbf{Recherche :}
+\begin{verbatim}
+Fonction rechercher(abr : ABR, x : Integer) : ABR
+Début
+    Si abr = NIL OU abr.cle = x Alors
+        Retourner abr
+    FinSi
+    Si x < abr.cle Alors
+        Retourner rechercher(abr.sAG, x)
+    Sinon
+        Retourner rechercher(abr.sAD, x)
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Recherche de 40 :}
+\begin{verbatim}
+50 (40 < 50, aller à gauche)
+  30 (40 > 30, aller à droite)
+       40 (trouvé!)
+\end{verbatim}
+\end{exemple}
+
+\begin{algorithme}
+\textbf{Insertion :}
+\begin{verbatim}
+Procédure inserer(abr : ABR, x : Integer)
+Début
+    Si abr = NIL Alors
+        abr <- NouveauNoeud(x)
+    Sinon Si x < abr.cle Alors
+        inserer(abr.sAG, x)
+    Sinon
+        inserer(abr.sAD, x)
+    FinSi
+Fin
+\end{verbatim}
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Insertion de 65 :}
+\begin{verbatim}
+50 -> 70 (65 < 70, gauche)
+  -> 60 (65 > 60, droite)
+    -> insérer 65
+\end{verbatim}
+\end{exemple}
+
+\subsubsection{Complexités}
+
+\begin{center}
+\colorbox{fondbleu}{
+\begin{tabular}{|l|c|c|}
+\hline
+\rowcolor{titrebleu!30}
+\textbf{Opération} & \textbf{Moyenne} & \textbf{Pire cas} \\
+\hline
+Recherche & \textcolor{defvert}{O($\log n$)} & \textcolor{importantrouge}{O(n)} \\
+Insertion & \textcolor{defvert}{O($\log n$)} & \textcolor{importantrouge}{O(n)} \\
+Suppression & \textcolor{defvert}{O($\log n$)} & \textcolor{importantrouge}{O(n)} \\
+Minimum/Maximum & \textcolor{defvert}{O($\log n$)} & \textcolor{importantrouge}{O(n)} \\
+\hline
+\end{tabular}}
+\end{center}
+
+\newpage
+\subsection{Tas (Heap)}
+
+\subsubsection{Définition}
+
+\begin{definition}
+Un \textbf{tas} est un arbre binaire presque complet tel que pour tout nœud (sauf la racine), la valeur du père est supérieure ou égale à celle de ses fils.
+
+\textbf{Tas max :} père $\geq$ fils (racine = maximum)
+
+\textbf{Tas min :} père $\leq$ fils (racine = minimum)
+\end{definition}
+
+\begin{notecours}
+\textbf{Propriété d'équilibre :}
+
+Un tas est toujours \textbf{équilibré} car c'est un arbre binaire presque complet.
+
+\textbf{Caractéristiques importantes (notes manuscrites) :}
+\begin{enumerate}
+    \item Un tas est une \textbf{interface avec 3 fonctions} principales : insertion, extraction du maximum, et consultation du maximum
+    \item C'est une \textbf{structure presque pleine} : tout la structure sauf éventuellement le dernier niveau est complètement rempli de gauche à droite
+    \item \textbf{C'est la structure de tas} elle-même (notion fondamentale à maîtriser)
+    \item \textbf{Un tas est une interface avec 3 fonction}
+    \item \textbf{Structure presque pleine tout la structure sauf et rempli de gauche a droit}
+    \item \textbf{C'est la structutr de tas}
+\end{enumerate}
+\end{notecours}
+
+\begin{exemple}
+\textbf{Exemple de tas max :}
+\begin{verbatim}
+           90
+          /  \
+        80    70
+       /  \   / \
+      50  60 40  30
+     / \
+    10 20
+\end{verbatim}
+\end{exemple}
+
+\subsubsection{Implémentation par tableau}
+
+\begin{important}
+Le tas est stocké dans un tableau où :
+\begin{itemize}
+    \item L'élément à l'indice i a :
+    \item Père à l'indice $\lfloor i/2 \rfloor$
+    \item Fils gauche à l'indice $2i$
+    \item Fils droit à l'indice $2i + 1$
+\end{itemize}
+\end{important}
+
+\begin{lstlisting}[language=Pascal]
+Type Tas = Record
+    tab : Array[1..MAX] of Integer;
+    taille : Integer;
+End;
+\end{lstlisting}
+
+\begin{exemple}
+\textbf{Représentation du tas précédent :}
+\begin{verbatim}
+Indice:   1   2   3   4   5   6   7   8   9
+       +---+---+---+---+---+---+---+---+---+
+tab[]  |90 |80 |70 |50 |60 |40 |30 |10 |20 |
+       +---+---+---+---+---+---+---+---+---+
+\end{verbatim}
+\end{exemple}
+
+\begin{notecours}
+\textbf{Opération d'insertion dans un tas (notes manuscrites) :}
+\begin{itemize}
+    \item Ici il faut ajouter le prochain élément en \textbf{fils gauche} du nœud num5
+    \item Puis \textbf{monter si possible} (comparer avec le parent et échanger si nécessaire)
+    \item Pour insérer dans un tas, on a une \textbf{complexité de hauteur} donc O($\log n$)
+    \item \textbf{Ici il faur ajouter le prochain en fils gauche du noeud num5}
+    \item \textbf{Puis monter si possible}
+    \item \textbf{Pour insere tas on une complexite de hauteur donc log de n}
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Complexités}
+
+\begin{center}
+\colorbox{fondvert!20}{
+\begin{tabular}{|l|c|}
+\hline
+\rowcolor{defvert!30}
+\textbf{Opération} & \textbf{Complexité} \\
+\hline
+Insertion & \textcolor{algoviolet}{O($\log n$)} \\
+Extraction max & \textcolor{algoviolet}{O($\log n$)} \\
+Recherche max & \textcolor{defvert}{O(1)} \\
+Construction & \textcolor{defvert}{O(n)} \\
+\hline
+\end{tabular}}
+\end{center}
+
+\begin{notecours}
+\textbf{Notes manuscrites sur le tas :}
+\begin{itemize}
+    \item \textbf{On ajoute en bas a gauche puis on monte}
+    \item \textbf{O(1) on prend le valeur au sommet}
+    \item \textbf{Log(n) equilibre}
+\end{itemize}
+\end{notecours}
+
+\newpage
+\section{Types Abstraits de Données (TAD)}
+
+\subsection{Définition générale}
+
+\begin{definition}
+Un \textbf{Type Abstrait de Données} est composé de :
+\begin{enumerate}
+    \item Un ensemble d'objets similaires
+    \item Un ensemble d'opérations sur ces objets
+\end{enumerate}
+
+\textbf{Principe :} Séparation entre \textit{spécification} (quoi faire) et \textit{implémentation} (comment faire).
+\end{definition}
+
+\subsection{TAD Dictionnaire}
+
+\begin{definition}
+Un \textbf{dictionnaire} est un ensemble fini d'éléments issus d'un ensemble discret, muni d'une relation d'ordre.
+\end{definition}
+
+\begin{notecours}
+\textbf{Notes importantes sur le dictionnaire (notes manuscrites) :}
+\begin{itemize}
+    \item \textbf{On a une dicotomie pour le log(n)} : à chaque itération, on diminue la taille par 2
+    \item \textbf{Pour supprimer une valeur}, on prend le dernier élément et on le met à sa place
+    \item Dans une \textbf{arbre de recherche}, pour supprimer : si c'est une feuille, c'est direct ; si c'est un nœud avec enfants, il faut le remplacer
+    \item L'\textbf{équilibre} est de l'ordre de $\log n$ et c'est équilibré
+    \item Pour le O(n) en tas, c'est parce qu'il y a des contraintes pour guider (gauche petit, droit grand), pas d'ordre strict
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Implémentations possibles}
+
+\begin{center}
+\colorbox{fondjaune}{
+\begin{tabular}{|l|c|c|c|}
+\hline
+\rowcolor{exempleorange!30}
+\textbf{Structure} & \textbf{Recherche} & \textbf{Insertion} & \textbf{Suppression} \\
+\hline
+Tableau non ordonné & O(n) & \textcolor{defvert}{O(1)} & \textcolor{defvert}{O(1)} \\
+Liste non ordonnée & O(n) & \textcolor{defvert}{O(1)} & \textcolor{defvert}{O(1)} \\
+Tableau ordonné & \textcolor{defvert}{O($\log n$)} & O(n) & O(n) \\
+ABR & \textcolor{defvert}{O(h)} & \textcolor{defvert}{O(h)} & \textcolor{defvert}{O(h)} \\
+\hline
+\end{tabular}}
+\end{center}
+
+\subsection{TAD Ensemble Dynamique}
+
+\begin{definition}
+Un \textbf{ensemble dynamique} peut être modifié : insertion et suppression d'éléments.
+\end{definition}
+
+\begin{notecours}
+\textbf{Points cruciaux (notes manuscrites) :}
+\begin{itemize}
+    \item Il faut savoir la \textbf{taille pour insérer en O(1)}
+    \item Il s'intéresse \textbf{pas au tri} mais il faut connaître et le comprendre
+\end{itemize}
+\end{notecours}
+
+\begin{important}
+\textbf{Interface :} insertion, suppression, recherche d'un élément, de l'élément minimum, du maximum, du prédécesseur, du successeur.
+\end{important}
+
+\subsection{TAD File de Priorité}
+
+\begin{definition}
+Une \textbf{file de priorité} permet de gérer une liste d'éléments munis d'une clé, suivant un ordre de priorité défini sur les clés.
+
+\textbf{Exemple d'application :} Gestion des processus dans un système d'exploitation.
+\end{definition}
+
+\begin{notecours}
+\textbf{Notes manuscrites :}
+\begin{itemize}
+    \item \textbf{Idee que ca fonctinne comme un urgence avec gravite du cas}
+    \item \textbf{File pile file de priorites sont des structures abstraites}
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Comparaison des implémentations}
+
+\begin{center}
+\colorbox{fondbleu}{
+\begin{tabular}{|l|c|c|c|}
+\hline
+\rowcolor{titrebleu!30}
+\textbf{Structure} & \textbf{Insérer} & \textbf{Maximum} & \textbf{ExtraireMax} \\
+\hline
+Tableau non ordonné & \textcolor{defvert}{O(1)} & O(n) & O(n) \\
+Liste non ordonnée & \textcolor{defvert}{O(1)} & O(n) & O(n) \\
+Tableau ordonné & O(n) & \textcolor{defvert}{O(1)} & O(n) \\
+Liste ordonnée & O(n) & \textcolor{defvert}{O(1)} & \textcolor{defvert}{O(1)} \\
+\rowcolor{defvert!20}
+\textbf{Tas} & \textcolor{algoviolet}{O($\log n$)} & \textcolor{defvert}{O(1)} & \textcolor{algoviolet}{O($\log n$)} \\
+\hline
+\end{tabular}}
+\end{center}
+
+\begin{important}
+\textbf{Conclusion :} Le tas est la structure optimale pour les files de priorité!
+\end{important}
+
+\subsection{TAD Famille d'Ensembles}
+
+\begin{definition}
+Soit X un ensemble muni d'une relation d'ordre. On appelle famille les sous-ensembles de X.
+
+\textbf{Interface :} l'insertion d'un ensemble, la suppression d'un ensemble, la vérification d'appartenance d'un ensemble à la famille.
+\end{definition}
+
+\begin{notecours}
+\textbf{Points importants (notes manuscrites) :}
+\begin{itemize}
+    \item English "round set", notion d'eun alphabet un ensemble de base = famille ?
+    \item Manipuier des sous ensembles
+    \item ex {2,4,8} = {4,2,8} (mais interepreter {2,4,8})
+    \item Pas d'ordre mais l'ensemble de base a une relation d'ordre
+    \item Ex les mots de taille 10 on a 10$^{\wedge}$26 mots possible
+    \item La fonction appartenance fait un scan et verifie si= ou pas
+    \item C de l ordre de O(taille de famille) on veut ameliorer ca
+    \item Et la solution d amelioration c 'est mettre un ordre les sous ensembles sont ordonnes (a,b) n est pas dans la famille
+    \item Car non entourer on peut avir des feilles comme des noeud internes
+    \item La complexites est devenu de l ordre du taille du l'ensembe debase
+    \item Au fur et amesoit on avance et on laisse tombe ce qui est avant donc au pire des cas pour l appartenance il faut tout scaner
+    \item Ex :pour ajouter (bde) on fait que avancer pour suppirmer il faut descendre trouver le noeud si cette noeud est une feilles supp jusque j ai plus de feille?
+    \item Si c un noued interne c de l ordre de O(taille de l 'alphabet)
+\end{itemize}
+\end{notecours}
+
+\begin{notecours}
+\textbf{Notes sur l'arbre lexicographique (notes manuscrites) :}
+\begin{itemize}
+    \item \textbf{Pas que un mot plutot un ensemble c plus general}
+    \item Table hash --> tableau(calcul) --> tree map --> se balader ds l'arbre c'estu un fonction de hashage aussi a la place des calcules
+    \item Un ensemble --> fonction de hashage (calcul) --> @adress (pointeur ds a memoire general) ou est la case
+    \item Question a resoudre, un objet e si il appartient a une famille en memoire on utilse pas un tableau ni une liste mais un treemap mapping --> table de hashage
+    \item Element <->code<->adress memoire pour 2 ensemble 2 adress different normalment sinon ca s'appele hashage par shainge (avec collision, pas trop abordante, une liste est utiliser)
+    \item La complexite de parcourrir l alphabet dans l'arbre
+    \item La complexite den map java va dependre de plein d autre truc pour gerer les colision, je chaine ou appeler une autre fonction de hashage
+    \item On voit que quand une famille est dens les methodes sont relativement proches
+    \item Le mappin grossi norment quand la famille grossi et l'arbre grossi mais de facon maitriser l arbre est plus efficace pour les dense
+\end{itemize}
+\end{notecours}
+
+\subsection{TAD Ensembles Disjoints (Union-Find)}
+
+\begin{definition}
+Un TAD \textbf{ensembles disjoints} gère une famille de sous-ensembles deux à deux disjoints d'un ensemble X, formant une partition.
+
+\textbf{Rappel :} Une partition de E est un ensemble de parties non vides, deux à deux disjointes, dont la réunion est E.
+\end{definition}
+
+\begin{notecours}
+\textbf{Notes manuscrites sur Union-Find :}
+\begin{itemize}
+    \item \textbf{E.union(c1,c2) --> O(n)}
+    \item \textbf{E.trouverClass(e) --> o(1)}
+    \item Si je veux fusionner C2 et C4 je parcoure la table et quand je vois un 4 je le remplace par un 2
+    \item Un tas implementer par un table mais juste pour relier le pere d une class par le representant d une autre class, ex pour fusioner (2,4) pere de 4 = 4 devient 2
+    \item Au pire des cas (max (hauteur de l arbre))
+    \item La complexite depend de quelle class j apporte en fils de l autre, il faut fusioner la plus petit en hauteur je prend ca facien et je le met en fils du plus grande
+    \item Je prend la class avec hauteur min et je la branche a l arbre de hauteur max donc on doit savoir le hauteur de l arbre
+    \item La hauteur est borne par log(nbr de class)
+\end{itemize}
+\end{notecours}
+
+\subsubsection{Optimisations}
+
+\begin{important}
+\textbf{1. Union par rang :} Attacher l'arbre de plus petite hauteur sous l'arbre de plus grande hauteur.
+
+\textbf{2. Compression de chemin :} Faire pointer tous les nœuds traversés directement vers la racine.
+\end{important}
+
+\begin{exemple}
+\textbf{Complexité avec optimisations :}
+
+Avec union par rang ET compression de chemin :
+\begin{itemize}
+    \item m opérations sur n éléments : \textcolor{defvert}{O(m $\cdot$ $\alpha$(n))}
+    \item $\alpha$(n) : fonction inverse d'Ackermann (quasi-constante)
+    \item En pratique : \textcolor{defvert}{O(1)} amorti par opération
+\end{itemize}
+\end{exemple}
+
+\newpage
+\section{Résumé et Comparaisons}
+
+\subsection{Structures de données}
+
+\begin{center}
+\colorbox{fondvert!20}{
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\rowcolor{defvert!30}
+\textbf{Structure} & \textbf{Caractéristiques} \\
+\hline
+Pile & \textcolor{importantrouge}{LIFO}, toutes opérations en \textcolor{defvert}{O(1)} \\
+\hline
+File & \textcolor{importantrouge}{FIFO}, toutes opérations en \textcolor{defvert}{O(1)} \\
+\hline
+ABR & Recherche/Insertion/Suppression en \textcolor{algoviolet}{O(h)}. Parcours ordonné efficace \\
+\hline
+Tas & Accès au max en \textcolor{defvert}{O(1)}, insertion/extraction en \textcolor{algoviolet}{O($\log n$)}. Idéal pour files de priorité \\
+\hline
+\end{tabular}}
+\end{center}
+
+\subsection{Types abstraits de données}
+
+\begin{center}
+\colorbox{fondbleu}{
+\begin{tabular}{|l|l|p{4.5cm}|}
+\hline
+\rowcolor{titrebleu!30}
+\textbf{TAD} & \textbf{Opérations} & \textbf{Implémentation} \\
+\hline
+Dictionnaire & insert, search, delete & ABR, table de hachage \\
+\hline
+Ensemble dynamique & + min, max, pred, succ & Liste chaînée ordonnée \\
+\hline
+File de priorité & insert, max, extractMax & \textcolor{defvert}{Tas (optimal)} \\
+\hline
+Famille d'ensembles & insert, delete, member & Arbre lexicographique \\
+\hline
+Ensembles disjoints & find, union & Forêt d'arbres + optim \\
+\hline
+\end{tabular}}
+\end{center}
+
+\begin{notecours}
+\textbf{Question type importante (notes manuscrites) :}
+
+Rappeler que ce que un dictionnaire, implémenter cette structure avec un tas.
+\end{notecours}
+
+\newpage
+\section{Conclusion}
+
+\begin{important}
+Ce cours a présenté les structures de données fondamentales et les types abstraits de données essentiels en informatique. La distinction entre :
+
+\begin{itemize}
+    \item \textcolor{algoviolet}{Spécification (TAD)} : définit \textit{quoi} faire
+    \item \textcolor{defvert}{Implémentation (structure)} : définit \textit{comment} le faire
+\end{itemize}
+
+est cruciale pour concevoir des programmes efficaces et maintenables.
+\end{important}
+
+\subsection{Points clés à retenir}
+
+\begin{enumerate}
+    \item \textcolor{titrebleu}{Choisir} la structure adaptée selon les opérations nécessaires
+    \item \textcolor{titrebleu}{Analyser} les complexités pour optimiser les performances
+    \item \textcolor{titrebleu}{Utiliser} les implémentations standards (bibliothèques) quand possible
+    \item \textcolor{titrebleu}{Comprendre} les compromis temps/espace
+    \item \textcolor{titrebleu}{Maîtriser} la distinction entre interface et implémentation
+\end{enumerate}
+
+\subsection{Pour aller plus loin}
+
+\begin{exemple}
+\begin{itemize}
+    \item Arbres équilibrés (AVL, Rouge-Noir)
+    \item Tables de hachage et fonctions de hachage
+    \item Graphes et algorithmes associés
+    \item Structures de données persistantes
+    \item Structures probabilistes (Bloom filter, Skip list)
+\end{itemize}
+\end{exemple}
+
+\end{document}
