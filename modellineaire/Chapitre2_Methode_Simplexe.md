@@ -123,7 +123,20 @@ On cherche une variable hors-base xj dont le coefficient dans z est **strictemen
 
 #### Etape 2 : Choix de la variable sortante (test du ratio minimum)
 
-Supposons que xe est la variable entrante. On regarde dans quelle equation elle apparait avec un coefficient positif. Pour chaque variable de base xi ayant un coefficient positif aie_barre > 0 pour xe :
+Supposons que xe est la variable entrante.
+
+**Attention a la convention de signe dans le dictionnaire !**
+
+Le dictionnaire est ecrit sous la forme :
+```
+xi = bi_barre - aie_barre * xe - ...
+```
+
+Le coefficient **reel** de xe dans la contrainte est **aie_barre** (le nombre qui apparait **apres le signe moins**). C'est ce coefficient qu'on utilise pour le ratio test.
+
+> **Piege courant :** Dans le dictionnaire, on voit `-aie_barre * xe` (avec un moins devant). Le coefficient reel est **aie_barre** lui-meme (positif). C'est normal : le "-" fait partie de la structure du dictionnaire `xi = bi - ...`, pas du coefficient.
+
+Pour chaque variable de base xi dont le coefficient reel **aie_barre > 0** (c'est-a-dire xe apparait avec un **signe -** dans le dictionnaire) :
 
 ```
 ratio_i = bi_barre / aie_barre
@@ -135,9 +148,11 @@ La variable sortante est celle qui donne le **plus petit ratio** :
 t* = min { bi_barre / aie_barre  |  aie_barre > 0 }
 ```
 
-**Pourquoi le ratio minimum ?** C'est la valeur maximale que peut prendre xe tout en gardant toutes les variables de base >= 0.
+**Pourquoi le ratio minimum ?** Quand xe augmente, les variables de base **diminuent** (car xi = bi - aie*xe). Le ratio bi/aie donne la valeur de xe pour laquelle xi atteint 0. Le minimum garantit qu'aucune variable de base ne devient negative.
 
-> **Si aucun coefficient n'est positif** (tous les aie_barre <= 0), le probleme est **non borne**. STOP.
+**Si xe apparait avec un signe "+" dans le dictionnaire** (coefficient reel negatif), cette variable de base **augmente** quand xe augmente → pas de limitation → on ignore cette ligne.
+
+> **Si aucun coefficient reel n'est positif** (xe apparait partout avec un "+" ou n'apparait pas), le probleme est **non borne**. STOP.
 
 #### Etape 3 : Le pivot
 
@@ -225,6 +240,164 @@ A l'optimal, si un coefficient cj_barre = 0 pour une variable hors-base xj, alor
 - Toute combinaison convexe de ces deux sommets est aussi optimale
 
 **Consequence :** Il existe une **infinite de solutions optimales** (toute l'arete entre les deux sommets).
+
+---
+
+#### Exemple complet : Probleme non borne
+
+```
+maximiser   z = 2x1 + x2
+sujet a     -x1 + x2 <= 2
+             x1 - 2x2 <= 4
+             x1, x2 >= 0
+```
+
+**Dictionnaire initial** (ajout de x3, x4 variables d'ecart) :
+```
+x3 = 2 + x1 - x2
+x4 = 4 - x1 + 2x2
+z  = 2x1 + x2
+```
+
+Solution initiale : x1 = 0, x2 = 0, x3 = 2, x4 = 4, z = 0.
+
+**Iteration 1 :**
+- Variable entrante : x1 (coefficient +2 dans z, le plus grand).
+- Ratios : on regarde comment x1 apparait dans chaque equation :
+  - x3 = 2 **+ x1** - x2 → coefficient de x1 est **+1** (signe +). Quand x1 augmente, x3 **augmente**. Pas de limitation.
+  - x4 = 4 **- x1** + 2x2 → coefficient de x1 est **-1** (signe -). Quand x1 augmente, x4 **diminue**. Ratio = 4/1 = 4. Variable sortante : x4.
+
+Pivot : isoler x1 dans l'equation de x4 :
+```
+x4 = 4 - x1 + 2x2
+x1 = 4 - x4 + 2x2
+```
+
+Substituer dans les autres equations :
+```
+x3 = 2 + (4 - x4 + 2x2) - x2 = 6 - x4 + x2
+x1 = 4 - x4 + 2x2
+z  = 2(4 - x4 + 2x2) + x2 = 8 - 2x4 + 5x2
+```
+
+Nouveau dictionnaire :
+```
+x3 = 6 - x4 + x2
+x1 = 4 - x4 + 2x2
+z  = 8 - 2x4 + 5x2
+```
+
+Solution : x4 = 0, x2 = 0, x3 = 6, x1 = 4, z = 8.
+
+**Iteration 2 :**
+- Variable entrante : x2 (coefficient +5 dans z).
+- Ratios : on regarde comment x2 apparait dans chaque equation :
+  - x3 = 6 - x4 **+ x2** → coefficient de x2 est **+1** (signe +). Quand x2 augmente, x3 **augmente**. Pas de limitation.
+  - x1 = 4 - x4 **+ 2x2** → coefficient de x2 est **+2** (signe +). Quand x2 augmente, x1 **augmente**. Pas de limitation.
+
+**Aucune variable de base n'est limitee** quand x2 augmente. On peut donc augmenter x2 a l'infini.
+
+Comme le coefficient de x2 dans z est +5, z = 8 + 5x2 croit sans limite.
+
+**Conclusion : Le probleme est NON BORNE.** Il n'existe pas de solution optimale finie.
+
+> **Comment verifier geometriquement ?** Les contraintes definissent une region non bornee. La direction d'augmentation de x2 (avec x1 = 4 + 2x2, x3 = 6 + x2, x4 = 0) est un rayon qui reste dans la region realisable et le long duquel z → +∞.
+
+---
+
+#### Exemple complet : Solutions multiples
+
+```
+maximiser   z = 2x1 + 4x2
+sujet a     x1 + 2x2 <= 8
+             x1 + x2 <= 5
+             x1, x2 >= 0
+```
+
+**Dictionnaire initial** (ajout de x3, x4 variables d'ecart) :
+```
+x3 = 8 - x1 - 2x2
+x4 = 5 - x1 - x2
+z  = 2x1 + 4x2
+```
+
+Solution initiale : x1 = 0, x2 = 0, x3 = 8, x4 = 5, z = 0.
+
+**Iteration 1 :**
+- Variable entrante : x2 (coefficient +4, le plus grand).
+- Ratios : 8/2 = 4, 5/1 = 5 → minimum = 4, x3 sort.
+- Pivot : isoler x2 dans l'equation de x3 :
+
+```
+x3 = 8 - x1 - 2x2
+2x2 = 8 - x1 - x3
+x2 = 4 - x1/2 - x3/2
+```
+
+Substituer :
+```
+x4 = 5 - x1 - (4 - x1/2 - x3/2) = 1 - x1/2 + x3/2
+z  = 2x1 + 4(4 - x1/2 - x3/2) = 16 - 2x3
+```
+
+Nouveau dictionnaire :
+```
+x2 = 4 - x1/2 - x3/2
+x4 = 1 - x1/2 + x3/2
+z  = 16 + 0*x1 - 2x3
+```
+
+**Test d'optimalite :** Les coefficients dans z sont :
+- x1 : **0** (exactement zero !)
+- x3 : **-2** (negatif)
+
+Tous les coefficients sont <= 0, donc la solution est **optimale**.
+
+**Solution optimale 1 :** x1 = 0, x2 = 4, z = 16.
+
+**Mais** le coefficient de x1 dans z vaut exactement **0**. Cela signifie que faire entrer x1 en base ne changera pas la valeur de z. On peut trouver un deuxieme sommet optimal :
+
+**Iteration supplementaire (optionnelle) :**
+- Variable entrante : x1 (coefficient 0 dans z — z ne changera pas).
+- Ratios : 4/(1/2) = 8, 1/(1/2) = 2 → minimum = 2, x4 sort.
+- Pivot : isoler x1 dans l'equation de x4 :
+
+```
+x4 = 1 - x1/2 + x3/2
+x1/2 = 1 - x4 + x3/2
+x1 = 2 - 2x4 + x3
+```
+
+Substituer :
+```
+x2 = 4 - (2 - 2x4 + x3)/2 - x3/2 = 3 + x4 - x3
+z  = 16 + 0*(2 - 2x4 + x3) - 2x3 = 16 - 2x3
+```
+
+Nouveau dictionnaire :
+```
+x1 = 2 - 2x4 + x3
+x2 = 3 + x4 - x3
+z  = 16 + 0*x4 - 2x3
+```
+
+**Solution optimale 2 :** x1 = 2, x2 = 3, z = 16.
+
+La valeur optimale est **toujours z = 16**, confirmant les solutions multiples.
+
+**Toutes les solutions optimales** sont de la forme :
+
+```
+(x1, x2) = λ(0, 4) + (1-λ)(2, 3)  pour tout λ ∈ [0, 1]
+         = (2 - 2λ,  3 + λ)
+```
+
+Par exemple :
+- λ = 0 → (2, 3), z = 16
+- λ = 1/2 → (1, 3.5), z = 16
+- λ = 1 → (0, 4), z = 16
+
+> **Geometriquement :** La droite z = 2x1 + 4x2 = 16 est **parallele** a la contrainte x1 + 2x2 <= 8 (les coefficients de z sont proportionnels a ceux de la contrainte : 2/1 = 4/2). L'ensemble des solutions optimales est l'arete entiere du polyedre entre les sommets (0,4) et (2,3).
 
 ---
 
