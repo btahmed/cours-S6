@@ -843,15 +843,20 @@ sujet a     2x1 - x2 + 2x3 <= 4
 
 #### Solution
 
-**1.** Dictionnaire initial :
+**1. Dictionnaire initial et identification du probleme**
+
+On introduit les variables d'ecart x4, x5, x6 :
 ```
 x4 = 4  - 2x1 + x2  - 2x3
 x5 = -5 - 2x1 + 3x2 - x3
 x6 = -1 + x1  - x2  + 2x3
+z  = x1 - x2 + x3
 ```
-x5 = -5 < 0 et x6 = -1 < 0 : l'origine **n'est pas realisable**.
+La solution de base courante est x1 = x2 = x3 = 0, d'ou x4 = 4, x5 = -5, x6 = -1. Comme **x5 < 0** et **x6 < 0**, l'origine n'est pas realisable. On ne peut pas demarrer le simplexe directement.
 
-**2.** Probleme auxiliaire (on ajoute +x0 a chaque contrainte, on maximise w = -x0) :
+**2. Probleme auxiliaire et pivot d'initialisation**
+
+On ajoute la variable x0 >= 0 a chaque contrainte et on maximise w = -x0 :
 ```
 x4 = 4  - 2x1 + x2  - 2x3 + x0
 x5 = -5 - 2x1 + 3x2 - x3  + x0
@@ -859,7 +864,11 @@ x6 = -1 + x1  - x2  + 2x3 + x0
 w  = -x0
 ```
 
-Pivot d'initialisation : x0 entre, x5 sort (b = -5, le plus negatif). Apres pivot :
+**Pivot d'initialisation :** x0 entre en base. La ligne avec le membre droit le plus negatif est x5 (b = -5), donc **x5 sort**. On exprime x0 a partir de la ligne x5 :
+
+x0 = 5 + 2x1 - 3x2 + x3 + x5
+
+Substitution dans les autres lignes :
 ```
 x0 = 5  + 2x1 - 3x2 + x3  + x5
 x4 = 9        - 2x2 - x3   + x5
@@ -867,13 +876,111 @@ x6 = 4  + 3x1 - 4x2 + 3x3 + x5
 w  = -5 - 2x1 + 3x2 - x3  - x5
 ```
 
-**3.** Voir l'exemple detaille en section 2.3. Apres 2 iterations du simplexe sur w, on obtient w* = 0. Le probleme original est realisable. Solution de Phase 1 : x1 = 0, x2 = 2.2, x3 = 1.6.
+Verification : x0 = 5, x4 = 9, x6 = 4 >= 0. Premier dictionnaire realisable. ✓
 
-**4.** On supprime x0, on remplace w par z = x1 - x2 + x3, on substitue :
+**3. Phase 1 : maximiser w = -x0**
+
+**Iteration 1.** w = -5 - 2x1 + 3x2 - x3 - x5. Coefficient positif : x2 (+3). **x2 entre.**
+
+Ratio test (on cherche les coefficients negatifs de x2) :
+- x0 : coeff = -3, ratio = 5/3 ≈ 1.67
+- x4 : coeff = -2, ratio = 9/2 = 4.5
+- x6 : coeff = -4, ratio = 4/4 = **1** ← minimum
+
+**x6 sort.** t* = 1, w augmente de 3 × 1 = 3 (passe de -5 a -2).
+
+On exprime x2 a partir de la ligne x6 :
+
+x2 = 1 + (3/4)x1 + (3/4)x3 + (1/4)x5 - (1/4)x6
+
+Substitution :
 ```
-z = -0.6 + 0.2x1 - 0.2x5 + 0.4x6
+x0 = 2  - (1/4)x1 - (5/4)x3 + (1/4)x5 + (3/4)x6
+x4 = 7  - (3/2)x1 - (5/2)x3 + (1/2)x5 + (1/2)x6
+x2 = 1  + (3/4)x1 + (3/4)x3 + (1/4)x5 - (1/4)x6
+w  = -2 + (1/4)x1 + (5/4)x3 - (1/4)x5 - (3/4)x6
 ```
-On continue le simplexe jusqu'a l'optimal.
+
+Solution : x0 = 2, x4 = 7, x2 = 1, w = -2.
+
+**Iteration 2.** w = -2 + (1/4)x1 + (5/4)x3 - (1/4)x5 - (3/4)x6. Coefficients positifs : x1 (+1/4), x3 (+5/4). Plus grand : **x3 entre**.
+
+Ratio test (coefficients negatifs de x3) :
+- x0 : coeff = -5/4, ratio = 2/(5/4) = 8/5 = **1.6** ← minimum
+- x4 : coeff = -5/2, ratio = 7/(5/2) = 14/5 = 2.8
+- x2 : coeff = +3/4 > 0, on ignore (x2 augmente quand x3 augmente)
+
+**x0 sort.** t* = 1.6, w augmente de (5/4) × 1.6 = 2 (passe de -2 a 0).
+
+On exprime x3 a partir de la ligne x0 :
+
+x3 = 8/5 - (1/5)x1 + (1/5)x5 + (3/5)x6 - (4/5)x0
+
+Substitution :
+```
+x3 = 8/5  - (1/5)x1 + (1/5)x5 + (3/5)x6 - (4/5)x0
+x4 = 3    - x1                 - x6      + 2x0
+x2 = 11/5 + (3/5)x1 + (2/5)x5 + (1/5)x6 - (3/5)x0
+w  = -x0
+```
+
+w = -x0 : comme x0 >= 0, on a w <= 0. Avec x0 = 0 (hors-base), **w* = 0**. Le probleme original est realisable !
+
+Solution de Phase 1 : x1 = 0, x2 = 11/5, x3 = 8/5, x4 = 3, x5 = 0, x6 = 0.
+
+**4. Phase 2 : optimiser z = x1 - x2 + x3**
+
+On supprime la colonne x0 du dictionnaire et on remplace w par l'objectif original z = x1 - x2 + x3. Comme x2 et x3 sont en base, on substitue :
+
+z = x1 - (11/5 + (3/5)x1 + (2/5)x5 + (1/5)x6) + (8/5 - (1/5)x1 + (1/5)x5 + (3/5)x6)
+
+z = (1 - 3/5 - 1/5)x1 + (-2/5 + 1/5)x5 + (-1/5 + 3/5)x6 + (-11/5 + 8/5)
+
+```
+x3 = 8/5  - (1/5)x1 + (1/5)x5 + (3/5)x6
+x4 = 3    - x1                 - x6
+x2 = 11/5 + (3/5)x1 + (2/5)x5 + (1/5)x6
+z  = -3/5 + (1/5)x1 - (1/5)x5 + (2/5)x6
+```
+
+z = -3/5 actuellement (x1 = x5 = x6 = 0).
+
+**Iteration 1 (Phase 2).** z = -3/5 + (1/5)x1 - (1/5)x5 + (2/5)x6. Coefficients positifs : x1 (+1/5), x6 (+2/5). Plus grand : **x6 entre**.
+
+Ratio test (coefficients negatifs de x6) :
+- x3 : coeff = +3/5 > 0, on ignore
+- x4 : coeff = -1, ratio = 3/1 = **3** ← seul candidat
+- x2 : coeff = +1/5 > 0, on ignore
+
+**x4 sort.** t* = 3, z augmente de (2/5) × 3 = 6/5 (passe de -3/5 a 3/5).
+
+On exprime x6 a partir de la ligne x4 :
+
+x6 = 3 - x1 - x4
+
+Substitution :
+```
+x3 = 17/5 - (4/5)x1 + (1/5)x5 - (3/5)x4
+x6 = 3    - x1                 - x4
+x2 = 14/5 + (2/5)x1 + (2/5)x5 - (1/5)x4
+z  = 3/5  - (1/5)x1 - (1/5)x5 - (2/5)x4
+```
+
+Tous les coefficients dans z sont **negatifs** → **solution optimale atteinte !**
+
+**Solution optimale :**
+| Variable | Valeur |
+|----------|--------|
+| x1 | 0 |
+| x2 | 14/5 = 2.8 |
+| x3 | 17/5 = 3.4 |
+| **z*** | **3/5 = 0.6** |
+
+**Verification :**
+- z = 0 - 2.8 + 3.4 = 0.6 ✓
+- Contrainte 1 : 2(0) - 2.8 + 2(3.4) = 4 <= 4 ✓ (saturee, x4 = 0)
+- Contrainte 2 : 2(0) - 3(2.8) + 3.4 = -5 <= -5 ✓ (saturee, x5 = 0)
+- Contrainte 3 : -(0) + 2.8 - 2(3.4) = -4 <= -1 ✓ (marge = 3 = x6)
 
 ---
 
@@ -893,11 +1000,118 @@ sujet a     x1 + 2x2 <= 14
 
 #### Solution
 
-Voir l'exemple detaille en section 2.3 (variante avec variables artificielles). La resolution complete donne :
+**Mise sous forme standard.** On convertit toutes les contraintes en egalites :
+```
+x1 + 2x2 + x3       = 14       (x3 : variable d'ecart, contrainte <=)
+-x1 + 2x2     - x4  = 5        (x4 : variable de surplus, contrainte >=)
+2x1 + 4x2           = 18       (egalite, pas de variable d'ecart)
+```
 
-**Phase 1 :** w* = 0 (probleme realisable). Solution intermediaire : x1 = 2, x2 = 3.5.
+Les equations 2 et 3 n'ont pas de variable de base naturelle (x4 a un coefficient -1, pas +1). On introduit des **variables artificielles** y1 et y2.
 
-**Phase 2 :** Apres optimisation, la solution optimale est **x1 = 0, x2 = 4.5, z* = 18**.
+**Phase 1 : Probleme artificiel**
+
+```
+maximiser   w = -y1 - y2
+sujet a     x1 + 2x2 + x3         = 14
+            -x1 + 2x2 - x4 + y1   = 5
+            2x1 + 4x2       + y2   = 18
+```
+
+Base initiale : B = {x3, y1, y2}, avec x3 = 14, y1 = 5, y2 = 18.
+
+**Dictionnaire initial.** On exprime w en fonction des hors-base en substituant y1 et y2 :
+
+w = -(5 + x1 - 2x2 + x4) - (18 - 2x1 - 4x2) = -23 + x1 + 6x2 - x4
+
+```
+x3 = 14 - x1  - 2x2
+y1 = 5  + x1  - 2x2 + x4
+y2 = 18 - 2x1 - 4x2
+w  = -23 + x1 + 6x2 - x4
+```
+
+**Iteration 1.** x2 entre (coeff +6, le plus grand).
+
+Ratio test (coefficients negatifs de x2) :
+- x3 : coeff = -2, ratio = 14/2 = 7
+- y1 : coeff = -2, ratio = 5/2 = **2.5** ← minimum
+- y2 : coeff = -4, ratio = 18/4 = 4.5
+
+**y1 sort.** x2 = 5/2 + (1/2)x1 + (1/2)x4 - (1/2)y1.
+
+```
+x2 = 5/2 + (1/2)x1 + (1/2)x4 - (1/2)y1
+x3 = 9   - 2x1     - x4      + y1
+y2 = 8   - 4x1     - 2x4     + 2y1
+w  = -8  + 4x1     + 2x4     - 3y1
+```
+
+**Iteration 2.** x1 entre (coeff +4 dans w).
+
+Ratio test (coefficients negatifs de x1) :
+- x2 : coeff = +1/2 > 0, on ignore
+- x3 : coeff = -2, ratio = 9/2 = 4.5
+- y2 : coeff = -4, ratio = 8/4 = **2** ← minimum
+
+**y2 sort.** x1 = 2 - (1/2)x4 + (1/2)y1 - (1/4)y2.
+
+```
+x1 = 2   - (1/2)x4 + (1/2)y1 - (1/4)y2
+x2 = 7/2 + (1/4)x4 - (1/4)y1 - (1/8)y2
+x3 = 5                        + (1/2)y2
+w  = 0   - y1      - y2
+```
+
+w = 0, tous les coefficients de w sont <= 0 → **optimal**. Les variables artificielles y1 et y2 sont hors-base (valent 0) → **w* = 0**, le probleme est realisable.
+
+Solution Phase 1 : x1 = 2, x2 = 7/2 = 3.5, x3 = 5.
+
+**Phase 2 : Optimisation de z = x1 + 4x2**
+
+On supprime les colonnes y1 et y2 et on restaure z en substituant :
+
+z = x1 + 4x2 = (2 - (1/2)x4) + 4(7/2 + (1/4)x4) = 2 - (1/2)x4 + 14 + x4 = 16 + (1/2)x4
+
+```
+x1 = 2   - (1/2)x4
+x2 = 7/2 + (1/4)x4
+x3 = 5
+z  = 16  + (1/2)x4
+```
+
+Le coefficient de x4 est **+1/2 > 0** dans z → on peut encore augmenter z. x4 entre.
+
+Ratio test (coefficients negatifs de x4) :
+- x1 : coeff = -1/2, ratio = 2/(1/2) = **4** ← seul candidat
+- x2 : coeff = +1/4 > 0, on ignore
+- x3 : pas de x4, pas de limite
+
+**x1 sort.** x4 = 4 - 2x1. Substitution :
+
+```
+x4 = 4   - 2x1
+x2 = 9/2 - (1/2)x1
+x3 = 5
+z  = 18  - x1
+```
+
+Tous les coefficients de z sont **<= 0** → **solution optimale atteinte !**
+
+**Solution optimale :**
+| Variable | Valeur |
+|----------|--------|
+| x1 | 0 |
+| x2 | 9/2 = 4.5 |
+| x3 | 5 (ecart contrainte 1) |
+| x4 | 4 (surplus contrainte 2) |
+| **z*** | **18** |
+
+**Verification :**
+- z = 0 + 4(4.5) = 18 ✓
+- Contrainte 1 : 0 + 2(4.5) = 9 <= 14 ✓ (marge = 5 = x3)
+- Contrainte 2 : -0 + 2(4.5) = 9 >= 5 ✓ (surplus = 4 = x4)
+- Contrainte 3 : 2(0) + 4(4.5) = 18 = 18 ✓
 
 ---
 
