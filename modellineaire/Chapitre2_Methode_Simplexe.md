@@ -396,7 +396,7 @@ Par exemple :
 - λ = 0 → (2, 3), z = 16
 - λ = 1/2 → (1, 3.5), z = 16
 - λ = 1 → (0, 4), z = 16
-
+  
 > **Geometriquement :** La droite z = 2x1 + 4x2 = 16 est **parallele** a la contrainte x1 + 2x2 <= 8 (les coefficients de z sont proportionnels a ceux de la contrainte : 2/1 = 4/2). L'ensemble des solutions optimales est l'arete entiere du polyedre entre les sommets (0,4) et (2,3).
 
 ---
@@ -568,7 +568,7 @@ x4 = 4 + 2x1 - x2 - x3
 x5 = 2 - x2 + x3
 z  = x1 - x2 + x3
 ```
-
+ 
 Variable entrante : x1 (coefficient +1 dans z).
 
 Regardons les coefficients de x1 dans les equations de base :
