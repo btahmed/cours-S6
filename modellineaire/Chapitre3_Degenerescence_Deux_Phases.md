@@ -984,7 +984,127 @@ Tous les coefficients dans z sont **negatifs** → **solution optimale atteinte 
 
 ---
 
-### Exercice 3 : Probleme avec variables artificielles
+### Exercice 3 : Methode des deux phases (probleme a deux variables)
+
+**Enonce :**
+Resoudre par la methode du simplexe a deux phases :
+```
+maximiser   z = -2x1 - x2
+sujet a     -x1 + x2 <= -1
+             x1 - 2x2 <= 4
+             x1, x2 >= 0
+```
+
+1. Identifier pourquoi l'origine n'est pas realisable.
+2. Former le probleme auxiliaire et construire le premier dictionnaire realisable.
+3. Resoudre la Phase 1.
+4. Deduire le dictionnaire de depart pour la Phase 2 et trouver la solution optimale.
+
+#### Solution
+
+**1. Dictionnaire initial et identification du probleme**
+
+On introduit les variables d'ecart x3 et x4 :
+```
+x3 = -1 + x1 - x2
+x4 = 4  - x1 + 2x2
+z  = -2x1 - x2
+```
+
+La solution de base courante est x1 = x2 = 0, d'ou x3 = -1 et x4 = 4. Comme **x3 = -1 < 0**, l'origine n'est pas realisable. On ne peut pas demarrer le simplexe directement.
+
+> **Remarque :** La contrainte -x1 + x2 <= -1 equivaut a x1 - x2 >= 1. Avec x1 = x2 = 0, on a 0 >= 1 qui est faux. L'origine viole cette contrainte.
+
+**2. Probleme auxiliaire et pivot d'initialisation**
+
+On ajoute la variable x0 >= 0 a chaque contrainte (avec un signe +) et on maximise w = -x0 :
+```
+x3 = -1 + x1 - x2 + x0
+x4 = 4  - x1 + 2x2 + x0
+w  = -x0
+```
+
+**Pivot d'initialisation :** x0 entre en base. La seule ligne avec un membre droit negatif est x3 (b = -1), donc **x3 sort**. On exprime x0 a partir de la ligne x3 :
+
+x0 = 1 - x1 + x2 + x3
+
+Substitution dans les autres lignes :
+```
+x0 = 1  - x1 + x2  + x3
+x4 = 4  - x1 + 2x2 + (1 - x1 + x2 + x3) = 5 - 2x1 + 3x2 + x3
+w  = -(1 - x1 + x2 + x3) = -1 + x1 - x2 - x3
+```
+
+Verification : x0 = 1, x4 = 5 >= 0. Premier dictionnaire realisable pour le probleme auxiliaire.
+
+**3. Phase 1 : maximiser w = -x0**
+
+**Iteration 1.** w = -1 + x1 - x2 - x3. Seul coefficient positif : x1 (+1). **x1 entre.**
+
+Ratio test (on cherche les coefficients negatifs de x1) :
+- x0 : coeff = -1, ratio = 1/1 = **1**
+- x4 : coeff = -2, ratio = 5/2 = **2.5**
+
+Minimum = 1 pour x0. De plus, x0 est toujours prioritaire pour sortir. **x0 sort.**
+
+On exprime x1 a partir de la ligne x0 :
+
+x1 = 1 + x2 + x3 - x0
+
+Substitution :
+```
+x1 = 1  + x2  + x3  - x0
+x4 = 5  - 2(1 + x2 + x3 - x0) + 3x2 + x3 = 3 + x2 - x3 + 2x0
+w  = -1 + (1 + x2 + x3 - x0) - x2 - x3 = -x0
+```
+
+w = -x0 : comme x0 >= 0, on a w <= 0. Avec x0 = 0 (hors-base), **w* = 0**. Tous les coefficients de w sont <= 0 (il n'y a que -1 devant x0). L'algorithme s'arrete.
+
+**Conclusion Phase 1 :** Le probleme original est **realisable**.
+
+Solution de Phase 1 : x1 = 1, x2 = 0, x3 = 0, x4 = 3.
+
+> **Verification de la realisabilite :** x1 = 1, x2 = 0 donne : contrainte 1 : -(1) + 0 = -1 <= -1 (saturee). Contrainte 2 : 1 - 0 = 1 <= 4.
+
+**4. Phase 2 : optimiser z = -2x1 - x2**
+
+On supprime la colonne x0 du dictionnaire. Le dictionnaire realisable est :
+```
+x1 = 1 + x2 + x3
+x4 = 3 + x2 - x3
+```
+
+On remplace w par l'objectif original z = -2x1 - x2. Comme x1 est en base, on substitue :
+
+z = -2(1 + x2 + x3) - x2 = -2 - 2x2 - 2x3 - x2 = -2 - 3x2 - 2x3
+
+```
+x1 = 1  + x2  + x3
+x4 = 3  + x2  - x3
+z  = -2 - 3x2 - 2x3
+```
+
+Tous les coefficients dans z sont **negatifs** (-3 pour x2, -2 pour x3) → **solution optimale atteinte immediatement** ! Aucune iteration de Phase 2 n'est necessaire.
+
+**Solution optimale :**
+| Variable | Valeur |
+|----------|--------|
+| x1 | 1 |
+| x2 | 0 |
+| x3 | 0 (ecart contrainte 1, saturee) |
+| x4 | 3 (ecart contrainte 2) |
+| **z*** | **-2** |
+
+**Verification :**
+- z = -2(1) - 0 = -2 ✓
+- Contrainte 1 : -(1) + 0 = -1 <= -1 ✓ (saturee, x3 = 0)
+- Contrainte 2 : 1 - 2(0) = 1 <= 4 ✓ (marge = 3 = x4)
+
+> **Observation :** Dans ce probleme, la fonction objectif z = -2x1 - x2 a tous ses coefficients negatifs dans les variables originales. Intuitivement, on veut minimiser x1 et x2. Mais la contrainte x1 - x2 >= 1 force x1 >= 1. Le minimum est donc atteint en x1 = 1, x2 = 0 (on minimise x1 au maximum permis par les contraintes). La Phase 1 a suffi a trouver ce point, et la Phase 2 a confirme son optimalite immediatement.
+
+---
+
+### Exercice 4 : Probleme avec variables artificielles
 
 **Enonce :**
 Resoudre par la methode a deux phases (avec variables artificielles) :
@@ -1115,7 +1235,7 @@ Tous les coefficients de z sont **<= 0** → **solution optimale atteinte !**
 
 ---
 
-### Exercice 4 : Regle de Bland
+### Exercice 5 : Regle de Bland
 
 **Enonce :**
 Reprendre l'exemple de cyclage de la Section 2.2 et appliquer la **regle de Bland** (plus petit indice pour la variable entrante et la variable sortante).

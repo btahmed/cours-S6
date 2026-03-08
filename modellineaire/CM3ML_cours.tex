@@ -1006,7 +1006,26 @@ Resoudre par la methode du simplexe a deux phases :
 \end{exemple}
 
 \begin{exemple}
-\textbf{Exercice 3 -- Probleme avec variables artificielles}
+\textbf{Exercice 3 -- Methode a deux phases (probleme a deux variables)}
+
+Resoudre par la methode du simplexe a deux phases :
+\begin{align*}
+\text{maximiser} \quad & z = -2x_1 - x_2\\
+\text{sujet a} \quad & -x_1 + x_2 \leq -1\\
+& x_1 - 2x_2 \leq 4\\
+& x_1, x_2 \geq 0
+\end{align*}
+
+\begin{enumerate}
+    \item Identifier pourquoi l'origine n'est pas realisable.
+    \item Former le probleme auxiliaire et construire le premier dictionnaire realisable.
+    \item Resoudre la Phase 1.
+    \item Deduire le dictionnaire de depart pour la Phase 2 et trouver la solution optimale.
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 4 -- Probleme avec variables artificielles}
 
 Resoudre par la methode a deux phases (avec variables artificielles) :
 \begin{align*}
@@ -1021,7 +1040,7 @@ Resoudre par la methode a deux phases (avec variables artificielles) :
 \end{exemple}
 
 \begin{exemple}
-\textbf{Exercice 4 -- Regle de Bland}
+\textbf{Exercice 5 -- Regle de Bland}
 
 Reprendre l'exemple de cyclage de la Section~3.2 et appliquer la \textbf{regle de Bland} (plus petit indice pour la variable entrante et la variable sortante).
 
