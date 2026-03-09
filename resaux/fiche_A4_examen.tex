@@ -1,0 +1,310 @@
+\documentclass[a4paper,4pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[left=3mm,right=3mm,top=3mm,bottom=3mm]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+% Ultra-compact formatting
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5pt}
+\setlength{\columnsep}{4mm}
+\setlist{nosep,leftmargin=8pt,itemsep=0pt,parsep=0pt,topsep=0pt}
+
+\titleformat{\section}{\bfseries\scriptsize\color{blue!80!black}}{\thesection.}{2pt}{}
+\titleformat{\subsection}{\bfseries\tiny\color{red!70!black}}{\thesubsection}{2pt}{}
+\titlespacing{\section}{0pt}{2pt}{1pt}
+\titlespacing{\subsection}{0pt}{1.5pt}{0.5pt}
+
+\renewcommand{\baselinestretch}{0.72}
+\pagestyle{empty}
+
+\begin{document}
+\fontsize{4.5pt}{5.2pt}\selectfont
+
+\begin{multicols}{3}
+
+% ============================================================
+\section{GRAPHES -- D\'efinitions}
+% ============================================================
+
+\textbf{Non orient\'e:} $G=(V,E)$, ar\^etes = paires $\{u,v\}$\\
+\textbf{Orient\'e:} arcs = couples $(u,v)$, $I(e)$=initiale, $T(e)$=terminale\\
+\textbf{Simple:} pas de boucle ni ar\^ete multiple
+
+\subsection{Matrices}
+\textbf{Adjacence} $A$: $a_{ij}$=nb ar\^etes entre $i,j$. Sym\'etrique si non orient\'e.\\
+\textbf{Incidence non or.} $B$: $b_{ij}\in\{0,1,2\}$, $\sum_{\text{col}}=2$\\
+\textbf{Incidence or.} $B$: $b_{ij}=+1$ (d\'epart), $-1$ (arriv\'ee), $0$. $\sum_{\text{col}}=0$
+
+\subsection{Degr\'es}
+$d(v)$=nb ar\^etes incidentes. $\delta(G)$=min, $\Delta(G)$=max\\
+{\color{red}\fbox{$\sum_{v\in V}d(v) = 2|E|$}} $\Rightarrow$ nb sommets degr\'e impair est pair
+
+\subsection{Graphe complet $K_n$}
+$|E|=\frac{n(n-1)}{2}$, $d(v)=n-1$. Ex: $K_3$=3, $K_4$=6, $K_5$=10
+
+\subsection{Sous-graphes}
+\textbf{Engendre par $U$:} toutes ar\^etes entre sommets de $U$\\
+\textbf{Graphe partiel:} tous sommets, sous-ens. d'ar\^etes
+
+\subsection{Biparti}
+$G$ biparti $\Leftrightarrow$ pas de cycle de longueur impaire\\
+Stables $V_1,V_2$: toute ar\^ete relie $V_1$ \`a $V_2$
+
+\subsection{Cheminements}
+\begin{tabular}{@{}l|l|l@{}}
+& Non orient\'e & Orient\'e\\
+\hline
+Suite & Cha\^ine & Chemin\\
+Ar\^etes diff. & Simple & Simple\\
+Sommets diff. & \'El\'ementaire & \'El\'ementaire\\
+Ferm\'e & Cycle & Circuit
+\end{tabular}
+Orient\'e: on \textbf{respecte le sens} des arcs.
+
+\subsection{Connexit\'e}
+\textbf{Connexe:} $\exists$ cha\^ine entre toute paire.\\
+\textbf{Fort. connexe (or.):} $\exists$ chemin dans les 2 sens.\\
+\textbf{Coupe:} $\delta(S)=\{e=uv: u\in S, v\in V\setminus S\}$
+
+% ============================================================
+\section{R\'ESEAUX}
+% ============================================================
+
+$G=(V,E)$ orient\'e + valeurs. Sommets: $b_i>0$ offre, $b_i<0$ demande, $b_i=0$ transit.\\
+Arcs: $c_{ij}$ co\^ut, $u_{ij}$ cap. sup., $l_{ij}$ cap. inf.\\
+{\color{red}\fbox{$\sum_{i\in V} b_i = 0$}} (conservation)
+
+% ============================================================
+\section{PLUS COURT CHEMIN (PCC)}
+% ============================================================
+
+\textbf{PL:} $x_{ij}\in\{0,1\}$. Conservation: $\sum_j x_{ij}-\sum_j x_{ji}=+1(s),-1(p),0$.\\
+Min $\sum c_{ij}x_{ij}$. Mat. incidence TU $\Rightarrow$ relaxation donne sol. enti\`ere.\\
+Circuit n\'egatif $\Rightarrow$ objectif $=-\infty$.
+
+\subsection{Choix algorithme}
+{\color{red}\textbf{DAG?}} $\to$ Bellman/topologique $O(V+E)$ (m\^eme poids n\'eg!)\\
+{\color{red}\textbf{Poids $\geq 0$?}} $\to$ Dijkstra $O(E+V\log V)$\\
+{\color{red}\textbf{Poids n\'eg, pas DAG?}} $\to$ Bellman-Ford $O(V{\cdot}E)$
+
+\subsection{Bellman (DAG)}
+1. \textbf{Niveaux:} $L_0$=sans pr\'ed\'ecesseur. $L_k$: $\max(\text{niv pr\'ed})+1$\\
+2. $d[s]=0$, $d[v]=+\infty$\\
+3. Traiter par ordre de niveau croissant:\\
+\hspace{4pt}$\forall (u,v)$: si $d[u]+c(u,v)<d[v]$: $d[v]=d[u]+c(u,v)$, $\pi[v]=u$
+
+\subsection{Dijkstra (poids $\geq 0$)}
+1. $d[s]=0$, $d[v]=+\infty$, Marqu\'es$=\emptyset$\\
+2. R\'ep\'eter $|V|$ fois:\\
+\hspace{4pt}a) $u=$ non marqu\'e avec $d[u]$ min\\
+\hspace{4pt}b) Marquer $u$\\
+\hspace{4pt}c) $\forall (u,v), v$ non marqu\'e: si $d[u]+c(u,v)<d[v]$: MAJ\\
+\textbf{JAMAIS avec poids n\'egatifs!}
+
+\subsection{Bellman-Ford (g\'en\'eral)}
+1. $d[s]=0$, $d[v]=+\infty$\\
+2. R\'ep\'eter $|V|-1$ fois: $\forall (u,v)\in E$: relaxer\\
+3. D\'etection circuit n\'eg: refaire 1 tour, si MAJ $\Rightarrow$ circuit n\'eg!
+
+% ============================================================
+\section{FLOT MAXIMUM}
+% ============================================================
+
+\textbf{PL:} $x_{ij}$=flot. Conserv.: $\sum_j x_{ij}-\sum_j x_{ji}=+v(s),-v(t),0$.\\
+$0\leq x_{ij}\leq u_{ij}$. Max $v$.
+
+\subsection{Th. Flot-Max/Coupe-Min}
+{\color{red}\fbox{$\max\{\text{flot}\}=\min\{\text{cap. coupe}\}$}}\\
+Coupe $(S,T)$: $s\in S, t\in T$. $\text{cap}(S,T)=\sum_{i\in S,j\in T}u_{ij}$\\
+\textbf{Attention:} arcs $S\to T$ seulement, PAS $T\to S$.
+
+\subsection{Ford-Fulkerson}
+1. Flot$=0$ partout\\
+2. \textbf{Graphe r\'esiduel $G_r$:} $\forall (u,v)$ avec flot $x$, cap $u$:\\
+\hspace{4pt}-- Arc avant $(u,v)$: cap. r\'es. $=u_{ij}-x_{ij}$ (si $>0$)\\
+\hspace{4pt}-- Arc arri\`ere $(v,u)$: cap. r\'es. $=x_{ij}$ (si $>0$)\\
+3. Chercher chemin augmentant $s\to t$ dans $G_r$ (BFS=Edmonds-Karp)\\
+4. $\delta=\min$ cap. r\'es. sur le chemin. Augmenter flot de $\delta$:\\
+\hspace{4pt}avant: $x_{ij}+=\delta$; arri\`ere: $x_{ij}-=\delta$\\
+5. Pas de chemin $\Rightarrow$ \textbf{flot max}. Sommets atteignables depuis $s$ dans $G_r$ = $S$, $(S,V\setminus S)$=coupe min.\\
+Complexit\'e: Edmonds-Karp $O(V{\cdot}E^2)$
+
+\subsection{V\'erif. optimalit\'e}
+Flot max $\Leftrightarrow$ pas de chemin augmentant dans $G_r$.
+
+% ============================================================
+\section{FLOT CO\^UT MINIMUM}
+% ============================================================
+
+$\min\sum c_{ij}x_{ij}$ s.c. conserv. $\sum x_{ij}-\sum x_{ji}=b_i$, $l_{ij}\leq x_{ij}\leq u_{ij}$\\
+\textbf{G\'en\'eralise:} PCC ($b_s=1,b_t=-1$) et Flot max (arc retour $(t,s)$ cap $\infty$, co\^ut $-1$)
+
+% ============================================================
+\section{ARBRE COUVRANT (MST)}
+% ============================================================
+
+\subsection{Propri\'et\'es d'un arbre}
+{\color{red}$|E|=|V|-1$} $\Leftrightarrow$ connexe sans cycle $\Leftrightarrow$ unique cha\^ine entre toute paire $\Leftrightarrow$ connexe minimal $\Leftrightarrow$ acyclique maximal
+
+\subsection{Kruskal}
+1. Trier ar\^etes par \textbf{poids croissant}\\
+2. $\forall$ ar\^ete (ordre croissant):\\
+\hspace{4pt}-- Pas de cycle $\to$ ajouter\\
+\hspace{4pt}-- Cycle $\to$ ignorer\\
+3. Stop quand $|V|-1$ ar\^etes. $O(E\log E)$
+
+\subsection{Prim}
+D\'epart $s$. R\'ep\'eter $|V|-1$ fois: ajouter l'ar\^ete de poids min avec 1 extr. dans l'arbre, 1 dehors. $O(E\log V)$
+
+\subsection{Puissance (sans fil)}
+$p(v)=\max$ poids ar\^etes incidentes \`a $v$ dans l'arbre.\\
+$P_{\text{total}}=\sum p(v)$. 2 MST m\^eme co\^ut $\neq$ m\^eme puissance!
+
+% ============================================================
+\section{BIP (Broadcast Incr. Power)}
+% ============================================================
+
+1. Source $s$, Arbre$=\{s\}$, $p(s)=0$\\
+2. $\forall (u,v)$, $u\in$arbre, $v\notin$arbre:\\
+\hspace{4pt}{\color{red}$\text{co\^ut\_add}(u,v)=\max(C(u,v)-p(u),\;0)$}\\
+3. Choisir ar\^ete avec co\^ut add. \textbf{minimum}\\
+4. MAJ: $p(u)=\max(p(u),C(u,v))$, $p(v)=C(u,v)$\\
+5. R\'ep\'eter.\\
+\textbf{BIP adapt\'e:} co\^ut $=a(u)+a(v)$ o\`u $a(u)=\max(C-p(u),0)$, $a(v)=C(u,v)$
+
+% ============================================================
+\section{CONNEXIT\'E / ROBUSTESSE}
+% ============================================================
+
+\textbf{Pt articulation:} suppression $\Rightarrow$ d\'econnexion\\
+\textbf{$k$-connexe:} r\'esiste \`a $k-1$ pannes. $\forall s,t$: $k$ cha\^ines disjointes.
+
+\subsection{Th. Menger (1927)}
+{\color{red}Nb max chemins disjoints $s$-$t$ $=$ nb min ar\^etes/sommets \`a supprimer pour s\'eparer $s$ de $t$}
+
+\subsection{Th. Whitney (1932)}
+$G$ $k$-ar\^ete-connexe $\Leftrightarrow$ $\forall s,t$: $k$ cha\^ines ar\^etes-disjointes\\
+$G$ $k$-sommet-connexe $\Leftrightarrow$ $\forall s,t$: $k$ cha\^ines sommets-disjointes
+
+\subsection{Types de noeuds}
+Sp\'ecial $r_i=2$ (2 chemins disj.), Ordinaire $r_i=1$, Optionnel $r_i=0$\\
+Entre $i,j$: $\min(r_i,r_j)$ cha\^ines disjointes requises.
+
+\subsection{Complexit\'e}
+$r_i=1\;\forall i \to$ MST (poly) | $r_i\in\{0,1\} \to$ Steiner (\textbf{NP-diff})\\
+$r_i=2\;\forall i \to$ 2-connexe (\textbf{NP-diff})
+
+\subsection{PL 2-connexe}
+$\sum_{e\in\delta(W)}x_e\geq \mathbf{2}\;\forall W\subset V$ (vs $\geq 1$ pour MST)\\
+R\'esolution: \textbf{Branch \& Cut} (relaxation + coupes + branchement)
+
+% ============================================================
+\section{CHEMINS DISJOINTS}
+% ============================================================
+
+\subsection{Arcs-disjoints}
+Cap. $=1$ sur chaque arc $\to$ flot max $=$ nb max chemins arcs-disjoints
+
+\subsection{Sommets-disjoints: D\'edoublement}
+$\forall v\neq s,t$: remplacer $v$ par $v_{\text{in}},v_{\text{out}}$, arc $(v_{\text{in}},v_{\text{out}})$ cap $1$\\
+Arcs entrant $\to v_{\text{in}}$, arcs sortant $\to v_{\text{out}}$\\
+Puis flot max dans le nouveau graphe.
+
+\subsection{Capacit\'e nodale}
+Sommet $v$ cap $k$: d\'edoubler, arc $(v_{\text{in}},v_{\text{out}})$ cap $k$.
+
+% ============================================================
+\section{DIFFUSION SANS FIL}
+% ============================================================
+
+Propri\'et\'e: \'emission $\Rightarrow$ tous voisins re\c{c}oivent.\\
+Broadcast storm: redondance $\sim$80\%.\\
+Broadcast minimum: NP-difficile.
+
+\subsection{Flooding}
+$s$ envoie. Chaque noeud: 1\`ere r\'eception $\to$ retransmettre. Suivantes $\to$ ignorer.\\
+Couverture: \textbf{OUI}. Transmissions: $O(|E|)$. Info: aucune.
+
+\subsection{Probabiliste}
+Retransmettre avec proba $p$. Couv: \textbf{NON}. $p\approx 0.6$ en dense.
+
+\subsection{Compteur (Counter-Based)}
+Apr\`es d\'elai $\tau$: si $\text{count}\leq C_{\text{seuil}}$ $\to$ retransmettre. Couv: \textbf{NON}.
+
+\subsection{Distance}
+Si $d(u,v)\geq d_{\text{seuil}}$ $\to$ retransmettre. N\'ecessite GPS. Couv: \textbf{NON}.
+
+\subsection{CDS (Dominant Connexe)}
+\textbf{Dominant:} $D\subseteq V$, $\forall u\in V\setminus D$: $\exists$ voisin dans $D$.\\
+\textbf{Connexe:} $G[D]$ connexe. Seuls noeuds de $D$ retransmettent.\\
+Couv: \textbf{OUI}.
+
+\textbf{Construction gloutonne CDS:}\\
+1. $v^*=$ sommet degr\'e max. $D=\{v^*\}$, Domin\'e$=N[v^*]$\\
+2. Tant que Domin\'e$\neq V$: choisir $u$ \textbf{voisin de $D$} maximisant $|N(u)\setminus\text{Domin\'e}|$. Voisin de $D$ $\Rightarrow$ connexit\'e!\\
+CDS min: \textbf{NP-difficile}.
+
+\subsection{MPR (OLSR)}
+$N_2(u)=\{w\notin N[u]: \exists v\in N(u), (v,w)\in E\}$\\
+1. $\text{MPR}(u)=\emptyset$\\
+2. \textbf{Obligatoire:} $\forall w\in N_2(u)$ avec 1 seul voisin $v$ dans $N(u)$: $v\in$MPR\\
+3. Tant que non couvert: $v\in N(u)$ max $|N(v)\cap(N_2(u)\setminus\text{Couvert})|$\\
+R\`egle: $u$ retransmet de $v$ ssi $u\in\text{MPR}(v)$. Couv: \textbf{OUI}. Info: vois. 2 sauts.
+
+\subsection{Tableau comparatif}
+\begin{tabular}{@{}l|c|l|l@{}}
+Algo & Couv & Transm. & Info\\
+\hline
+Flooding & OUI & $O(|E|)$ & aucune\\
+Proba & NON & $p|V|$ & aucune\\
+Compteur & NON & var. & aucune\\
+Distance & NON & var. & GPS\\
+CDS & OUI & $|D|$ & vois. 1\\
+MPR & OUI & $\sum$MPR & vois. 2\\
+\end{tabular}
+
+% ============================================================
+\section{NIVEAUX DAG + 2\textsuperscript{n-2}}
+% ============================================================
+
+$L_0$=sans pr\'ed. $L_k=\max(\text{niv pr\'ed})+1$.\\
+Tous les sommets ont un niveau $\Rightarrow$ DAG (sans circuit).\\
+Nb chemins $v_1\to v_n$ dans DAG complet: {\color{red}$2^{n-2}$}
+
+% ============================================================
+\section{FORMULES CL\'ES}
+% ============================================================
+
+\begin{tabular}{@{}l|l@{}}
+$\sum d(v)=2|E|$ & Degr\'es\\
+$|E|=|V|-1$ & Arbre\\
+$|E(K_n)|=\frac{n(n-1)}{2}$ & Complet\\
+$2^{n-2}$ & Chemins DAG complet\\
+$\sum b_i=0$ & Conservation flot\\
+Flot max $=$ Coupe min & Ford-Fulkerson\\
+\end{tabular}
+
+\subsection{NP-difficile}
+Steiner, 2-connexe min, CDS min, Broadcast min
+
+\subsection{Conseils examen}
+1. Justifier choix algo (DAG? poids$\geq0$? n\'eg?)\\
+2. Dijkstra: tableau complet (\'etape$\times$sommet)\\
+3. Kruskal: trier, noter ajout/cycle\\
+4. BIP: co\^ut add $=\max(C-p(u),0)$\\
+5. Disjoints: cap unitaires + flot max\\
+6. Coupe min: v\'erifier cap$=$flot max\\
+7. DAG: montrer niveaux\\
+8. $p(v)=\max$ poids ar\^etes incidentes\\
+9. D\'edoublement pour cap. nodale / sommets-disjoints\\
+10. CDS: toujours voisin de $D$ + max nouveaux couverts
+
+\end{multicols}
+\end{document}

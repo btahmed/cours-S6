@@ -1,0 +1,1794 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usetikzlibrary{arrows.meta, positioning, calc}
+\geometry{margin=2cm}
+
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+\newtcolorbox{enonce}{colback=fondbleu, colframe=titrebleu, fonttitle=\bfseries, title=\'Enonc\'e, arc=3mm}
+\newtcolorbox{methode}{colback=fondjaune, colframe=exempleorange, fonttitle=\bfseries, title=M\'ethode, arc=3mm}
+\newtcolorbox{correction}{colback=fondvert, colframe=defvert, fonttitle=\bfseries, arc=3mm}
+\newtcolorbox{attention}{colback=fondrose, colframe=importantrouge, fonttitle=\bfseries, title=\`A retenir, arc=3mm}
+\newtcolorbox{etape}{colback=fondgris, colframe=algoviolet, fonttitle=\bfseries, arc=3mm}
+
+\titleformat{\section}{\color{titrebleu}\normalfont\Large\bfseries}{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}{\color{defvert}\normalfont\large\bfseries}{\color{defvert}\thesubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Exercices Types Corrig\'es}\\[0.5em]
+\Large\color{defvert}Optimisation dans les R\'eseaux --- Pr\'eparation Examen\\[0.3em]
+\normalsize\color{algoviolet}F.~Bendali-Mailfert --- L3 Informatique --- S6 2025}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================
+%  EXERCICE 1 : DIJKSTRA
+%=============================================================
+\section{Exercice 1 --- Dijkstra (poids $\geq 0$)}
+
+\begin{enonce}
+Soit le graphe orient\'e $G$ suivant avec source $s$ :
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=white] (a) at (2.5,1.5) {$a$};
+    \node[fill=white] (b) at (2.5,-1.5) {$b$};
+    \node[fill=white] (c) at (5,1.5) {$c$};
+    \node[fill=white] (d) at (5,-1.5) {$d$};
+    \node[fill=importantrouge!20] (t) at (7.5,0) {$t$};
+
+    \draw[arr] (s) -- node[above left, draw=none, fill=none, font=\small]{2} (a);
+    \draw[arr] (s) -- node[below left, draw=none, fill=none, font=\small]{5} (b);
+    \draw[arr] (a) -- node[above, draw=none, fill=none, font=\small]{1} (c);
+    \draw[arr] (a) -- node[right, draw=none, fill=none, font=\small]{4} (d);
+    \draw[arr] (b) -- node[below, draw=none, fill=none, font=\small]{2} (d);
+    \draw[arr] (b) -- node[left, draw=none, fill=none, font=\small]{1} (a);
+    \draw[arr] (c) -- node[above right, draw=none, fill=none, font=\small]{6} (t);
+    \draw[arr] (c) -- node[right, draw=none, fill=none, font=\small]{2} (d);
+    \draw[arr] (d) -- node[below right, draw=none, fill=none, font=\small]{1} (t);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Quel algorithme choisir ? Justifier.
+    \item Appliquer l'algorithme pour trouver les plus courtes distances depuis $s$.
+    \item Donner l'arborescence des plus courts chemins.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{R\`egle :} Tous les poids $\geq 0$ $\Rightarrow$ \textbf{Dijkstra}.
+
+\textbf{Principe :} \`A chaque \'etape, extraire le sommet non marqu\'e de distance minimale, puis relaxer ses voisins.
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1.} Tous les poids sont $\geq 0$ $\Rightarrow$ on utilise \textbf{Dijkstra}. Complexit\'e : $O(|E| + |V|\log|V|)$.
+
+\medskip
+\textbf{Q2.} Ex\'ecution de Dijkstra :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|l|}
+\hline
+\textbf{\'Etape} & $s$ & $a$ & $b$ & $c$ & $d$ & $t$ & \textbf{Extrait} \\\hline
+Init & \textbf{0} & $\infty$ & $\infty$ & $\infty$ & $\infty$ & $\infty$ & --- \\\hline
+1 & 0 & \textbf{2} & 5 & $\infty$ & $\infty$ & $\infty$ & $s$ $(d=0)$ \\\hline
+2 & 0 & 2 & 5 & \textbf{3} & 6 & $\infty$ & $a$ $(d=2)$ \\\hline
+3 & 0 & 2 & 5 & 3 & \textbf{5} & 9 & $c$ $(d=3)$ \\\hline
+4 & 0 & 2 & 5 & 3 & 5 & \textbf{6} & $b\text{ ou }d$ $(d=5)$ \\\hline
+5 & 0 & 2 & 5 & 3 & 5 & 6 & $d$ $(d=5)$ \\\hline
+6 & 0 & 2 & 5 & 3 & 5 & \textbf{6} & $t$ $(d=6)$ \\\hline
+\end{tabular}
+\end{center}
+
+D\'etail des relaxations :
+
+\begin{etape}{title=\'Etape 1 : extraire $s$ $(d=0)$}
+\begin{itemize}[nosep]
+    \item $d[a] = \min(\infty,\, 0+2) = 2$ \quad $\pi[a]=s$
+    \item $d[b] = \min(\infty,\, 0+5) = 5$ \quad $\pi[b]=s$
+\end{itemize}
+\end{etape}
+
+\begin{etape}{title=\'Etape 2 : extraire $a$ $(d=2)$}
+\begin{itemize}[nosep]
+    \item $d[c] = \min(\infty,\, 2+1) = 3$ \quad $\pi[c]=a$
+    \item $d[d] = \min(\infty,\, 2+4) = 6$ \quad $\pi[d]=a$
+\end{itemize}
+\end{etape}
+
+\begin{etape}{title=\'Etape 3 : extraire $c$ $(d=3)$}
+\begin{itemize}[nosep]
+    \item $d[t] = \min(\infty,\, 3+6) = 9$ \quad $\pi[t]=c$
+    \item $d[d] = \min(6,\, 3+2) = \mathbf{5}$ \quad $\pi[d]=c$ \quad (am\'elior\'e !)
+\end{itemize}
+\end{etape}
+
+\begin{etape}{title=\'Etape 4 : extraire $b$ $(d=5)$}
+\begin{itemize}[nosep]
+    \item $d[d] = \min(5,\, 5+2) = 5$ \quad (inchang\'e)
+    \item $d[a] = \min(2,\, 5+1) = 2$ \quad (inchang\'e, d\'ej\`a marqu\'e)
+\end{itemize}
+\end{etape}
+
+\begin{etape}{title=\'Etape 5 : extraire $d$ $(d=5)$}
+\begin{itemize}[nosep]
+    \item $d[t] = \min(9,\, 5+1) = \mathbf{6}$ \quad $\pi[t]=d$ \quad (am\'elior\'e !)
+\end{itemize}
+\end{etape}
+
+\medskip
+\textbf{Q3.} Arborescence des plus courts chemins :
+
+$$\pi[a]=s,\quad \pi[b]=s,\quad \pi[c]=a,\quad \pi[d]=c,\quad \pi[t]=d$$
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick, color=defvert}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node (a) at (2,1) {$a$};
+    \node (b) at (2,-1) {$b$};
+    \node (c) at (4,1) {$c$};
+    \node (d) at (6,0) {$d$};
+    \node[fill=importantrouge!20] (t) at (8,0) {$t$};
+
+    \draw[arr] (s) -- node[above left, draw=none, fill=none, font=\scriptsize, color=black]{$d\!=\!2$} (a);
+    \draw[arr] (s) -- node[below left, draw=none, fill=none, font=\scriptsize, color=black]{$d\!=\!5$} (b);
+    \draw[arr] (a) -- node[above, draw=none, fill=none, font=\scriptsize, color=black]{$d\!=\!3$} (c);
+    \draw[arr] (c) -- node[above, draw=none, fill=none, font=\scriptsize, color=black]{$d\!=\!5$} (d);
+    \draw[arr] (d) -- node[above, draw=none, fill=none, font=\scriptsize, color=black]{$d\!=\!6$} (t);
+\end{tikzpicture}
+\end{center}
+
+\textbf{PCC de $s$ \`a $t$ :} $s \to a \to c \to d \to t$ \quad (co\^ut = $2+1+2+1 = 6$)
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item On extrait toujours le sommet \textbf{non marqu\'e de distance minimale}.
+    \item Un sommet d\'ej\`a marqu\'e ne change plus de distance.
+    \item Dijkstra \textbf{ne marche pas} si poids n\'egatifs $\Rightarrow$ utiliser Bellman-Ford ou relaxation topologique (DAG).
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 2 : RELAXATION TOPOLOGIQUE (DAG + POIDS NEGATIFS)
+%=============================================================
+\section{Exercice 2 --- Relaxation topologique (DAG, poids n\'egatifs)}
+
+\begin{enonce}
+Soit le graphe orient\'e $G$ suivant. L'arc $a \to c$ a un poids \textbf{n\'egatif} $(-4)$.
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node (a) at (2.5,1.5) {$a$};
+    \node (b) at (2.5,-1.5) {$b$};
+    \node (c) at (5,0) {$c$};
+    \node (d) at (7.5,1.5) {$d$};
+    \node[fill=importantrouge!20] (e) at (7.5,-1.5) {$e$};
+
+    \draw[arr] (s) -- node[above left, draw=none, fill=none, font=\small]{3} (a);
+    \draw[arr] (s) -- node[below left, draw=none, fill=none, font=\small]{2} (b);
+    \draw[arr] (a) -- node[above, draw=none, fill=none, font=\small, color=importantrouge]{\textbf{-4}} (c);
+    \draw[arr] (a) -- node[above right, draw=none, fill=none, font=\small]{5} (d);
+    \draw[arr] (b) -- node[below, draw=none, fill=none, font=\small]{3} (c);
+    \draw[arr] (b) -- node[below right, draw=none, fill=none, font=\small]{7} (e);
+    \draw[arr] (c) -- node[right, draw=none, fill=none, font=\small]{2} (d);
+    \draw[arr] (c) -- node[right, draw=none, fill=none, font=\small]{6} (e);
+    \draw[arr] (d) -- node[right, draw=none, fill=none, font=\small]{1} (e);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Montrer que $G$ est un DAG en donnant les niveaux.
+    \item Quel algorithme choisir ? Pourquoi pas Dijkstra ?
+    \item Calculer les PCC depuis $s$ par relaxation topologique.
+    \item Donner le PCC de $s$ \`a $e$.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{R\`egle :} Poids n\'egatifs $\Rightarrow$ \textbf{pas Dijkstra}. Si le graphe est un DAG $\Rightarrow$ \textbf{relaxation topologique} (meilleur que Bellman-Ford : $O(V+E)$).
+
+\textbf{Pour trouver les niveaux :} Chercher les sommets sans pr\'ed\'ecesseur (niveau 0), puis it\'erer.
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1. Niveaux :}
+
+Pr\'ed\'ecesseurs de chaque sommet :
+\begin{itemize}[nosep]
+    \item $s$ : aucun $\Rightarrow$ \textbf{Niveau 0}
+    \item $a$ : $s$ (niv.0) $\Rightarrow$ \textbf{Niveau 1}
+    \item $b$ : $s$ (niv.0) $\Rightarrow$ \textbf{Niveau 1}
+    \item $c$ : $a$ (niv.1), $b$ (niv.1) $\Rightarrow$ \textbf{Niveau 2}
+    \item $d$ : $a$ (niv.1), $c$ (niv.2) $\Rightarrow$ \textbf{Niveau 3}
+    \item $e$ : $b$ (niv.1), $c$ (niv.2), $d$ (niv.3) $\Rightarrow$ \textbf{Niveau 4}
+\end{itemize}
+
+Tous les arcs vont d'un niveau inf\'erieur vers un niveau sup\'erieur $\Rightarrow$ \textbf{pas de circuit} $\Rightarrow$ DAG. $\checkmark$
+
+\medskip
+\textbf{Q2.} L'arc $a \to c$ a le poids $-4 < 0$ $\Rightarrow$ Dijkstra \textbf{non applicable}. Mais $G$ est un DAG $\Rightarrow$ on utilise la \textbf{relaxation par ordre topologique} en $O(V+E)$.
+
+\medskip
+\textbf{Q3. Ex\'ecution :}
+
+Init : $d[s]=0$, tous les autres $= +\infty$.
+
+\begin{etape}{title=Niveau 0 --- traiter $s$}
+$d[a] = \min(\infty,\, 0+3) = 3$, \quad $d[b] = \min(\infty,\, 0+2) = 2$
+\end{etape}
+
+\begin{etape}{title=Niveau 1 --- traiter $a$ ($d=3$) puis $b$ ($d=2$)}
+Depuis $a$ : $d[c] = \min(\infty,\, 3+(-4)) = \mathbf{-1}$, \quad $d[d] = \min(\infty,\, 3+5) = 8$
+
+Depuis $b$ : $d[c] = \min(-1,\, 2+3) = -1$ (inchang\'e), \quad $d[e] = \min(\infty,\, 2+7) = 9$
+\end{etape}
+
+\begin{etape}{title=Niveau 2 --- traiter $c$ ($d=-1$)}
+$d[d] = \min(8,\, -1+2) = \mathbf{1}$ \quad (am\'elior\'e !), \quad $d[e] = \min(9,\, -1+6) = \mathbf{5}$ \quad (am\'elior\'e !)
+\end{etape}
+
+\begin{etape}{title=Niveau 3 --- traiter $d$ ($d=1$)}
+$d[e] = \min(5,\, 1+1) = \mathbf{2}$ \quad (am\'elior\'e !)
+\end{etape}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{Sommet} & $s$ & $a$ & $b$ & $c$ & $d$ & $e$ \\\hline
+$d(\cdot)$ & 0 & 3 & 2 & $-1$ & 1 & 2 \\\hline
+$\pi(\cdot)$ & --- & $s$ & $s$ & $a$ & $c$ & $d$ \\\hline
+\end{tabular}
+\end{center}
+
+\textbf{Q4. PCC de $s$ \`a $e$ :} $s \to a \to c \to d \to e$ \quad (co\^ut = $3 + (-4) + 2 + 1 = \mathbf{2}$)
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item Le poids n\'egatif sur $a \to c$ permet d'obtenir $d[c] = -1$ : c'est normal dans un DAG (pas de circuit absorbant possible).
+    \item L'ordre de traitement par niveaux garantit qu'on ne revient jamais en arri\`ere.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 3 : KRUSKAL + PUISSANCE
+%=============================================================
+\section{Exercice 3 --- Kruskal + Puissance des n\oe uds}
+
+\begin{enonce}
+Soit le graphe non orient\'e $G$ (r\'eseau sans fil) :
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    edge/.style={thick}
+]
+    \node (1) at (0,2) {1};
+    \node (2) at (2,3) {2};
+    \node (3) at (4,2) {3};
+    \node (4) at (2,0) {4};
+    \node (5) at (6,1) {5};
+    \node (6) at (4,0) {6};
+
+    \draw[edge] (1) -- node[above, draw=none, fill=none, font=\small]{3} (2);
+    \draw[edge] (1) -- node[left, draw=none, fill=none, font=\small]{5} (4);
+    \draw[edge] (2) -- node[above, draw=none, fill=none, font=\small]{4} (3);
+    \draw[edge] (2) -- node[right, draw=none, fill=none, font=\small]{6} (4);
+    \draw[edge] (3) -- node[right, draw=none, fill=none, font=\small]{2} (5);
+    \draw[edge] (3) -- node[right, draw=none, fill=none, font=\small]{7} (6);
+    \draw[edge] (4) -- node[below, draw=none, fill=none, font=\small]{8} (6);
+    \draw[edge] (5) -- node[right, draw=none, fill=none, font=\small]{5} (6);
+    \draw[edge] (1) -- node[above right, draw=none, fill=none, font=\small]{9} (3);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Appliquer Kruskal pour trouver un MST.
+    \item Calculer la puissance de chaque n\oe ud dans le MST.
+    \item Calculer la puissance totale du r\'eseau.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{Kruskal :} Trier les ar\^etes par poids croissant. Ajouter si pas de cycle. S'arr\^eter \`a $|V|-1$ ar\^etes.
+
+\textbf{Puissance :} $p(v) = \max\{$poids des ar\^etes incidentes \`a $v$ dans le MST$\}$.
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1. Kruskal :}
+
+Ar\^etes tri\'ees : $3$-$5$(2), $1$-$2$(3), $2$-$3$(4), $1$-$4$(5), $5$-$6$(5), $2$-$4$(6), $3$-$6$(7), $4$-$6$(8), $1$-$3$(9)
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{\'Etape} & \textbf{Ar\^ete} & \textbf{Poids} & \textbf{Action} \\\hline
+1 & $3$-$5$ & 2 & Ajouter $\to \{3,5\}$ \\\hline
+2 & $1$-$2$ & 3 & Ajouter $\to \{1,2\},\{3,5\}$ \\\hline
+3 & $2$-$3$ & 4 & Ajouter $\to \{1,2,3,5\}$ \\\hline
+4 & $1$-$4$ & 5 & Ajouter $\to \{1,2,3,4,5\}$ \\\hline
+5 & $5$-$6$ & 5 & Ajouter $\to \{1,2,3,4,5,6\}$ \checkmark \\\hline
+\end{tabular}
+\end{center}
+
+$|V|-1 = 5$ ar\^etes s\'electionn\'ees. \textbf{Co\^ut MST} $= 2+3+4+5+5 = \mathbf{19}$.
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    edge/.style={thick, color=defvert},
+    unused/.style={thick, dashed, color=gray!40}
+]
+    \node (1) at (0,2) {1};
+    \node (2) at (2,3) {2};
+    \node (3) at (4,2) {3};
+    \node (4) at (2,0) {4};
+    \node (5) at (6,1) {5};
+    \node (6) at (4,0) {6};
+
+    \draw[edge] (1) -- node[above, draw=none, fill=none, font=\small]{3} (2);
+    \draw[edge] (2) -- node[above, draw=none, fill=none, font=\small]{4} (3);
+    \draw[edge] (1) -- node[left, draw=none, fill=none, font=\small]{5} (4);
+    \draw[edge] (3) -- node[right, draw=none, fill=none, font=\small]{2} (5);
+    \draw[edge] (5) -- node[right, draw=none, fill=none, font=\small]{5} (6);
+
+    \draw[unused] (2) -- (4);
+    \draw[unused] (3) -- (6);
+    \draw[unused] (4) -- (6);
+    \draw[unused] (1) -- (3);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\textbf{Q2--Q3. Puissance de chaque n\oe ud :}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|l|c|}
+\hline
+\textbf{N\oe ud} & \textbf{Ar\^etes incidentes dans MST} & $p(v)$ \\\hline
+1 & $1$-$2$(3), $1$-$4$(5) & $\max(3,5) = \mathbf{5}$ \\\hline
+2 & $1$-$2$(3), $2$-$3$(4) & $\max(3,4) = \mathbf{4}$ \\\hline
+3 & $2$-$3$(4), $3$-$5$(2) & $\max(4,2) = \mathbf{4}$ \\\hline
+4 & $1$-$4$(5) & $\mathbf{5}$ \\\hline
+5 & $3$-$5$(2), $5$-$6$(5) & $\max(2,5) = \mathbf{5}$ \\\hline
+6 & $5$-$6$(5) & $\mathbf{5}$ \\\hline\hline
+\multicolumn{2}{|r|}{\textbf{Puissance totale}} & $\mathbf{28}$ \\\hline
+\end{tabular}
+\end{center}
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item $p(v) = \max$ (pas la somme !) des poids des ar\^etes incidentes \`a $v$ dans l'arbre.
+    \item Si deux ar\^etes ont le m\^eme poids, il peut y avoir \textbf{plusieurs MST} de m\^eme co\^ut mais de puissances diff\'erentes.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 4 : BIP
+%=============================================================
+\section{Exercice 4 --- Algorithme BIP}
+
+\begin{enonce}
+Sur le m\^eme graphe $G$ de l'exercice~3, appliquer l'algorithme \textbf{BIP} (Broadcast Incremental Power) depuis le n\oe ud~$1$.
+
+Comparer la puissance totale obtenue avec celle du MST.
+\end{enonce}
+
+\begin{methode}
+\textbf{BIP :} \`A chaque \'etape, choisir l'ar\^ete $(u,v)$ ($u$ dans l'arbre, $v$ hors) qui minimise le \textbf{co\^ut additionnel} :
+$$\text{co\^ut\_add}(u,v) = \max\big(C(u,v) - p(u),\; 0\big)$$
+Si $C(u,v) \leq p(u)$ : le co\^ut additionnel est $0$ (le n\oe ud \'emet d\'ej\`a assez fort).
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\begin{etape}{title=\'Etape 1 : Arbre $= \{1\}$, $p(1)=0$}
+Ar\^etes depuis 1 :
+\begin{itemize}[nosep]
+    \item $1$-$2$(3) : co\^ut\_add $= 3-0 = 3$
+    \item $1$-$4$(5) : co\^ut\_add $= 5-0 = 5$
+    \item $1$-$3$(9) : co\^ut\_add $= 9-0 = 9$
+\end{itemize}
+\textbf{Min :} $1$-$2$(3), co\^ut add $= 3$.  $\Rightarrow p(1) = 3$, $p(2) = 3$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 2 : Arbre $= \{1,2\}$, $p(1)=3$, $p(2)=3$}
+\begin{itemize}[nosep]
+    \item $1$-$4$(5) : $\max(5-3,0) = 2$
+    \item $1$-$3$(9) : $\max(9-3,0) = 6$
+    \item $2$-$3$(4) : $\max(4-3,0) = 1$
+    \item $2$-$4$(6) : $\max(6-3,0) = 3$
+\end{itemize}
+\textbf{Min :} $2$-$3$(4), co\^ut add $= 1$. $\Rightarrow p(2)=4$, $p(3)=4$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 3 : Arbre $= \{1,2,3\}$, $p(1)=3$, $p(2)=4$, $p(3)=4$}
+\begin{itemize}[nosep]
+    \item $1$-$4$(5) : $\max(5-3,0) = 2$
+    \item $3$-$5$(2) : $\max(2-4,0) = \mathbf{0}$ \quad (gratuit !)
+    \item $3$-$6$(7) : $\max(7-4,0) = 3$
+\end{itemize}
+\textbf{Min :} $3$-$5$(2), co\^ut add $= 0$. $\Rightarrow p(3)$ inchang\'e (4), $p(5)=2$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 4 : Arbre $= \{1,2,3,5\}$}
+\begin{itemize}[nosep]
+    \item $1$-$4$(5) : $\max(5-3,0) = 2$
+    \item $5$-$6$(5) : $\max(5-2,0) = 3$
+    \item $3$-$6$(7) : $\max(7-4,0) = 3$
+\end{itemize}
+\textbf{Min :} $1$-$4$(5), co\^ut add $= 2$. $\Rightarrow p(1)=5$, $p(4)=5$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 5 : Arbre $= \{1,2,3,4,5\}$}
+\begin{itemize}[nosep]
+    \item $5$-$6$(5) : $\max(5-2,0) = 3$
+    \item $3$-$6$(7) : $\max(7-4,0) = 3$
+    \item $4$-$6$(8) : $\max(8-5,0) = 3$
+\end{itemize}
+Ex-\ae quo. Choisir $5$-$6$(5). $\Rightarrow p(5)=5$, $p(6)=5$.
+\end{etape}
+
+\medskip
+\textbf{R\'esultat BIP :}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|c|c|c|c|c|c|c||c|}
+\hline
+\textbf{N\oe ud} & 1 & 2 & 3 & 4 & 5 & 6 & \textbf{Total} \\\hline
+$p_{\text{BIP}}$ & 5 & 4 & 4 & 5 & 5 & 5 & $\mathbf{28}$ \\\hline
+$p_{\text{MST}}$ & 5 & 4 & 4 & 5 & 5 & 5 & $\mathbf{28}$ \\\hline
+\end{tabular}
+\end{center}
+
+Ici les deux m\'ethodes donnent la m\^eme puissance. Ce n'est \textbf{pas toujours le cas} --- voir l'examen o\`u BIP donne 44 vs MST $T_1$ = 47.
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item Co\^ut additionnel $= \max(C(u,v) - p(u),\, 0)$ : ne jamais oublier le $\max(\cdot, 0)$.
+    \item Un co\^ut additionnel de $0$ signifie que $u$ \'emet d\'ej\`a assez fort pour atteindre $v$ ``gratuitement''.
+    \item BIP \textbf{ne garantit pas l'optimum} global, c'est une heuristique gloutonne.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 5 : FLOT MAX + COUPE MIN + CHEMINS DISJOINTS
+%=============================================================
+\section{Exercice 5 --- Flot maximum, coupe minimum, chemins arcs-disjoints}
+
+\begin{enonce}
+Soit le r\'eseau $G$ suivant avec capacit\'es sur les arcs :
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node (a) at (2.5,2) {$a$};
+    \node (b) at (2.5,0) {$b$};
+    \node (c) at (2.5,-2) {$c$};
+    \node (d) at (5.5,1) {$d$};
+    \node (e) at (5.5,-1) {$e$};
+    \node[fill=importantrouge!20] (t) at (8,0) {$t$};
+
+    \draw[arr] (s) -- node[above left, draw=none, fill=none, font=\small]{5} (a);
+    \draw[arr] (s) -- node[above, draw=none, fill=none, font=\small]{4} (b);
+    \draw[arr] (s) -- node[below left, draw=none, fill=none, font=\small]{3} (c);
+    \draw[arr] (a) -- node[above, draw=none, fill=none, font=\small]{3} (d);
+    \draw[arr] (b) -- node[above, draw=none, fill=none, font=\small]{2} (d);
+    \draw[arr] (b) -- node[below, draw=none, fill=none, font=\small]{3} (e);
+    \draw[arr] (c) -- node[below, draw=none, fill=none, font=\small]{4} (e);
+    \draw[arr] (d) -- node[above right, draw=none, fill=none, font=\small]{6} (t);
+    \draw[arr] (e) -- node[below right, draw=none, fill=none, font=\small]{5} (t);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Trouver le flot maximum de $s$ \`a $t$ en utilisant Ford-Fulkerson (chemins augmentants).
+    \item Donner une coupe minimum et v\'erifier Flot-Max $=$ Coupe-Min.
+    \item En mettant les capacit\'es \`a 1, combien de chemins arcs-disjoints $s$-$t$ au maximum ?
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{Ford-Fulkerson :}
+\begin{enumerate}[nosep]
+    \item Partir de flot $= 0$
+    \item Trouver un chemin augmentant de $s$ \`a $t$ dans le graphe r\'esiduel
+    \item Augmenter le flot du min des capacit\'es r\'esiduelles sur le chemin
+    \item R\'ep\'eter jusqu'\`a plus de chemin augmentant
+\end{enumerate}
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1. Ford-Fulkerson :}
+
+\begin{etape}{title=Chemin augmentant 1 : $s \to a \to d \to t$}
+Capacit\'es r\'esiduelles : $\min(5, 3, 6) = 3$. Envoyer $3$ unit\'es.
+
+Flots : $x_{sa}=3$, $x_{ad}=3$, $x_{dt}=3$. Valeur du flot : $\mathbf{3}$.
+\end{etape}
+
+\begin{etape}{title=Chemin augmentant 2 : $s \to b \to e \to t$}
+Capacit\'es r\'esiduelles : $\min(4, 3, 5) = 3$. Envoyer $3$ unit\'es.
+
+Flots : $x_{sb}=3$, $x_{be}=3$, $x_{et}=3$. Valeur du flot : $\mathbf{6}$.
+\end{etape}
+
+\begin{etape}{title=Chemin augmentant 3 : $s \to c \to e \to t$}
+Capacit\'es r\'esiduelles : $\min(3, 4, 5-3) = \min(3, 4, 2) = 2$. Envoyer $2$ unit\'es.
+
+Flots : $x_{sc}=2$, $x_{ce}=2$, $x_{et}=5$. Valeur du flot : $\mathbf{8}$.
+\end{etape}
+
+\begin{etape}{title=Chemin augmentant 4 : $s \to b \to d \to t$}
+Capacit\'es r\'esiduelles : $\min(4-3, 2, 6-3) = \min(1, 2, 3) = 1$. Envoyer $1$ unit\'e.
+
+Flots : $x_{sb}=4$, $x_{bd}=1$, $x_{dt}=4$. Valeur du flot : $\mathbf{9}$.
+\end{etape}
+
+\begin{etape}{title=Chemin augmentant 5 : $s \to a \to d \to t$}
+R\'esiduel : $\min(5-3, 3-3, \ldots) = \min(2, 0, \ldots) = 0$ sur $a \to d$. \textbf{Bloqu\'e.}
+
+$s \to c \to e \to t$ : $\min(3-2, 4-2, 5-5) = \min(1, 2, 0) = 0$. \textbf{Bloqu\'e.}
+
+Plus de chemin augmentant. $\Rightarrow$ \textbf{Flot maximum $= 9$}.
+\end{etape}
+
+\medskip
+Flots finaux :
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Arc} & \textbf{Flot / Capacit\'e} & \textbf{Satur\'e ?} \\\hline
+$s \to a$ & 3/5 & Non \\\hline
+$s \to b$ & 4/4 & \textbf{OUI} \\\hline
+$s \to c$ & 2/3 & Non \\\hline
+$a \to d$ & 3/3 & \textbf{OUI} \\\hline
+$b \to d$ & 1/2 & Non \\\hline
+$b \to e$ & 3/3 & \textbf{OUI} \\\hline
+$c \to e$ & 2/4 & Non \\\hline
+$d \to t$ & 4/6 & Non \\\hline
+$e \to t$ & 5/5 & \textbf{OUI} \\\hline
+\end{tabular}
+\end{center}
+
+V\'erification : sortie de $s$ = $3+4+2 = 9$, entr\'ee dans $t$ = $4+5 = 9$. $\checkmark$
+
+\medskip
+\textbf{Q2. Coupe minimum :}
+
+Sommets atteignables depuis $s$ dans le graphe r\'esiduel : $S = \{s, a, c\}$.
+
+$T = \{b, d, e, t\}$.
+
+Arcs de $S$ vers $T$ :
+\begin{itemize}[nosep]
+    \item $s \to b$ : capacit\'e $4$
+    \item $a \to d$ : capacit\'e $3$
+    \item $c \to e$ : capacit\'e $4$ \quad ... attendons.
+\end{itemize}
+
+En fait, cherchons mieux. L'ensemble $S = \{s\}$, $T = V \setminus \{s\}$ :
+$$\text{cap}(\{s\}, T) = 5 + 4 + 3 = 12 \neq 9$$
+
+Essayons $S = \{s, a, c\}$ : arcs $s \to b$ (4), $a \to d$ (3), $c \to e$ (4) $\Rightarrow$ cap $= 11 \neq 9$.
+
+Essayons $S = \{s, a, b, c\}$ : arcs $a \to d$ (3), $b \to d$ (2), $b \to e$ (3), $c \to e$ (4) $\Rightarrow$ cap $= 12 \neq 9$.
+
+Essayons $S = \{s, a, b, c, d\}$ : arcs $b \to e$ (3), $c \to e$ (4), $d \to t$ (6) $\Rightarrow$ cap $= 13$.
+
+Essayons $S = \{s, a, b, c, e\}$ : arcs $a \to d$ (3), $b \to d$ (2), $e \to t$ (5) $\Rightarrow$ cap $= 10$.
+
+Essayons $S = \{s, a, b, c, d, e\}$ : arcs $d \to t$ (6), $e \to t$ (5) $\Rightarrow$ cap $= 11$.
+
+\textbf{Coupe correcte :} $S = \{s, c\}$, arcs $s \to a$ (5), $s \to b$ (4), $c \to e$ (4) $\Rightarrow$ cap $= 13$.
+
+Reprenons le graphe r\'esiduel apr\`es flot max. Les sommets atteignables depuis $s$ :
+\begin{itemize}[nosep]
+    \item $s$ : directement. $s \to a$ r\'esiduel $5-3=2 > 0 \Rightarrow a$ atteignable.
+    \item $a$ : $a \to d$ r\'esiduel $3-3=0$, bloqu\'e. Pas de sortie.
+    \item $s \to b$ : r\'esiduel $4-4=0$. Bloqu\'e.
+    \item $s \to c$ : r\'esiduel $3-2=1 > 0 \Rightarrow c$ atteignable.
+    \item $c \to e$ : r\'esiduel $4-2=2 > 0 \Rightarrow e$ atteignable.
+    \item $e \to t$ : r\'esiduel $5-5=0$. Bloqu\'e. Arc retour $e \to b$ : $x_{be}=3 > 0 \Rightarrow b$ atteignable.
+    \item $b \to d$ : r\'esiduel $2-1=1 > 0 \Rightarrow d$ atteignable.
+    \item $d \to t$ : r\'esiduel $6-4=2 > 0 \Rightarrow t$ atteignable ?!
+\end{itemize}
+
+Il reste un chemin ! Chemin : $s \to c \to e \xrightarrow{\text{retour}} b \to d \to t$, avec capacit\'es r\'esiduelles $\min(1, 2, 3, 1, 2) = 1$.
+
+\medskip
+\begin{etape}{title=Chemin augmentant 5 : $s \to c \to e \xrightarrow{\text{retour}} b \to d \to t$ (via arc retour)}
+$\delta = 1$. Envoyer 1 unit\'e.
+
+Mise \`a jour :
+$x_{sc} = 3$, $x_{ce} = 3$, $x_{be} = 2$ (diminu\'e !), $x_{bd} = 2$, $x_{dt} = 5$.
+
+Valeur du flot : $\mathbf{10}$.
+\end{etape}
+
+Recontr\^ole : sortie de $s$ = $3+4+3 = 10$, entr\'ee dans $t$ = $5+5 = 10$. $\checkmark$
+
+V\'erifions s'il reste un chemin augmentant :
+\begin{itemize}[nosep]
+    \item $s \to a$ (r\'es. 2) $\to d$ (r\'es. 0) : bloqu\'e.
+    \item $s \to c$ (r\'es. 0) : bloqu\'e.
+    \item $s \to b$ (r\'es. 0) : bloqu\'e.
+\end{itemize}
+Seul $s \to a$ est possible, mais $a$ ne m\`ene nulle part. \textbf{Plus de chemin augmentant.}
+
+\textbf{Flot maximum $= 10$.}
+
+$S = \{s, a\}$ (sommets atteignables). $T = \{b, c, d, e, t\}$.
+
+Arcs de $S$ vers $T$ : $s \to b$ (cap. 4), $s \to c$ (cap. 3), $a \to d$ (cap. 3) $\Rightarrow$ cap $= 4+3+3 = \mathbf{10}$ $= f^*$. $\checkmark$
+
+\textbf{Coupe minimum :} $\{s \to b,\; s \to c,\; a \to d\}$, capacit\'e $= 10 = $ Flot Max. \checkmark
+
+\medskip
+\textbf{Q3. Chemins arcs-disjoints (capacit\'es unitaires) :}
+
+Avec capacit\'e $= 1$ sur chaque arc :
+
+On identifie 3 chemins arcs-disjoints :
+\begin{itemize}
+    \item $P_1 : s \to a \to d \to t$
+    \item $P_2 : s \to b \to e \to t$
+    \item $P_3 : s \to c \to e \to t$ \quad \textcolor{importantrouge}{\textbf{IMPOSSIBLE}} : l'arc $e \to t$ est d\'ej\`a utilis\'e dans $P_2$.
+\end{itemize}
+
+Reconsid\'erons :
+\begin{itemize}
+    \item $P_1 : s \to a \to d \to t$
+    \item $P_2 : s \to b \to e \to t$
+    \item $P_3$ n\'ecessiterait $s \to c \to e$, mais $e \to t$ d\'ej\`a pris. Et $b \to d$ : $d \to t$ d\'ej\`a pris.
+\end{itemize}
+
+Un 3\textsuperscript{e} chemin ne peut pas \'eviter de partager un arc. Donc flot max (cap. unit.) $= 2$.
+
+V\'erifions : coupe $\{d \to t, e \to t\}$, capacit\'e $= 1+1 = 2$. Confirme que max $= \mathbf{2}$ chemins arcs-disjoints.
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item \textbf{Ne pas oublier les arcs retour} dans le graphe r\'esiduel ! Un arc $(u,v)$ avec flot $x > 0$ cr\'ee un arc retour $(v,u)$ de capacit\'e $x$.
+    \item \textbf{Coupe min :} Sommets atteignables depuis $s$ dans le r\'esiduel $= S$. Arcs $S \to V \setminus S$ $=$ coupe.
+    \item \textbf{Chemins arcs-disjoints :} mettre toutes les capacit\'es \`a 1 et r\'esoudre le flot max.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 6 : DEDOUBLEMENT DE NOEUD
+%=============================================================
+\section{Exercice 6 --- D\'edoublement de n\oe ud (capacit\'e nodale)}
+
+\begin{enonce}
+Reprendre le graphe de l'exercice 5 avec les capacit\'es originales. On impose maintenant une \textbf{contrainte de capacit\'e sur le n\oe ud $b$} : au plus $2$ unit\'es de flot peuvent transiter par $b$.
+
+\begin{enumerate}
+    \item Comment mod\'eliser cette contrainte ?
+    \item Quel est le nouveau flot maximum ?
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{D\'edoublement de n\oe ud :} Remplacer $b$ par $b_{in}$ et $b_{out}$ reli\'es par un arc de capacit\'e \'egale \`a la capacit\'e nodale.
+\begin{itemize}[nosep]
+    \item Arcs entrant en $b$ $\to$ arrivent \`a $b_{in}$
+    \item Arcs sortant de $b$ $\to$ partent de $b_{out}$
+    \item Arc $b_{in} \to b_{out}$ de capacit\'e $= 2$
+\end{itemize}
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1. Transformation :}
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node (a) at (2.5,2) {$a$};
+    \node[fill=fondjaune] (bin) at (2,-0.5) {$b_{\text{in}}$};
+    \node[fill=fondjaune] (bout) at (3.8,-0.5) {$b_{\text{out}}$};
+    \node (c) at (2.5,-2.5) {$c$};
+    \node (d) at (6,1) {$d$};
+    \node (e) at (6,-1.5) {$e$};
+    \node[fill=importantrouge!20] (t) at (8.5,0) {$t$};
+
+    \draw[arr] (s) -- node[above left, draw=none, fill=none, font=\small]{5} (a);
+    \draw[arr] (s) -- node[above, draw=none, fill=none, font=\small]{4} (bin);
+    \draw[arr] (s) -- node[below left, draw=none, fill=none, font=\small]{3} (c);
+    \draw[arr, color=importantrouge, very thick] (bin) -- node[above, draw=none, fill=none, font=\small, color=importantrouge]{\textbf{2}} (bout);
+    \draw[arr] (a) -- node[above, draw=none, fill=none, font=\small]{3} (d);
+    \draw[arr] (bout) -- node[above, draw=none, fill=none, font=\small]{2} (d);
+    \draw[arr] (bout) -- node[below, draw=none, fill=none, font=\small]{3} (e);
+    \draw[arr] (c) -- node[below, draw=none, fill=none, font=\small]{4} (e);
+    \draw[arr] (d) -- node[above right, draw=none, fill=none, font=\small]{6} (t);
+    \draw[arr] (e) -- node[below right, draw=none, fill=none, font=\small]{5} (t);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Q2. Nouveau flot max :}
+
+Avec la contrainte $b_{in} \to b_{out}$ : capacit\'e $2$, le flot passant par $b$ est limit\'e \`a $2$.
+
+Chemins augmentants :
+\begin{itemize}[nosep]
+    \item $s \to a \to d \to t$ : flot $= 3$ (capacit\'e de $a \to d$)
+    \item $s \to b_{in} \to b_{out} \to e \to t$ : flot $= 2$ (goulot : arc $b_{in} \to b_{out}$)
+    \item $s \to c \to e \to t$ : r\'esiduel $e \to t$ : $5-2=3$, et $c \to e$ : $4$, $s \to c$ : $3$ $\Rightarrow \min(3,4,3) = 3$.
+\end{itemize}
+
+Flot total $= 3 + 2 + 3 = 8$. V\'erifions s'il reste un chemin augmentant.
+
+Apr\`es ces 3 envois : arc $b_{in} \to b_{out}$ satur\'e, $e \to t$ satur\'e ($2+3=5$), $s \to c$ satur\'e.
+
+R\'esiduel depuis $s$ : $s \to a$ (r\'es. $5-3=2$), mais $a \to d$ (r\'es. $3-3=0$) bloqu\'e. $s \to b_{in}$ (r\'es. $4-2=2$) mais $b_{in} \to b_{out}$ (r\'es. $2-2=0$) bloqu\'e. $s \to c$ (r\'es. $3-3=0$) bloqu\'e.
+
+$\Rightarrow$ \textbf{Nouveau flot max $= 8$} (vs 10 sans contrainte nodale).
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item Le d\'edoublement fonctionne aussi pour les \textbf{chemins sommet-disjoints} : mettre capacit\'e $= 1$ sur chaque arc $v_{in} \to v_{out}$ pour les n\oe uds interm\'ediaires.
+    \item Ne jamais d\'edoubler $s$ ni $t$.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 7 : CDS + MPR
+%=============================================================
+\section{Exercice 7 --- Dominant connexe (CDS) et MPR}
+
+\begin{enonce}
+Soit le graphe non orient\'e $G$ (r\'eseau sans fil) :
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    edge/.style={thick}
+]
+    \node (1) at (0,1) {1};
+    \node (2) at (2,2) {2};
+    \node (3) at (2,0) {3};
+    \node (4) at (4,2) {4};
+    \node (5) at (4,0) {5};
+    \node (6) at (6,1) {6};
+    \node (7) at (6,-1) {7};
+    \node (8) at (8,0) {8};
+
+    \draw[edge] (1)--(2); \draw[edge] (1)--(3);
+    \draw[edge] (2)--(3); \draw[edge] (2)--(4);
+    \draw[edge] (3)--(5); \draw[edge] (4)--(5);
+    \draw[edge] (4)--(6); \draw[edge] (5)--(6);
+    \draw[edge] (5)--(7); \draw[edge] (6)--(8);
+    \draw[edge] (7)--(8);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Appliquer l'algorithme glouton pour construire un dominant connexe (CDS).
+    \item Calculer MPR(5) : l'ensemble MPR du n\oe ud 5.
+    \item Simuler la diffusion depuis le n\oe ud 1 via le CDS.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{CDS glouton :} D\'emarrer avec le n\oe ud de degr\'e max. Ajouter it\'erativement un \textbf{voisin de D} qui couvre le plus de non-domin\'es.
+
+\textbf{MPR de $u$ :} S\'electionner un sous-ensemble minimal de $N(u)$ couvrant tout $N_2(u)$.
+\end{methode}
+
+\begin{correction}{title=Correction}
+
+\textbf{Q1. Construction du CDS :}
+
+Degr\'es : $d(1)=2$, $d(2)=3$, $d(3)=3$, $d(4)=3$, $\mathbf{d(5)=4}$, $d(6)=3$, $d(7)=2$, $d(8)=2$.
+
+\begin{etape}{title=\'Etape 1 : Degr\'e max $= 5$ ($d(5)=4$)}
+$D = \{5\}$, Domin\'e $= N[5] = \{3, 4, 5, 6, 7\}$.
+
+Non domin\'es : $\{1, 2, 8\}$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 2 : Voisins de $D$ non dans $D$ : $\{3, 4, 6, 7\}$}
+\begin{itemize}[nosep]
+    \item $3$ : couvre $1$ ($\in$ non-domin\'es), $2$ ($\in$ non-domin\'es) $\Rightarrow$ \textbf{2 nouveaux}
+    \item $4$ : couvre $2$ $\Rightarrow$ 1 nouveau
+    \item $6$ : couvre $8$ $\Rightarrow$ 1 nouveau
+    \item $7$ : couvre $8$ $\Rightarrow$ 1 nouveau
+\end{itemize}
+\textbf{Max :} $3$ (couvre 2 nouveaux). $D = \{3, 5\}$, Domin\'e $= \{1,2,3,4,5,6,7\}$. Non domin\'es : $\{8\}$.
+\end{etape}
+
+\begin{etape}{title=\'Etape 3 : Voisins de $D$ non dans $D$ : $\{1, 2, 4, 6, 7\}$}
+\begin{itemize}[nosep]
+    \item $6$ : couvre $8$ $\Rightarrow$ 1 nouveau
+    \item $7$ : couvre $8$ $\Rightarrow$ 1 nouveau
+    \item Les autres ne couvrent aucun nouveau.
+\end{itemize}
+Choisir $6$ (ou $7$). Prenons $6$. $D = \{3, 5, 6\}$. Domin\'e $= V$. \checkmark
+\end{etape}
+
+\textbf{CDS} $= \{3, 5, 6\}$. V\'erification :
+\begin{itemize}[nosep]
+    \item Dominant : $1 \in N(3)$, $2 \in N(3)$, $4 \in N(5)$, $7 \in N(5)$, $8 \in N(6)$ \checkmark
+    \item Connexe : $3$-$5$-$6$ forment un chemin dans $G$ \checkmark
+\end{itemize}
+
+\medskip
+\textbf{Q2. Calcul de MPR(5) :}
+
+$N(5) = \{3, 4, 6, 7\}$
+
+$N_2(5) = $ noeuds \`a distance 2 de 5, pas dans $N[5]$ :
+\begin{itemize}[nosep]
+    \item Via $3$ : $N(3) = \{1, 2, 5\}$ $\Rightarrow$ $1, 2$ sont dans $N_2(5)$
+    \item Via $4$ : $N(4) = \{2, 5, 6\}$ $\Rightarrow$ $2$ d\'ej\`a compt\'e
+    \item Via $6$ : $N(6) = \{4, 5, 8\}$ $\Rightarrow$ $8 \in N_2(5)$
+    \item Via $7$ : $N(7) = \{5, 8\}$ $\Rightarrow$ $8$ d\'ej\`a compt\'e
+\end{itemize}
+
+$N_2(5) = \{1, 2, 8\}$.
+
+\'Etape obligatoire :
+\begin{itemize}[nosep]
+    \item $1$ : seul voisin commun avec $5$ = $3$ $\Rightarrow$ $3$ obligatoire dans MPR(5)
+    \item $2$ : voisins communs avec $5$ = $3$ et $4$ $\Rightarrow$ pas obligatoire
+    \item $8$ : voisins communs avec $5$ = $6$ et $7$ $\Rightarrow$ pas obligatoire
+\end{itemize}
+
+$\text{MPR}(5) = \{3\}$. Couvert $= \{1, 2\}$ (car $N(3) \cap N_2(5) = \{1, 2\}$).
+
+Non couvert : $\{8\}$. Choisir entre $6$ ($8 \in N(6)$) et $7$ ($8 \in N(7)$). Prenons $6$.
+
+$$\boxed{\text{MPR}(5) = \{3, 6\}}$$
+
+\medskip
+\textbf{Q3. Diffusion depuis $1$ via CDS $= \{3, 5, 6\}$ :}
+
+\begin{enumerate}[nosep]
+    \item $1$ envoie le message. $1 \notin D$, donc $1$ ne retransmet que s'il est la source (oui).
+    \item $2$ et $3$ re\c{c}oivent. $3 \in D$ : \textbf{retransmet}. $2 \notin D$ : ne retransmet pas.
+    \item $5$ re\c{c}oit de $3$. $5 \in D$ : \textbf{retransmet}. ($1$ et $2$ ignorent car d\'ej\`a re\c{c}u.)
+    \item $4, 6, 7$ re\c{c}oivent de $5$. $6 \in D$ : \textbf{retransmet}. $4, 7 \notin D$ : ne retransmettent pas.
+    \item $8$ re\c{c}oit de $6$. $8 \notin D$ : ne retransmet pas.
+\end{enumerate}
+
+\textbf{Retransmissions :} $1$ (source) $+ 3 + 5 + 6 = $ \textbf{4 transmissions} pour couvrir 8 n\oe uds.
+
+Flooding aurait donn\'e $8$ transmissions (chaque n\oe ud retransmet une fois).
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item Pour le CDS : toujours choisir un \textbf{voisin de D} (pas n'importe quel sommet) pour garantir la connexit\'e.
+    \item Pour les MPR : ne pas oublier l'\textbf{\'etape obligatoire} (n\oe uds de $N_2$ n'ayant qu'un seul voisin dans $N$).
+    \item Le CDS n'est pas unique : diff\'erents choix initiaux donnent diff\'erents CDS.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 8 : BELLMAN-FORD
+%=============================================================
+\section{Exercice 8 --- Bellman-Ford (poids n\'egatifs, graphe g\'en\'eral)}
+
+\begin{enonce}
+Soit le graphe orient\'e $G = (V, E)$ avec $V = \{s, 1, 2, 3, 4, 5\}$ et les arcs suivants :
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (1) at (2.5,1.5) {$1$};
+    \node[fill=defvert!20] (2) at (2.5,-1.5) {$2$};
+    \node[fill=exempleorange!20] (3) at (5.5,1.5) {$3$};
+    \node[fill=exempleorange!20] (4) at (5.5,-1.5) {$4$};
+    \node[fill=importantrouge!20] (5) at (8,0) {$5$};
+
+    \draw[arr] (s) -- node[above left,draw=none,fill=none]{\small $6$} (1);
+    \draw[arr] (s) -- node[below left,draw=none,fill=none]{\small $4$} (2);
+    \draw[arr] (1) -- node[above,draw=none,fill=none]{\small $5$} (3);
+    \draw[arr] (1) -- node[left,draw=none,fill=none]{\small $-2$} (2);
+    \draw[arr] (2) -- node[below,draw=none,fill=none]{\small $3$} (4);
+    \draw[arr] (3) -- node[above right,draw=none,fill=none]{\small $2$} (5);
+    \draw[arr] (4) -- node[below right,draw=none,fill=none]{\small $1$} (5);
+    \draw[arr] (3) -- node[right,draw=none,fill=none]{\small $-4$} (4);
+    \draw[arr] (4) -- node[below,draw=none,fill=none]{\small $-1$} (2);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Peut-on appliquer Dijkstra ? Pourquoi ?
+    \item Ce graphe est-il un DAG ? Peut-on utiliser la relaxation par niveaux ?
+    \item Appliquer l'algorithme de \textbf{Bellman-Ford} depuis $s$. Montrer toutes les it\'erations.
+    \item Y a-t-il un circuit de poids n\'egatif (circuit absorbant) ?
+    \item Donner l'arborescence des plus courts chemins.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{Quand utiliser Bellman-Ford ?}
+\begin{itemize}[nosep]
+    \item Poids n\'egatifs ET le graphe n'est \textbf{pas un DAG} (contient des circuits)
+    \item Complexit\'e : $O(|V| \cdot |E|)$
+    \item Effectuer $|V|-1$ it\'erations de relaxation de \textbf{tous} les arcs
+    \item Une $|V|$-i\`eme it\'eration permet de \textbf{d\'etecter les circuits absorbants} : si un $d[v]$ diminue encore, il y a un circuit de poids n\'egatif
+\end{itemize}
+
+\textbf{Proc\'edure :}
+\begin{enumerate}[nosep]
+    \item Initialiser $d[s] = 0$, $d[v] = +\infty$ pour $v \neq s$, $\pi[v] = \text{nil}$
+    \item Pour $k = 1$ \`a $|V|-1$ : pour \textbf{chaque arc} $(u,v)$ de poids $w(u,v)$ : si $d[u] + w(u,v) < d[v]$, alors $d[v] \leftarrow d[u] + w(u,v)$ et $\pi[v] \leftarrow u$
+    \item V\'erification : parcourir tous les arcs une derni\`ere fois. Si une am\'elioration est possible $\Rightarrow$ circuit absorbant d\'etect\'e
+\end{enumerate}
+\end{methode}
+
+\begin{correction}
+\textbf{Q1. Dijkstra ?} \textbf{Non.} L'arc $(1,2)$ a un poids $-2$ et l'arc $(3,4)$ a un poids $-4$. Dijkstra \textbf{exige des poids $\geq 0$}.
+
+\medskip
+\textbf{Q2. DAG ?} \textbf{Non.} Le graphe contient le circuit $2 \to 4 \to 2$ (via $2 \xrightarrow{3} 4 \xrightarrow{-1} 2$). Poids du circuit $= 3 + (-1) = 2 > 0$, donc ce n'est pas absorbant, mais la pr\'esence d'un circuit emp\^eche d'utiliser la relaxation par niveaux.
+
+$\Rightarrow$ \textbf{Bellman-Ford} est le seul choix.
+
+\medskip
+\textbf{Q3. Ex\'ecution de Bellman-Ford.}
+
+Arcs (ordre fix\'e) : $(s,1)_6$, $(s,2)_4$, $(1,3)_5$, $(1,2)_{-2}$, $(2,4)_3$, $(3,5)_2$, $(3,4)_{-4}$, $(4,5)_1$, $(4,2)_{-1}$.
+
+\medskip
+\textbf{Initialisation :}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+& $s$ & $1$ & $2$ & $3$ & $4$ & $5$ \\\hline
+Init & $0$ & $+\infty$ & $+\infty$ & $+\infty$ & $+\infty$ & $+\infty$ \\\hline
+\end{tabular}
+\end{center}
+
+\textbf{It\'eration 1} ($k=1$) --- relaxer tous les arcs :
+\begin{itemize}[nosep]
+    \item $(s,1)$ : $d[1] = \min(\infty, 0+6) = \mathbf{6}$, $\pi[1]=s$
+    \item $(s,2)$ : $d[2] = \min(\infty, 0+4) = \mathbf{4}$, $\pi[2]=s$
+    \item $(1,3)$ : $d[3] = \min(\infty, 6+5) = \mathbf{11}$, $\pi[3]=1$
+    \item $(1,2)$ : $d[2] = \min(4, 6+(-2)) = \mathbf{4}$ (inchang\'e)
+    \item $(2,4)$ : $d[4] = \min(\infty, 4+3) = \mathbf{7}$, $\pi[4]=2$
+    \item $(3,5)$ : $d[5] = \min(\infty, 11+2) = \mathbf{13}$, $\pi[5]=3$
+    \item $(3,4)$ : $d[4] = \min(7, 11+(-4)) = \mathbf{7}$ (inchang\'e)
+    \item $(4,5)$ : $d[5] = \min(13, 7+1) = \mathbf{8}$, $\pi[5]=4$
+    \item $(4,2)$ : $d[2] = \min(4, 7+(-1)) = \mathbf{4}$ (inchang\'e)
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+& $s$ & $1$ & $2$ & $3$ & $4$ & $5$ \\\hline
+$k=1$ & $0$ & $6$ & $4$ & $11$ & $7$ & $8$ \\\hline
+\end{tabular}
+\end{center}
+
+\textbf{It\'eration 2} ($k=2$) --- relaxer tous les arcs :
+\begin{itemize}[nosep]
+    \item $(s,1)$ : $d[1] = \min(6, 0+6) = 6$ (inchang\'e)
+    \item $(s,2)$ : $d[2] = \min(4, 0+4) = 4$ (inchang\'e)
+    \item $(1,3)$ : $d[3] = \min(11, 6+5) = 11$ (inchang\'e)
+    \item $(1,2)$ : $d[2] = \min(4, 6-2) = \mathbf{4}$ (inchang\'e)
+    \item $(2,4)$ : $d[4] = \min(7, 4+3) = \mathbf{7}$ (inchang\'e)
+    \item $(3,5)$ : $d[5] = \min(8, 11+2) = 8$ (inchang\'e)
+    \item $(3,4)$ : $d[4] = \min(7, 11-4) = \mathbf{7}$ (inchang\'e)
+    \item $(4,5)$ : $d[5] = \min(8, 7+1) = \mathbf{8}$ (inchang\'e)
+    \item $(4,2)$ : $d[2] = \min(4, 7-1) = \mathbf{4}$ (inchang\'e)
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+& $s$ & $1$ & $2$ & $3$ & $4$ & $5$ \\\hline
+$k=2$ & $0$ & $6$ & $4$ & $11$ & $7$ & $8$ \\\hline
+\end{tabular}
+\end{center}
+
+\textbf{It\'erations 3, 4, 5} ($k=3$ \`a $|V|-1=5$) : aucune modification $\Rightarrow$ convergence atteinte d\`es $k=1$.
+
+\medskip
+\textbf{Q4. D\'etection de circuit absorbant.}
+
+It\'eration $|V| = 6$ (v\'erification) : on relaxe tous les arcs une derni\`ere fois.
+
+\textbf{Aucune am\'elioration} $\Rightarrow$ \textcolor{defvert}{\textbf{pas de circuit absorbant}}.
+
+(On peut v\'erifier : le seul circuit est $2 \to 4 \to 2$ de poids $3 + (-1) = 2 > 0$.)
+
+\medskip
+\textbf{Q5. Arborescence des PCC :}
+
+$$\pi[1]=s,\quad \pi[2]=s,\quad \pi[3]=1,\quad \pi[4]=2,\quad \pi[5]=4$$
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick, color=defvert}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (1) at (2.5,1.2) {$1$};
+    \node[fill=defvert!20] (2) at (2.5,-1.2) {$2$};
+    \node[fill=exempleorange!20] (3) at (5,1.2) {$3$};
+    \node[fill=exempleorange!20] (4) at (5,-1.2) {$4$};
+    \node[fill=importantrouge!20] (5) at (7.5,0) {$5$};
+
+    \draw[arr] (s) -- node[above left,draw=none,fill=none]{\small $d=6$} (1);
+    \draw[arr] (s) -- node[below left,draw=none,fill=none]{\small $d=4$} (2);
+    \draw[arr] (1) -- node[above,draw=none,fill=none]{\small $d=11$} (3);
+    \draw[arr] (2) -- node[below,draw=none,fill=none]{\small $d=7$} (4);
+    \draw[arr] (4) -- node[below right,draw=none,fill=none]{\small $d=8$} (5);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Chemins optimaux :}
+\begin{align*}
+s &\to 1 \quad (d=6) \\
+s &\to 2 \quad (d=4) \\
+s &\to 1 \to 3 \quad (d=11) \\
+s &\to 2 \to 4 \quad (d=7) \\
+s &\to 2 \to 4 \to 5 \quad (d=8)
+\end{align*}
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item \textbf{Bellman-Ford vs Dijkstra :} Bellman-Ford est le seul choix quand il y a des poids n\'egatifs ET que le graphe n'est pas un DAG.
+    \item \textbf{Nombre d'it\'erations :} exactement $|V|-1$ it\'erations (m\^eme si convergence avant). La $|V|$-i\`eme it\'eration sert \textbf{uniquement} \`a d\'etecter les circuits absorbants.
+    \item \textbf{Ordre des arcs :} l'ordre de parcours des arcs dans chaque it\'eration ne change pas le r\'esultat final, mais peut acc\'el\'erer la convergence.
+    \item \textbf{Circuit de poids n\'egatif $\neq$ arc de poids n\'egatif :} un arc n\'egatif ne pose pas de probl\`eme en soi. C'est un \textbf{circuit} dont la somme des poids est $< 0$ qui rend le probl\`eme insoluble.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 9 : FORD-FULKERSON AVEC ARCS RETOUR
+%=============================================================
+\section{Exercice 9 --- Flot max avec chemins augmentants et arcs retour}
+
+\begin{enonce}
+Soit le r\'eseau $G$ suivant avec source $s$ et puits $t$. Les valeurs sur les arcs indiquent la capacit\'e.
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (a) at (2.5,1.5) {$a$};
+    \node[fill=defvert!20] (b) at (2.5,-1.5) {$b$};
+    \node[fill=exempleorange!20] (c) at (5.5,1.5) {$c$};
+    \node[fill=exempleorange!20] (d) at (5.5,-1.5) {$d$};
+    \node[fill=importantrouge!20] (t) at (8,0) {$t$};
+
+    \draw[arr] (s) -- node[above left,draw=none,fill=none]{\small $10$} (a);
+    \draw[arr] (s) -- node[below left,draw=none,fill=none]{\small $8$} (b);
+    \draw[arr] (a) -- node[above,draw=none,fill=none]{\small $6$} (c);
+    \draw[arr] (a) -- node[left,draw=none,fill=none]{\small $5$} (d);
+    \draw[arr] (b) -- node[below,draw=none,fill=none]{\small $7$} (d);
+    \draw[arr] (b) -- node[right,draw=none,fill=none]{\small $3$} (a);
+    \draw[arr] (c) -- node[above right,draw=none,fill=none]{\small $9$} (t);
+    \draw[arr] (d) -- node[below right,draw=none,fill=none]{\small $10$} (t);
+    \draw[arr] (c) -- node[right,draw=none,fill=none]{\small $4$} (d);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Trouver un flot initial en identifiant des chemins augmentants \'evidents.
+    \item Construire le graphe r\'esiduel apr\`es ce flot initial.
+    \item Chercher un nouveau chemin augmentant (qui utilise un \textbf{arc retour} dans le graphe r\'esiduel). Augmenter le flot.
+    \item R\'ep\'eter jusqu'\`a obtenir le flot maximum. Donner $f^*$.
+    \item Identifier une coupe minimum et v\'erifier le th\'eor\`eme flot max / coupe min.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{Ford-Fulkerson --- graphe r\'esiduel :}
+\begin{itemize}[nosep]
+    \item Pour chaque arc $(u,v)$ de capacit\'e $c$ portant un flot $f$ :
+    \begin{itemize}[nosep]
+        \item \textbf{Arc avant} $(u \to v)$ : capacit\'e r\'esiduelle $= c - f$ (si $> 0$)
+        \item \textbf{Arc retour} $(v \to u)$ : capacit\'e r\'esiduelle $= f$ (si $> 0$)
+    \end{itemize}
+    \item Un \textbf{chemin augmentant} utilisant un arc retour $(v,u)$ signifie qu'on \textbf{diminue} le flot sur l'arc original $(u,v)$ pour le rediriger ailleurs.
+    \item La valeur d'augmentation = $\min$ des capacit\'es r\'esiduelles sur le chemin.
+\end{itemize}
+\end{methode}
+
+\begin{correction}
+\textbf{Q1. Flot initial --- chemins augmentants \'evidents :}
+
+\begin{itemize}[nosep]
+    \item $P_1 : s \to a \to c \to t$ : goulot $= \min(10, 6, 9) = 6$. Envoyer $f=6$.
+    \item $P_2 : s \to b \to d \to t$ : goulot $= \min(8, 7, 10) = 7$. Envoyer $f=7$.
+\end{itemize}
+
+\'Etat du flot apr\`es $P_1$ et $P_2$ (notation $f/c$) :
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Arc & $s\!\to\!a$ & $s\!\to\!b$ & $a\!\to\!c$ & $a\!\to\!d$ & $b\!\to\!d$ & $b\!\to\!a$ & $c\!\to\!t$ & $d\!\to\!t$ & $c\!\to\!d$ \\\hline
+$f/c$ & $6/10$ & $7/8$ & $6/6$ & $0/5$ & $7/7$ & $0/3$ & $6/9$ & $7/10$ & $0/4$ \\\hline
+\end{tabular}
+\end{center}
+
+Flot actuel : $|f| = 6 + 7 = 13$.
+
+\medskip
+\textbf{Q2. Graphe r\'esiduel $G^r$ :}
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick, color=titrebleu},
+    ret/.style={-{Stealth}, thick, color=importantrouge, dashed}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (a) at (2.5,1.5) {$a$};
+    \node[fill=defvert!20] (b) at (2.5,-1.5) {$b$};
+    \node[fill=exempleorange!20] (c) at (5.5,1.5) {$c$};
+    \node[fill=exempleorange!20] (d) at (5.5,-1.5) {$d$};
+    \node[fill=importantrouge!20] (t) at (8,0) {$t$};
+
+    % Arcs avant (capacit\'e r\'esiduelle > 0)
+    \draw[arr] (s) to[bend left=10] node[above left,draw=none,fill=none]{\small $4$} (a);
+    \draw[arr] (s) to[bend right=10] node[below left,draw=none,fill=none]{\small $1$} (b);
+    \draw[arr] (a) -- node[left,draw=none,fill=none]{\small $5$} (d);
+    \draw[arr] (b) -- node[right,draw=none,fill=none]{\small $3$} (a);
+    \draw[arr] (c) to[bend left=10] node[above right,draw=none,fill=none]{\small $3$} (t);
+    \draw[arr] (d) to[bend right=10] node[below right,draw=none,fill=none]{\small $3$} (t);
+    \draw[arr] (c) -- node[right,draw=none,fill=none]{\small $4$} (d);
+
+    % Arcs retour
+    \draw[ret] (a) to[bend left=10] node[below right,draw=none,fill=none]{\small $6$} (s);
+    \draw[ret] (b) to[bend right=10] node[above right,draw=none,fill=none]{\small $7$} (s);
+    \draw[ret] (c) -- node[below,draw=none,fill=none]{\small $6$} (a);
+    \draw[ret] (d) to[bend left=10] node[above,draw=none,fill=none]{\small $7$} (b);
+    \draw[ret] (t) to[bend left=10] node[below left,draw=none,fill=none]{\small $6$} (c);
+    \draw[ret] (t) to[bend right=10] node[above left,draw=none,fill=none]{\small $7$} (d);
+\end{tikzpicture}
+\end{center}
+
+{\small Bleu = arcs avant (capacit\'e r\'esiduelle $c-f$). Rouge pointill\'e = arcs retour (capacit\'e $f$).}
+
+\medskip
+\textbf{Q3. Chemin augmentant avec arc retour :}
+
+$P_3 : s \to b \to a \to d \to t$ dans $G^r$.
+
+Capacit\'es r\'esiduelles : $\min(1, 3, 5, 3) = 1$. Augmenter de $1$.
+
+Mise \`a jour :
+\begin{itemize}[nosep]
+    \item $s \to b$ : $f = 7+1 = 8$ (satur\'e)
+    \item $b \to a$ : $f = 0+1 = 1$
+    \item $a \to d$ : $f = 0+1 = 1$
+    \item $d \to t$ : $f = 7+1 = 8$
+\end{itemize}
+
+Flot : $|f| = 13 + 1 = 14$.
+
+\medskip
+\textbf{Nouveau graphe r\'esiduel :} Cherchons un nouveau chemin augmentant.
+
+$P_4 : s \to a \to c \to d \to t$ dans $G^r$.
+
+Capacit\'es r\'esiduelles : $s \to a : 10-6 = 4 - 0 = 3$ (puisque $f(s,a)=6+0=6$, non, recalculons).
+
+Apr\`es $P_3$, le flot est :
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Arc & $s\!\to\!a$ & $s\!\to\!b$ & $a\!\to\!c$ & $a\!\to\!d$ & $b\!\to\!d$ & $b\!\to\!a$ & $c\!\to\!t$ & $d\!\to\!t$ & $c\!\to\!d$ \\\hline
+$f/c$ & $6/10$ & $8/8$ & $6/6$ & $1/5$ & $7/7$ & $1/3$ & $6/9$ & $8/10$ & $0/4$ \\\hline
+\end{tabular}
+\end{center}
+
+$P_4 : s \to a \to d \to t$ : $\min(4, 4, 2) = 2$. Augmenter de $2$.
+
+Apr\`es $P_4$ :
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Arc & $s\!\to\!a$ & $s\!\to\!b$ & $a\!\to\!c$ & $a\!\to\!d$ & $b\!\to\!d$ & $b\!\to\!a$ & $c\!\to\!t$ & $d\!\to\!t$ & $c\!\to\!d$ \\\hline
+$f/c$ & $8/10$ & $8/8$ & $6/6$ & $3/5$ & $7/7$ & $1/3$ & $6/9$ & $10/10$ & $0/4$ \\\hline
+\end{tabular}
+\end{center}
+
+Flot : $|f| = 14 + 2 = 16$.
+
+\medskip
+Nouveau $G^r$ : $d \to t$ satur\'e, $s \to b$ satur\'e. Cherchons un chemin de $s$ \`a $t$ :
+
+$P_5 : s \to a \to c \to t$ ? Non, $a \to c$ satur\'e. Mais arc retour $c \to a$ existe.
+
+$s \to a$ (cap. 2) ? Puis $a \to d$ (cap. 2) ? Puis $d \to t$ (cap. 0) : bloqu\'e.
+
+$s \to a$ (cap. 2) $\to$ $a \to c$? Non (cap. $0$).
+
+Plus de chemin $s$-$t$ dans $G^r$.
+
+\medskip
+\textbf{Q4. Flot maximum :}
+$$\boxed{f^* = 16}$$
+
+V\'erification : $f^* = f(s,a) + f(s,b) = 8 + 8 = 16$ (sortant de $s$) et $f(c,t) + f(d,t) = 6 + 10 = 16$ (entrant dans $t$). $\checkmark$
+
+\medskip
+\textbf{Q5. Coupe minimum :}
+
+Depuis $s$ dans le graphe r\'esiduel final, les sommets accessibles sont $S = \{s, a\}$ (car $s \to a$ a encore cap. r\'esiduelle $= 2$, mais depuis $a$ : $a \to c$ satur\'e, $a \to d$ cap. $2$ $\to d \to t$ satur\'e).
+
+Recalculons : depuis $s$, on peut atteindre $a$ (cap. 2). Depuis $a$ : $a \to d$ (cap. 2) $\to$ on atteint $d$. Depuis $d$ : $d \to t$ satur\'e (cap. 0), arc retour $d \to b$ (cap. 7), arc retour $d \to a$ (cap. 1). Depuis $b$ : arc retour $b \to s$ (cap. 8), $b \to a$ (cap. 2). Donc $S = \{s, a, b, d\}$, $\bar{S} = \{c, t\}$.
+
+Coupe $(S, \bar{S})$ : arcs de $S$ vers $\bar{S}$ :
+\begin{itemize}[nosep]
+    \item $(a, c)$ : capacit\'e $6$
+    \item $(d, t)$ : capacit\'e $10$
+\end{itemize}
+
+$$\text{Capacit\'e de la coupe} = 6 + 10 = 16 = f^*\ \checkmark$$
+
+\textbf{Th\'eor\`eme flot max / coupe min v\'erifi\'e.}
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item Les \textbf{arcs retour} dans le graphe r\'esiduel permettent de \og d\'efaire \fg{} un flot mal plac\'e pour le rediriger ailleurs. C'est souvent n\'ecessaire pour atteindre l'optimum.
+    \item La \textbf{coupe minimum} se trouve en faisant un BFS/DFS depuis $s$ dans le graphe r\'esiduel final : $S$ = sommets accessibles, $\bar{S}$ = le reste.
+    \item Notation examen : $a/b$ signifie flot $a$ sur capacit\'e $b$. Capacit\'e r\'esiduelle avant $= b-a$, retour $= a$.
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 10 : CHEMINS SOMMETS-DISJOINTS (DEDOUBLEMENT)
+%=============================================================
+\section{Exercice 10 --- Chemins sommets-disjoints (d\'edoublement de n\oe uds)}
+
+\begin{enonce}
+Soit le graphe orient\'e $G = (V, E)$ suivant avec $V = \{s, a, b, c, d, t\}$ :
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (a) at (2.5,1.5) {$a$};
+    \node[fill=defvert!20] (b) at (2.5,-1.5) {$b$};
+    \node[fill=exempleorange!20] (c) at (5,1.5) {$c$};
+    \node[fill=exempleorange!20] (d) at (5,-1.5) {$d$};
+    \node[fill=importantrouge!20] (t) at (7.5,0) {$t$};
+
+    \draw[arr] (s) -- (a);
+    \draw[arr] (s) -- (b);
+    \draw[arr] (a) -- (c);
+    \draw[arr] (a) -- (d);
+    \draw[arr] (b) -- (c);
+    \draw[arr] (b) -- (d);
+    \draw[arr] (c) -- (t);
+    \draw[arr] (d) -- (t);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+    \item Trouver le nombre maximum de chemins \textbf{arcs-disjoints} de $s$ \`a $t$.
+    \item Trouver le nombre maximum de chemins \textbf{sommets-disjoints} de $s$ \`a $t$ (les chemins ne partagent aucun sommet interm\'ediaire).
+    \item Pour la question 2, appliquer la technique de \textbf{d\'edoublement de n\oe uds} : construire le graphe transform\'e $G'$, puis trouver le flot maximum.
+\end{enumerate}
+\end{enonce}
+
+\begin{methode}
+\textbf{Chemins arcs-disjoints :} flot max avec capacit\'es $= 1$ sur chaque arc (th. de Menger, version arcs).
+
+\textbf{Chemins sommets-disjoints :} d\'edoublement de n\oe uds (th. de Menger, version sommets).
+\begin{itemize}[nosep]
+    \item Chaque sommet interm\'ediaire $v$ (ni $s$ ni $t$) est remplac\'e par $v_{in}$ et $v_{out}$
+    \item Arc interne $(v_{in} \to v_{out})$ de capacit\'e $1$ (un seul chemin peut traverser $v$)
+    \item Tout arc $(u, v)$ du graphe original devient $(u_{out}, v_{in})$ de capacit\'e $1$
+    \item $s$ garde un seul n\oe ud $s_{out}$, $t$ garde un seul n\oe ud $t_{in}$
+    \item Le flot max dans $G'$ donne le nombre max de chemins sommets-disjoints dans $G$
+\end{itemize}
+\end{methode}
+
+\begin{correction}
+\textbf{Q1. Chemins arcs-disjoints :}
+
+Capacit\'es $= 1$ sur tous les arcs. Cherchons des chemins $s$-$t$ arcs-disjoints :
+\begin{itemize}[nosep]
+    \item $P_1 : s \to a \to c \to t$ \quad (arcs $sa$, $ac$, $ct$)
+    \item $P_2 : s \to b \to d \to t$ \quad (arcs $sb$, $bd$, $dt$)
+\end{itemize}
+
+Aucun arc commun $\checkmark$. Peut-on faire 3 ? Non : $t$ n'a que 2 arcs entrants ($ct$ et $dt$), donc au plus 2 chemins.
+
+$$\boxed{\text{Chemins arcs-disjoints max} = 2}$$
+
+\medskip
+\textbf{Q2. Chemins sommets-disjoints :}
+
+Les chemins $P_1$ et $P_2$ ci-dessus ne partagent aucun sommet interm\'ediaire ($a, c$ pour $P_1$ et $b, d$ pour $P_2$) $\Rightarrow$ ils sont aussi sommets-disjoints.
+
+$$\boxed{\text{Chemins sommets-disjoints max} = 2}$$
+
+\medskip
+\textbf{Q3. V\'erification par d\'edoublement :}
+
+Construction de $G'$ : chaque sommet interm\'ediaire $v \in \{a, b, c, d\}$ est remplac\'e par $(v_{in}, v_{out})$ avec un arc de capacit\'e $1$.
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    every node/.style={circle, draw, minimum size=8mm, font=\scriptsize\bfseries},
+    arr/.style={-{Stealth}, thick},
+    internal/.style={-{Stealth}, thick, color=importantrouge}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+
+    \node[fill=defvert!20] (ain) at (2,1.8) {$a_i$};
+    \node[fill=defvert!20] (aout) at (3.5,1.8) {$a_o$};
+
+    \node[fill=defvert!20] (bin) at (2,-1.8) {$b_i$};
+    \node[fill=defvert!20] (bout) at (3.5,-1.8) {$b_o$};
+
+    \node[fill=exempleorange!20] (cin) at (5.5,1.8) {$c_i$};
+    \node[fill=exempleorange!20] (cout) at (7,1.8) {$c_o$};
+
+    \node[fill=exempleorange!20] (din) at (5.5,-1.8) {$d_i$};
+    \node[fill=exempleorange!20] (dout) at (7,-1.8) {$d_o$};
+
+    \node[fill=importantrouge!20] (t) at (9,0) {$t$};
+
+    % Arcs internes (capacit\'e 1)
+    \draw[internal] (ain) -- node[above,draw=none,fill=none]{\tiny $1$} (aout);
+    \draw[internal] (bin) -- node[above,draw=none,fill=none]{\tiny $1$} (bout);
+    \draw[internal] (cin) -- node[above,draw=none,fill=none]{\tiny $1$} (cout);
+    \draw[internal] (din) -- node[above,draw=none,fill=none]{\tiny $1$} (dout);
+
+    % Arcs du graphe original
+    \draw[arr] (s) -- node[above,draw=none,fill=none]{\tiny $1$} (ain);
+    \draw[arr] (s) -- node[below,draw=none,fill=none]{\tiny $1$} (bin);
+    \draw[arr] (aout) -- node[above,draw=none,fill=none]{\tiny $1$} (cin);
+    \draw[arr] (aout) -- node[left,draw=none,fill=none]{\tiny $1$} (din);
+    \draw[arr] (bout) -- node[right,draw=none,fill=none]{\tiny $1$} (cin);
+    \draw[arr] (bout) -- node[below,draw=none,fill=none]{\tiny $1$} (din);
+    \draw[arr] (cout) -- node[above,draw=none,fill=none]{\tiny $1$} (t);
+    \draw[arr] (dout) -- node[below,draw=none,fill=none]{\tiny $1$} (t);
+\end{tikzpicture}
+\end{center}
+
+{\small Arcs rouges = arcs internes $(v_{in} \to v_{out})$ de capacit\'e 1. Arcs noirs = arcs originaux de capacit\'e 1.}
+
+\medskip
+Flot max dans $G'$ :
+\begin{itemize}[nosep]
+    \item $P_1' : s \to a_{in} \to a_{out} \to c_{in} \to c_{out} \to t$ (flot $= 1$)
+    \item $P_2' : s \to b_{in} \to b_{out} \to d_{in} \to d_{out} \to t$ (flot $= 1$)
+\end{itemize}
+
+$|f^*| = 2$. Les arcs internes de $a$ et $b$ sont satur\'es. Un 3\textsuperscript{e} chemin devrait passer par $a$ ou $b$ (seuls successeurs de $s$), mais $a_{in} \to a_{out}$ et $b_{in} \to b_{out}$ sont satur\'es.
+
+$$\boxed{\text{Nombre max de chemins sommets-disjoints} = 2}$$
+
+Confirmation du th\'eor\`eme de Menger (version sommets) : le nombre maximum de chemins sommets-disjoints de $s$ \`a $t$ = taille minimum d'un ensemble de sommets (hors $s,t$) dont la suppression d\'econnecte $s$ de $t$. Ici, supprimer $\{a, b\}$ (ou $\{c, d\}$) d\'econnecte $s$ de $t$ : connectivit\'e nodale $\kappa(s,t) = 2$.
+\end{correction}
+
+\begin{attention}
+\begin{itemize}
+    \item \textbf{Ne pas d\'edoubler $s$ et $t$} : ils ne subissent pas la contrainte de capacit\'e nodale.
+    \item \textbf{Capacit\'e nodale $k$} : si on veut que chaque sommet supporte au plus $k$ chemins, mettre la capacit\'e de l'arc interne \`a $k$ (au lieu de $1$).
+    \item Toujours v\'erifier : chemins sommets-disjoints $\leq$ chemins arcs-disjoints (car disjoints sur les sommets $\Rightarrow$ disjoints sur les arcs, mais pas l'inverse).
+\end{itemize}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  EXERCICE 11 : EXERCICE TYPE EXAMEN (COMBINE)
+%=============================================================
+\section{Exercice 11 --- Exercice type examen (synth\`ese compl\`ete)}
+
+\begin{enonce}
+Soit le graphe orient\'e $G = (V, E)$ avec $V = \{s, 1, 2, 3, 4, 5, t\}$ et les arcs pond\'er\'es :
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=2.5cm,
+    every node/.style={circle, draw, minimum size=9mm, font=\small\bfseries},
+    arr/.style={-{Stealth}, thick}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (1) at (2.5,2) {$1$};
+    \node[fill=defvert!20] (2) at (2.5,-2) {$2$};
+    \node[fill=exempleorange!20] (3) at (5,2) {$3$};
+    \node[fill=exempleorange!20] (4) at (5,0) {$4$};
+    \node[fill=algoviolet!20] (5) at (5,-2) {$5$};
+    \node[fill=importantrouge!20] (t) at (7.5,0) {$t$};
+
+    \draw[arr] (s) -- node[above left,draw=none,fill=none]{\small $3$} (1);
+    \draw[arr] (s) -- node[left,draw=none,fill=none]{\small $5$} (4);
+    \draw[arr] (s) -- node[below left,draw=none,fill=none]{\small $2$} (2);
+    \draw[arr] (1) -- node[above,draw=none,fill=none]{\small $1$} (3);
+    \draw[arr] (1) -- node[left,draw=none,fill=none]{\small $4$} (4);
+    \draw[arr] (2) -- node[below,draw=none,fill=none]{\small $3$} (5);
+    \draw[arr] (2) -- node[right,draw=none,fill=none]{\small $6$} (4);
+    \draw[arr] (3) -- node[above right,draw=none,fill=none]{\small $2$} (t);
+    \draw[arr] (4) -- node[right,draw=none,fill=none]{\small $1$} (t);
+    \draw[arr] (5) -- node[below right,draw=none,fill=none]{\small $4$} (t);
+    \draw[arr] (3) -- node[right,draw=none,fill=none]{\small $3$} (4);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Partie A --- Plus courts chemins :}
+\begin{enumerate}
+    \item Ce graphe est-il un DAG ? Si oui, donner les niveaux.
+    \item Quel algorithme choisir pour calculer les PCC depuis $s$ ? Justifier.
+    \item Ex\'ecuter l'algorithme choisi. Donner les distances et l'arborescence.
+\end{enumerate}
+
+\textbf{Partie B --- R\'eseau sans fil :}
+
+On consid\`ere maintenant le graphe $G$ comme \textbf{non orient\'e} (les poids deviennent des co\^uts d'\'emission).
+\begin{enumerate}[resume]
+    \item Trouver un arbre couvrant de poids minimum (MST) par Kruskal.
+    \item Calculer la puissance de chaque n\oe ud sur le MST et la puissance totale.
+    \item Appliquer l'algorithme BIP depuis $s$ pour construire un arbre de diffusion.
+    \item Comparer la puissance totale BIP avec celle du MST.
+\end{enumerate}
+\end{enonce}
+
+\begin{correction}
+%--- PARTIE A ---
+\textbf{Partie A --- Plus courts chemins}
+
+\medskip
+\textbf{Q1. DAG et niveaux ?}
+
+V\'erifions l'absence de circuit : tous les arcs vont de $s$ vers $\{1,2,4\}$, de $\{1,2\}$ vers $\{3,4,5\}$, et de $\{3,4,5\}$ vers $t$. Aucun arc ne revient en arri\`ere $\Rightarrow$ \textbf{G est un DAG}.
+
+Niveaux (par calcul des pr\'ed\'ecesseurs) :
+\begin{itemize}[nosep]
+    \item $s$ : aucun pr\'ed\'ecesseur $\Rightarrow$ \textbf{Niveau 0}
+    \item $1$ : pr\'edec. $s$ (niv.0) $\Rightarrow$ \textbf{Niveau 1}
+    \item $2$ : pr\'edec. $s$ (niv.0) $\Rightarrow$ \textbf{Niveau 1}
+    \item $4$ : pr\'edec. $s$(0), $1$(1), $2$(1), $3$(2) $\Rightarrow$ \textbf{Niveau 3}
+    \item $3$ : pr\'edec. $1$(1) $\Rightarrow$ \textbf{Niveau 2}
+    \item $5$ : pr\'edec. $2$(1) $\Rightarrow$ \textbf{Niveau 2}
+    \item $t$ : pr\'edec. $3$(2), $4$(3), $5$(2) $\Rightarrow$ \textbf{Niveau 4}
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    every node/.style={circle, draw, minimum size=8mm, font=\small\bfseries}
+]
+    \node[fill=titrebleu!20] (s) at (0,0) {$s$};
+    \node[fill=defvert!20] (1) at (2,1) {$1$};
+    \node[fill=defvert!20] (2) at (2,-1) {$2$};
+    \node[fill=exempleorange!20] (3) at (4,1) {$3$};
+    \node[fill=exempleorange!20] (5) at (4,-1) {$5$};
+    \node[fill=algoviolet!20] (4) at (6,0) {$4$};
+    \node[fill=importantrouge!20] (t) at (8,0) {$t$};
+
+    \node[draw=none,fill=none,color=titrebleu] at (0,-2) {\small $L_0$};
+    \node[draw=none,fill=none,color=defvert] at (2,-2) {\small $L_1$};
+    \node[draw=none,fill=none,color=exempleorange] at (4,-2) {\small $L_2$};
+    \node[draw=none,fill=none,color=algoviolet] at (6,-2) {\small $L_3$};
+    \node[draw=none,fill=none,color=importantrouge] at (8,-2) {\small $L_4$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Q2. Algorithme ?}
+
+Tous les poids sont $\geq 0$ et le graphe est un DAG $\Rightarrow$ on peut utiliser Dijkstra \textbf{ou} la relaxation par niveaux. La \textbf{relaxation par niveaux} est optimale : $O(|V|+|E|)$ contre $O(|V|^2)$ pour Dijkstra.
+
+\textbf{Choix : relaxation topologique (par niveaux).}
+
+\medskip
+\textbf{Q3. Ex\'ecution :}
+
+Initialisation : $d[s]=0$, tous les autres $= +\infty$.
+
+\textbf{Niveau 0 --- $s$ ($d=0$) :}
+\begin{align*}
+d[1] &= \min(\infty, 0+3) = 3,\quad d[4] = \min(\infty, 0+5) = 5,\quad d[2] = \min(\infty, 0+2) = 2
+\end{align*}
+
+\textbf{Niveau 1 --- $1$ ($d=3$) puis $2$ ($d=2$) :}
+
+Depuis $1$ : $d[3] = \min(\infty, 3+1) = 4$, $d[4] = \min(5, 3+4) = 5$ (inchang\'e).
+
+Depuis $2$ : $d[5] = \min(\infty, 2+3) = 5$, $d[4] = \min(5, 2+6) = 5$ (inchang\'e).
+
+\textbf{Niveau 2 --- $3$ ($d=4$) puis $5$ ($d=5$) :}
+
+Depuis $3$ : $d[t] = \min(\infty, 4+2) = 6$, $d[4] = \min(5, 4+3) = 5$ (inchang\'e).
+
+Depuis $5$ : $d[t] = \min(6, 5+4) = 6$ (inchang\'e).
+
+\textbf{Niveau 3 --- $4$ ($d=5$) :}
+
+Depuis $4$ : $d[t] = \min(6, 5+1) = \mathbf{6}$ (inchang\'e).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+& $s$ & $1$ & $2$ & $3$ & $4$ & $5$ & $t$ \\\hline
+$d(\cdot)$ & $0$ & $3$ & $2$ & $4$ & $5$ & $5$ & $6$ \\\hline
+$\pi(\cdot)$ & --- & $s$ & $s$ & $1$ & $s$ & $2$ & $3$ \\\hline
+\end{tabular}
+\end{center}
+
+Arborescence : $s \to 1 \to 3 \to t$ ($d=6$), $s \to 2 \to 5$ ($d=5$), $s \to 4$ ($d=5$).
+
+Chemins : $s \xrightarrow{3} 1 \xrightarrow{1} 3 \xrightarrow{2} t$ (distance 6). \'Egalement $s \xrightarrow{5} 4 \xrightarrow{1} t = 6$.
+
+\bigskip
+%--- PARTIE B ---
+\textbf{Partie B --- R\'eseau sans fil (graphe non orient\'e)}
+
+\medskip
+Ar\^etes avec poids : $s$-$1$(3), $s$-$2$(2), $s$-$4$(5), $1$-$3$(1), $1$-$4$(4), $2$-$4$(6), $2$-$5$(3), $3$-$4$(3), $3$-$t$(2), $4$-$t$(1), $5$-$t$(4).
+
+\medskip
+\textbf{Q4. MST par Kruskal :}
+
+Ar\^etes tri\'ees par poids croissant :
+
+$1$-$3$(1), $4$-$t$(1), $s$-$2$(2), $3$-$t$(2), $s$-$1$(3), $2$-$5$(3), $3$-$4$(3), $1$-$4$(4), $5$-$t$(4), $s$-$4$(5), $2$-$4$(6)
+
+\begin{enumerate}[nosep]
+    \item $1$-$3$ (1) : ajouter $\to \{1,3\}$
+    \item $4$-$t$ (1) : ajouter $\to \{4,t\}$
+    \item $s$-$2$ (2) : ajouter $\to \{s,2\}$
+    \item $3$-$t$ (2) : ajouter $\to \{1,3,4,t\}$ (fusionne $\{1,3\}$ et $\{4,t\}$)
+    \item $s$-$1$ (3) : ajouter $\to \{s,1,2,3,4,t\}$ (fusionne $\{s,2\}$ et $\{1,3,4,t\}$)
+    \item $2$-$5$ (3) : ajouter $\to \{s,1,2,3,4,5,t\}$ (connecte $5$) $\checkmark$ \textbf{7 sommets, 6 ar\^etes = arbre complet}
+\end{enumerate}
+
+$$T = \{1\text{-}3(1),\ 4\text{-}t(1),\ s\text{-}2(2),\ 3\text{-}t(2),\ s\text{-}1(3),\ 2\text{-}5(3)\}$$
+$$\text{Co\^ut MST} = 1+1+2+2+3+3 = \mathbf{12}$$
+
+\medskip
+\textbf{Q5. Puissance de chaque n\oe ud sur le MST :}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|l|c|}
+\hline
+\textbf{N\oe ud} & \textbf{Ar\^etes incidentes dans $T$} & $p(v)$ \\\hline
+$s$ & $s$-$1$(3), $s$-$2$(2) & $\max(3,2) = 3$ \\\hline
+$1$ & $s$-$1$(3), $1$-$3$(1) & $\max(3,1) = 3$ \\\hline
+$2$ & $s$-$2$(2), $2$-$5$(3) & $\max(2,3) = 3$ \\\hline
+$3$ & $1$-$3$(1), $3$-$t$(2) & $\max(1,2) = 2$ \\\hline
+$4$ & $4$-$t$(1) & $1$ \\\hline
+$5$ & $2$-$5$(3) & $3$ \\\hline
+$t$ & $3$-$t$(2), $4$-$t$(1) & $\max(2,1) = 2$ \\\hline\hline
+\multicolumn{2}{|r|}{\textbf{Puissance totale MST}} & $\mathbf{17}$ \\\hline
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{Q6. Algorithme BIP depuis $s$ :}
+
+Initialisation : arbre $= \{s\}$, $p(s) = 0$.
+
+\textbf{\'Etape 1 :} Ar\^etes depuis $s$ : $s$-$1$(3), $s$-$2$(2), $s$-$4$(5).
+
+Co\^uts additionnels : $a(s\text{-}1) = 3-0=3$, $a(s\text{-}2) = 2-0=2$, $a(s\text{-}4) = 5-0=5$.
+
+Min : $s$-$2$ (co\^ut $2$). $p(s)=2$, $p(2)=2$.
+
+\textbf{\'Etape 2 :} Depuis $s$($p=2$), $2$($p=2$) :
+\begin{itemize}[nosep]
+    \item $s$-$1$(3) : $3-2=1$
+    \item $s$-$4$(5) : $5-2=3$
+    \item $2$-$4$(6) : $6-2=4$
+    \item $2$-$5$(3) : $3-2=1$
+\end{itemize}
+Ex \ae quo : $s$-$1$(1) et $2$-$5$(1). Choisissons $s$-$1$. $p(s)=3$, $p(1)=3$.
+
+\textbf{\'Etape 3 :} Depuis $s$($p=3$), $1$($p=3$), $2$($p=2$) :
+\begin{itemize}[nosep]
+    \item $1$-$3$(1) : $\max(1-3,0)=0$
+    \item $1$-$4$(4) : $4-3=1$
+    \item $2$-$5$(3) : $3-2=1$
+    \item $s$-$4$(5) : $5-3=2$
+\end{itemize}
+Min : $1$-$3$ (co\^ut $0$). $p(1)$ inchang\'e, $p(3)=1$.
+
+\textbf{\'Etape 4 :} Depuis $s$($p=3$), $1$($p=3$), $2$($p=2$), $3$($p=1$) :
+\begin{itemize}[nosep]
+    \item $3$-$t$(2) : $2-1=1$
+    \item $3$-$4$(3) : $3-1=2$
+    \item $1$-$4$(4) : $4-3=1$
+    \item $2$-$5$(3) : $3-2=1$
+\end{itemize}
+Ex \ae quo : $3$-$t$(1), $1$-$4$(1), $2$-$5$(1). Choisissons $3$-$t$. $p(3)=2$, $p(t)=2$.
+
+\textbf{\'Etape 5 :} Depuis $t$($p=2$) aussi :
+\begin{itemize}[nosep]
+    \item $4$-$t$(1) : $\max(1-2,0)=0$
+    \item $1$-$4$(4) : $4-3=1$
+    \item $2$-$5$(3) : $3-2=1$
+    \item $5$-$t$(4) : $4-2=2$
+\end{itemize}
+Min : $4$-$t$ (co\^ut $0$). $p(t)$ inchang\'e, $p(4)=1$.
+
+\textbf{\'Etape 6 :} Restant : $5$.
+\begin{itemize}[nosep]
+    \item $2$-$5$(3) : $3-2=1$
+    \item $5$-$t$(4) : $4-2=2$
+\end{itemize}
+Min : $2$-$5$ (co\^ut $1$). $p(2)=3$, $p(5)=3$.
+
+\medskip
+Arbre BIP $= \{s\text{-}2(2),\ s\text{-}1(3),\ 1\text{-}3(1),\ 3\text{-}t(2),\ 4\text{-}t(1),\ 2\text{-}5(3)\}$
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|c|c||c|}
+\hline
+\textbf{N\oe ud} & $s$ & $1$ & $2$ & $3$ & $4$ & $5$ & $t$ & \textbf{Total} \\\hline
+$p_{\text{BIP}}$ & $3$ & $3$ & $3$ & $2$ & $1$ & $3$ & $2$ & $\mathbf{17}$ \\\hline
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{Q7. Comparaison :}
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+& \textbf{MST (Kruskal)} & \textbf{BIP (depuis $s$)} \\\hline
+Co\^ut de l'arbre & $12$ & $12$ \\\hline
+Puissance totale & $17$ & $17$ \\\hline
+\end{tabular}
+\end{center}
+
+Ici, les deux m\'ethodes donnent le \textbf{m\^eme arbre} et la m\^eme puissance totale. Ce n'est pas toujours le cas : BIP peut donner une puissance totale inf\'erieure au MST (cf. examens A et B).
+
+\textbf{Remarque :} BIP est une heuristique qui ne garantit pas la puissance minimale, mais elle donne g\'en\'eralement un r\'esultat meilleur ou \'egal au MST en termes de puissance totale.
+\end{correction}
+
+\begin{attention}
+\textbf{Strat\'egie d'examen --- D\'emarche syst\'ematique :}
+\begin{enumerate}[nosep]
+    \item \textbf{Identifier le type de graphe :} orient\'e/non orient\'e, poids n\'egatifs ?, circuits ?, DAG ?
+    \item \textbf{Choisir l'algorithme :}
+    \begin{itemize}[nosep]
+        \item DAG $\to$ relaxation par niveaux (m\^eme si poids $< 0$)
+        \item Poids $\geq 0$, pas DAG $\to$ Dijkstra
+        \item Poids $< 0$, pas DAG $\to$ Bellman-Ford
+    \end{itemize}
+    \item \textbf{MST :} trier les ar\^etes, appliquer Kruskal, \textbf{v\'erifier les cycles}
+    \item \textbf{BIP :} toujours calculer le co\^ut additionnel $= \max(C(u,v) - p(u), 0)$
+    \item \textbf{Comparer :} puissance MST vs puissance BIP
+\end{enumerate}
+\end{attention}
+
+
+\newpage
+%=============================================================
+%  SYNTHESE FINALE
+%=============================================================
+\section*{Synth\`ese : Quel algorithme pour quel probl\`eme ?}
+\addcontentsline{toc}{section}{Synth\`ese}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{4.5cm}|p{4cm}|p{5cm}|}
+\hline
+\textbf{Probl\`eme} & \textbf{Algorithme} & \textbf{Condition / Complexit\'e} \\\hline
+PCC, DAG (m\^eme poids $< 0$) & Relaxation topologique & $O(V+E)$. \textbf{Montrer les niveaux.} \\\hline
+PCC, poids $\geq 0$ & Dijkstra & $O(E + V\log V)$. \textbf{Tableau d'ex\'ecution.} \\\hline
+PCC, poids n\'egatifs, pas DAG & Bellman-Ford & $O(V \cdot E)$. D\'etecte circuits $-$. \\\hline
+MST & Kruskal (ou Prim) & Trier + Union-Find. $O(E \log E)$. \\\hline
+Puissance min sans fil & BIP & Co\^ut add. $= \max(C-p(u), 0)$. \\\hline
+Flot maximum & Ford-Fulkerson / Edmonds-Karp & Graphe r\'esiduel + chemins augmentants. \\\hline
+Chemins arcs-disjoints & Flot max, capacit\'es $= 1$ & Th. de Menger. \\\hline
+Chemins sommets-disjoints & D\'edoublement + flot max & $v \to v_{in}, v_{out}$, cap. $= 1$. \\\hline
+Capacit\'e nodale & D\'edoublement & Arc $v_{in} \to v_{out}$, cap. $= k$. \\\hline
+Dominant connexe (CDS) & Glouton : degr\'e max & Voisin de D couvrant le plus. \\\hline
+MPR & \'Etape oblig. + glouton & Voisinage 2 sauts. \\\hline
+\end{tabular}
+\end{center}
+
+\vspace{2em}
+\begin{center}
+\textcolor{titrebleu}{\rule{0.6\textwidth}{1.5pt}}\\[0.5em]
+\textit{\Large Bon courage pour l'examen !}\\[0.3em]
+\textcolor{defvert}{\small Optimisation dans les R\'eseaux --- F.~Bendali-Mailfert --- S6 2025}
+\end{center}
+
+\end{document}
