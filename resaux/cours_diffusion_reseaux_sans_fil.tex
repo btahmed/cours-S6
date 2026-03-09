@@ -1,0 +1,826 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage{titlesec}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+\geometry{margin=2.5cm}
+
+% Couleurs (identiques au cours principal)
+\definecolor{titrebleu}{RGB}{0,102,204}
+\definecolor{defvert}{RGB}{0,153,76}
+\definecolor{exempleorange}{RGB}{255,102,0}
+\definecolor{algoviolet}{RGB}{153,0,153}
+\definecolor{importantrouge}{RGB}{204,0,0}
+\definecolor{fondgris}{RGB}{245,245,245}
+\definecolor{fondjaune}{RGB}{255,250,205}
+\definecolor{fondvert}{RGB}{230,255,230}
+\definecolor{fondbleu}{RGB}{230,240,255}
+\definecolor{fondrose}{RGB}{255,230,240}
+
+% Boîtes (identiques au cours principal)
+\newtcolorbox{definition}{
+    colback=fondvert, colframe=defvert,
+    fonttitle=\bfseries, title=D\'efinition, arc=3mm
+}
+\newtcolorbox{exemple}{
+    colback=fondjaune, colframe=exempleorange,
+    fonttitle=\bfseries, title=Exemple, arc=3mm
+}
+\newtcolorbox{important}{
+    colback=white, colframe=importantrouge,
+    fonttitle=\bfseries, title=Important, arc=3mm
+}
+\newtcolorbox{astuce}{
+    colback=fondbleu, colframe=titrebleu,
+    fonttitle=\bfseries, title=\`A savoir, arc=3mm
+}
+\newtcolorbox{notecours}{
+    colback=fondrose, colframe=importantrouge,
+    fonttitle=\bfseries, title=Note de Cours, arc=3mm
+}
+\newtcolorbox{algorithme}{
+    colback=fondgris, colframe=algoviolet,
+    fonttitle=\bfseries, title=Algorithme, arc=3mm
+}
+
+% Style des sections (identique)
+\titleformat{\section}
+{\color{titrebleu}\normalfont\Large\bfseries}
+{\color{titrebleu}\thesection}{1em}{}
+\titleformat{\subsection}
+{\color{defvert}\normalfont\large\bfseries}
+{\color{defvert}\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\color{algoviolet}\normalfont\normalsize\bfseries}
+{\color{algoviolet}\thesubsubsection}{1em}{}
+
+\title{\textbf{\Huge\color{titrebleu}Algorithmes de Diffusion}\\[0.5em]
+\textbf{\Large\color{defvert}dans les Réseaux Sans Fil}\\[0.5em]
+\large\color{algoviolet}Chapitre manquant --- Cours d'Optimisation dans les Réseaux}
+\author{\large F. Bendali-Mailfert\\
+\textit{Complément de cours rédigé à partir du plan du cours}}
+\date{\large L3 Informatique --- 2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================
+\section{Problématique de la Diffusion (Broadcast)}
+%=============================================================
+
+\begin{notecours}
+\textbf{Contexte :}
+Dans un réseau sans fil, lorsqu'un nœud émet à une puissance donnée, \textbf{tous ses voisins reçoivent
+le message simultanément}. C'est la propriété de \emph{diffusion naturelle} des ondes radio.
+
+Ce chapitre répond à la question : comment diffuser un message à \textbf{l'ensemble des nœuds du
+réseau} de façon efficace, c'est-à-dire en minimisant le nombre de retransmissions et la
+consommation d'énergie ?
+\end{notecours}
+
+\subsection{La tempête de diffusion (Broadcast Storm)}
+
+\begin{definition}
+\textbf{Broadcast Storm (Tempête de diffusion) :}
+
+Si un nœud source $s$ diffuse un message et que \textbf{tous les nœuds qui reçoivent le message le
+retransmettent immédiatement}, on obtient une explosion de retransmissions redondantes.
+
+\textbf{Conséquences :}
+\begin{itemize}
+    \item \textcolor{importantrouge}{\textbf{Collisions}} : plusieurs nœuds émettent simultanément
+          sur le même canal $\Rightarrow$ les messages se brouillent.
+    \item \textcolor{importantrouge}{\textbf{Congestion}} : le canal est saturé de messages
+          identiques.
+    \item \textcolor{importantrouge}{\textbf{Gaspillage d'énergie}} : retransmissions inutiles
+          épuisent les batteries.
+\end{itemize}
+\end{definition}
+
+\begin{exemple}
+\textbf{Illustration quantitative :}
+
+Soit un réseau de $n = 100$ nœuds, chaque nœud ayant en moyenne $d = 10$ voisins.
+
+\begin{itemize}
+    \item \textbf{Flooding naïf :} chaque nœud retransmet une fois $\Rightarrow$ jusqu'à
+          $\sum_{i} d_i \approx 1000$ transmissions pour couvrir le réseau. De nombreuses
+          transmissions sont reçues plusieurs fois par le même nœud (redondance $\approx 80\%$).
+    \item \textbf{Objectif idéal :} $n - 1 = 99$ transmissions suffisent (arbre couvrant).
+\end{itemize}
+\end{exemple}
+
+\subsection{Formalisation du problème}
+
+\begin{definition}
+\textbf{Problème du Broadcast Minimum :}
+
+\textbf{Données :}
+\begin{itemize}
+    \item Réseau $G = (V, E)$ non orienté.
+    \item Un nœud source $s \in V$.
+\end{itemize}
+
+\textbf{Objectif :} Sélectionner un ensemble de relais $R \subseteq V \setminus \{s\}$ tel que :
+\begin{enumerate}
+    \item Tout nœud de $V$ reçoit le message (couverture totale).
+    \item $|R|$ est minimisé (ou la consommation d'énergie est minimisée).
+\end{enumerate}
+
+\textbf{Remarque :} Ce problème est \textcolor{importantrouge}{\textbf{NP-difficile}} en général.
+On cherche donc des heuristiques et des algorithmes d'approximation.
+\end{definition}
+
+\newpage
+
+%=============================================================
+\section{Algorithme de Flooding (Inondation)}
+%=============================================================
+
+\subsection{Flooding simple}
+
+\begin{algorithme}
+\textbf{Flooding Simple (Inondation Naïve)}
+
+\textbf{Données :} Graphe $G = (V, E)$, source $s$.
+
+\textbf{Résultat :} Tous les nœuds reçoivent le message.
+
+\textbf{Algorithme (distribué) :}
+\begin{enumerate}
+    \item $s$ envoie le message à tous ses voisins $N(s)$.
+    \item \textbf{Pour} chaque nœud $u \in V \setminus \{s\}$ \textbf{faire} :
+    \begin{itemize}
+        \item Lorsque $u$ reçoit le message \textbf{pour la première fois} :
+        \begin{itemize}
+            \item Marquer le message comme reçu.
+            \item Retransmettre le message à tous ses voisins $N(u)$.
+        \end{itemize}
+        \item Si $u$ reçoit le message une nouvelle fois $\Rightarrow$ ignorer.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Complexité :}
+\begin{itemize}
+    \item Nombre de transmissions : $O(|E|)$ dans le pire cas.
+    \item Nombre de tours (délai) : $O(\text{diamètre}(G))$.
+\end{itemize}
+\end{algorithme}
+
+\begin{important}
+\textbf{Analyse du flooding simple :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{++} Simplicité : aucune information globale requise.
+    \item \textcolor{defvert}{++} Robustesse : fonctionne même si des nœuds tombent en panne.
+    \item \textcolor{defvert}{++} Garantie de couverture totale (si $G$ connexe).
+    \item \textcolor{importantrouge}{--} Nombre de retransmissions très élevé : $O(|E|)$.
+    \item \textcolor{importantrouge}{--} Collisions fréquentes (problème de synchronisation).
+    \item \textcolor{importantrouge}{--} Consommation d'énergie élevée.
+\end{itemize}
+
+\textbf{Conclusion :} Le flooding simple est le point de départ. Tous les autres algorithmes
+cherchent à le \textbf{réduire} tout en conservant la couverture totale.
+\end{important}
+
+\subsection{Flooding avec TTL (Time To Live)}
+
+\begin{algorithme}
+\textbf{Flooding avec TTL}
+
+\textbf{Idée :} Limiter la propagation du message en ajoutant un compteur décroissant.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $s$ envoie le message avec $\text{TTL} = k$ (paramètre).
+    \item Lorsqu'un nœud $u$ reçoit le message avec $\text{TTL} = t$ :
+    \begin{itemize}
+        \item Si $t = 0$ : ne pas retransmettre.
+        \item Si $t > 0$ : retransmettre avec $\text{TTL} = t - 1$.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Effet :} Seuls les nœuds à distance $\leq k$ de $s$ reçoivent le message.
+
+\textbf{Utilisation :} Découverte de voisinage à $k$ sauts (vu dans le chapitre précédent).
+\end{algorithme}
+
+\newpage
+
+%=============================================================
+\section{Diffusion Probabiliste}
+%=============================================================
+
+\begin{definition}
+\textbf{Principe de la diffusion probabiliste :}
+
+Chaque nœud $u$ qui reçoit le message le retransmet avec une probabilité $p \in (0, 1]$, au lieu
+de le retransmettre systématiquement.
+
+\textbf{Paramètre :} La probabilité $p$ est fixée à l'avance (même valeur pour tous les nœuds).
+\end{definition}
+
+\begin{algorithme}
+\textbf{Diffusion Probabiliste}
+
+\textbf{Données :} Graphe $G = (V, E)$, source $s$, probabilité $p \in (0, 1]$.
+
+\textbf{Algorithme (distribué) :}
+\begin{enumerate}
+    \item $s$ envoie le message.
+    \item Lorsque le nœud $u$ reçoit le message pour la première fois :
+    \begin{itemize}
+        \item Avec probabilité $p$ : retransmettre le message.
+        \item Avec probabilité $1 - p$ : ne pas retransmettre.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Nombre moyen de retransmissions :} $p \cdot (|V| - 1)$.
+\end{algorithme}
+
+\begin{important}
+\textbf{Analyse :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{++} Réduction significative du nombre de retransmissions.
+    \item \textcolor{defvert}{++} Simple à implémenter (aucune information de voisinage requise).
+    \item \textcolor{importantrouge}{--} \textbf{Pas de garantie de couverture totale} : certains
+          nœuds peuvent ne jamais recevoir le message.
+    \item \textcolor{importantrouge}{--} La couverture dépend fortement de la densité du réseau.
+\end{itemize}
+
+\textbf{Choix de $p$ :}
+\begin{itemize}
+    \item $p$ proche de 1 : proche du flooding, beaucoup de retransmissions.
+    \item $p$ faible : peu de retransmissions, mais risque de non-couverture.
+    \item \textbf{Règle empirique :} $p \approx 0.6$ dans les réseaux denses.
+\end{itemize}
+\end{important}
+
+\begin{exemple}
+\textbf{Simulation sur un réseau de 50 nœuds, degré moyen 8 :}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Probabilité $p$} & \textbf{Taux de couverture moyen} & \textbf{Retransmissions} \\
+\hline
+$p = 1.0$ (flooding) & $100\%$ & $400$ \\
+$p = 0.8$ & $99\%$ & $320$ \\
+$p = 0.6$ & $94\%$ & $240$ \\
+$p = 0.4$ & $75\%$ & $160$ \\
+$p = 0.2$ & $42\%$ & $80$ \\
+\hline
+\end{tabular}
+\end{center}
+
+La diffusion probabiliste offre un bon compromis pour $p \in [0.6, 0.8]$.
+\end{exemple}
+
+\newpage
+
+%=============================================================
+\section{Schéma Basé sur le Compteur (Counter-Based)}
+%=============================================================
+
+\begin{definition}
+\textbf{Idée du schéma basé sur compteur :}
+
+Un nœud $u$ \textbf{compte} le nombre de fois qu'il reçoit le même message. Plus ce compteur
+est élevé, plus ses voisins ont déjà retransmis le message $\Rightarrow$ retransmettre serait
+redondant.
+
+\textbf{Principe :} Si $u$ a déjà entendu le message $c$ fois, la probabilité de retransmettre
+diminue avec $c$.
+\end{definition}
+
+\begin{algorithme}
+\textbf{Schéma Basé sur le Compteur}
+
+\textbf{Données :} Graphe $G = (V, E)$, source $s$, seuil $C_{threshold}$.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $s$ envoie le message.
+    \item Pour chaque nœud $u$ :
+    \begin{itemize}
+        \item Initialiser le compteur : $\text{count}(u) \leftarrow 0$.
+        \item À chaque réception du message par $u$ : $\text{count}(u) \leftarrow \text{count}(u) + 1$.
+        \item Après un délai d'attente $\tau$ :
+        \begin{itemize}
+            \item Si $\text{count}(u) \leq C_{threshold}$ : retransmettre.
+            \item Sinon : ne pas retransmettre.
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Interprétation :} Un compteur faible $\Rightarrow$ peu de voisins ont retransmis $\Rightarrow$
+$u$ doit retransmettre pour ne pas laisser des nœuds non couverts.
+\end{algorithme}
+
+\begin{notecours}
+\textbf{Pourquoi introduire un délai $\tau$ ?}
+
+Sans délai, le nœud retransmettrait dès la première réception, sans avoir pu accumuler les
+comptages. Le délai $\tau$ permet à $u$ d'\textbf{observer combien de ses voisins ont déjà
+retransmis} avant de décider.
+
+Ce délai peut être aléatoire (pour éviter les collisions simultanées).
+\end{notecours}
+
+\begin{important}
+\textbf{Analyse :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{++} Adaptatif : exploite l'information locale de réception.
+    \item \textcolor{defvert}{++} Fonctionne mieux dans les réseaux denses (beaucoup de voisins).
+    \item \textcolor{importantrouge}{--} Toujours pas de garantie de couverture totale.
+    \item \textcolor{importantrouge}{--} Sensible au choix du seuil $C_{threshold}$.
+    \item \textcolor{importantrouge}{--} Introduit un délai (problème temps réel).
+\end{itemize}
+\end{important}
+
+\newpage
+
+%=============================================================
+\section{Schéma Basé sur la Distance}
+%=============================================================
+
+\begin{definition}
+\textbf{Principe du schéma basé sur la distance :}
+
+Un nœud $u$ retransmet le message \textbf{uniquement s'il permet d'atteindre des nœuds
+significativement plus éloignés} que ce que les autres transmetteurs ont déjà couvert.
+
+\textbf{Idée :} Plus la distance entre $u$ et l'émetteur $v$ qui lui a transmis le message est
+grande, plus $u$ couvre une zone nouvelle $\Rightarrow$ plus utile de retransmettre.
+\end{definition}
+
+\begin{algorithme}
+\textbf{Schéma Basé sur la Distance}
+
+\textbf{Données :} Réseau avec positions géographiques connues, source $s$, seuil $d_{threshold}$.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $s$ envoie le message avec sa position géographique.
+    \item Lorsque $u$ reçoit le message de $v$ :
+    \begin{itemize}
+        \item Calculer $d(u, v)$ (distance géographique entre $u$ et $v$).
+        \item Si $d(u, v) \geq d_{threshold}$ : retransmettre.
+        \item Sinon : ne pas retransmettre.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Variante avec délai :} Retransmettre après un délai inversement proportionnel à la
+distance : $\tau(u) = (d_{max} - d(u,v)) / d_{max} \cdot \tau_{max}$.
+
+Ainsi, les nœuds les plus éloignés retransmettent en premier. Si $u$ entend un voisin plus
+éloigné retransmettre avant lui, $u$ peut annuler sa retransmission.
+\end{algorithme}
+
+\begin{astuce}
+\textbf{Pourquoi utiliser un délai inversement proportionnel à la distance ?}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    \node[circle, fill=titrebleu!80, text=white, inner sep=4pt] (s) at (0,0) {$v$};
+    \node[circle, fill=defvert!80, text=white, inner sep=4pt] (a) at (1.5,0.8) {$a$};
+    \node[circle, fill=defvert!80, text=white, inner sep=4pt] (b) at (3.5,1.2) {$b$};
+    \node[circle, fill=exempleorange!80, text=white, inner sep=4pt] (c) at (2.0,-1.0) {$c$};
+
+    \draw[->,thick,titrebleu] (s) -- (a) node[midway, above, font=\small] {$d_1$};
+    \draw[->,thick,titrebleu] (s) -- (b) node[midway, below right, font=\small] {$d_2$};
+    \draw[->,thick,titrebleu] (s) -- (c) node[midway, below, font=\small] {$d_3$};
+
+    \draw[dashed, importantrouge, thick] (s) circle (3.8cm);
+\end{tikzpicture}
+\end{center}
+
+Si $d_2 > d_1 > d_3$, le nœud $b$ retransmet en premier (plus éloigné). Sa zone de couverture
+est plus grande $\Rightarrow$ $a$ et $c$ peuvent déduire que leur retransmission est inutile.
+\end{astuce}
+
+\begin{important}
+\textbf{Analyse :}
+
+\begin{itemize}
+    \item \textcolor{defvert}{++} Très efficace en pratique pour réduire les retransmissions.
+    \item \textcolor{defvert}{++} Les nœuds les plus utiles retransmettent en priorité.
+    \item \textcolor{importantrouge}{--} Nécessite la connaissance des positions (GPS ou équivalent).
+    \item \textcolor{importantrouge}{--} Complexité accrue dans les réseaux sans infrastructure.
+    \item \textcolor{importantrouge}{--} Toujours pas de garantie théorique de couverture totale.
+\end{itemize}
+\end{important}
+
+\newpage
+
+%=============================================================
+\section{Diffusion par Dominant Connexe (Connected Dominating Set)}
+%=============================================================
+
+\subsection{Rappel : Dominant et Dominant Connexe}
+
+\begin{definition}
+\textbf{Dominant (vu dans le chapitre précédent) :}
+
+$D \subseteq V$ est un \textbf{dominant} de $G = (V, E)$ si :
+$$\forall u \in V \setminus D,\ \exists v \in D : (u, v) \in E$$
+
+\textbf{Dominant connexe :} $D$ est un dominant connexe si le sous-graphe induit $G[D]$
+est connexe.
+
+\textbf{Utilisation pour la diffusion :} Un dominant connexe forme un \textbf{réseau virtuel
+épine dorsale} (backbone). Seuls les nœuds de $D$ retransmettent.
+\end{definition}
+
+\subsection{Algorithme de diffusion basé sur le dominant connexe}
+
+\begin{algorithme}
+\textbf{Diffusion via Dominant Connexe}
+
+\textbf{Étape 1 : Construction du dominant connexe} (voir algorithme ci-dessous)
+
+\textbf{Étape 2 : Diffusion}
+\begin{enumerate}
+    \item La source $s$ envoie le message.
+    \item Si $s \in D$ (dans le dominant) : retransmettre.
+    \item Tout nœud $u \in D$ qui reçoit le message : retransmettre une seule fois.
+    \item Tout nœud $u \notin D$ : ne pas retransmettre.
+\end{enumerate}
+
+\textbf{Garantie :} Puisque $D$ est connexe et dominant, tout nœud de $V \setminus D$ a un
+voisin dans $D$ qui recevra le message.
+\end{algorithme}
+
+\begin{important}
+\textbf{Propriété fondamentale :}
+
+Si $D$ est un dominant connexe de $G$, alors l'algorithme de diffusion via $D$ garantit que
+\textbf{tous les nœuds de $V$ reçoivent le message}.
+
+\textbf{Preuve :}
+\begin{enumerate}
+    \item Les nœuds de $D$ forment un sous-graphe connexe $\Rightarrow$ le message se propage à
+          tous les membres de $D$ (par connectivité de $G[D]$).
+    \item Tout nœud $u \notin D$ a un voisin $v \in D$ (propriété de dominant) $\Rightarrow$
+          $u$ reçoit le message de $v$.
+\end{enumerate}
+\end{important}
+
+\subsection{Construction d'un dominant connexe (algorithme glouton)}
+
+\begin{algorithme}
+\textbf{Construction Gloutonne d'un Dominant Connexe}
+
+\textbf{Données :} Graphe $G = (V, E)$.
+
+\textbf{Résultat :} Un dominant connexe $D$ (pas nécessairement minimum).
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item \textbf{Initialisation :}
+    \begin{itemize}
+        \item Choisir un nœud de degré maximum : $D \leftarrow \{v^* = \arg\max_{v \in V} d(v)\}$.
+        \item $\text{Dominé} \leftarrow N[v^*]$ (nœuds déjà dominés).
+    \end{itemize}
+    \item \textbf{Extension du dominant :}
+    \begin{itemize}
+        \item \textbf{Tant que} $\text{Dominé} \neq V$ \textbf{faire} :
+        \begin{itemize}
+            \item Parmi les nœuds voisins de $D$ (non encore dans $D$), choisir $u$ qui
+                  maximise $|N(u) \setminus \text{Dominé}|$.
+            \item $D \leftarrow D \cup \{u\}$.
+            \item $\text{Dominé} \leftarrow \text{Dominé} \cup N[u]$.
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Note :} Le choix de voisins de $D$ assure la connexité du sous-graphe induit.
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple d'exécution :}
+
+Soit le graphe suivant (7 nœuds) :
+
+\begin{center}
+\begin{tikzpicture}[
+    noeud/.style={circle, draw, fill=white, inner sep=5pt, font=\small\bfseries},
+    dom/.style={circle, draw=importantrouge, fill=importantrouge!20, inner sep=5pt,
+                font=\small\bfseries, line width=2pt}
+]
+    \node[noeud] (1) at (0,0) {1};
+    \node[noeud] (2) at (2,1) {2};
+    \node[noeud] (3) at (2,-1) {3};
+    \node[noeud] (4) at (4,0) {4};
+    \node[noeud] (5) at (4,2) {5};
+    \node[noeud] (6) at (6,1) {6};
+    \node[noeud] (7) at (6,-1) {7};
+
+    \draw (1)--(2); \draw (1)--(3); \draw (2)--(4); \draw (3)--(4);
+    \draw (2)--(5); \draw (4)--(6); \draw (4)--(7); \draw (5)--(6);
+
+    \node at (3,-2) {\small Degrés : $d(1)=2,\, d(2)=3,\, d(3)=2,\, d(4)=4,\, d(5)=2,\, d(6)=2,\, d(7)=1$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Exécution :}
+\begin{enumerate}
+    \item Nœud de degré max : $v^* = 4$ ($d(4) = 4$).
+          $D = \{4\}$, $\text{Dominé} = \{2, 3, 4, 6, 7\}$.
+    \item Nœuds non dominés : $\{1, 5\}$.
+          Voisins de $D$ non dans $D$ : $\{2, 3, 6, 7\}$.
+          Choisir celui couvrant le plus de non-dominés :
+          $u = 2$ (couvre $\{1, 5\}$, 2 nœuds).
+          $D = \{2, 4\}$, $\text{Dominé} = V$.
+\end{enumerate}
+
+\textbf{Résultat :} $D = \{2, 4\}$. Vérification : tous les nœuds ont un voisin dans $D$.
+\end{exemple}
+
+\subsection{Complexité et approximation}
+
+\begin{important}
+\textbf{Résultats théoriques :}
+
+\begin{itemize}
+    \item \textbf{Calcul du CDS minimum} (Minimum Connected Dominating Set) :
+          \textcolor{importantrouge}{\textbf{NP-difficile}}.
+    \item \textbf{Approximation gloutonne :} le dominant produit est de taille au plus
+          $O(\ln(\Delta))$ fois le minimum, où $\Delta$ est le degré maximum.
+    \item \textbf{En pratique :} on cherche à minimiser la taille de $D$ pour réduire au
+          maximum le nombre de relais tout en garantissant la couverture.
+\end{itemize}
+\end{important}
+
+\newpage
+
+%=============================================================
+\section{MPR : Multipoint Relaying}
+%=============================================================
+
+\subsection{Principe}
+
+\begin{notecours}
+\textbf{MPR (Multipoint Relaying)} est la technique de diffusion utilisée dans le protocole
+de routage \textbf{OLSR} (Optimized Link State Routing), protocole proactif standard pour
+les réseaux sans fil ad hoc.
+
+\textbf{Idée centrale :} Chaque nœud $u$ sélectionne un sous-ensemble minimal de ses voisins
+à 1 saut, appelé \textbf{ensemble MPR} noté $\text{MPR}(u)$, tel que tous les voisins à 2 sauts
+de $u$ soient couverts par au moins un nœud de $\text{MPR}(u)$.
+\end{notecours}
+
+\begin{definition}
+\textbf{Voisinage à 2 sauts :}
+
+$N_2(u) = \{w \in V : w \notin N[u]\ \text{et}\ \exists v \in N(u),\ (v,w) \in E\}$
+
+\textbf{Ensemble MPR de $u$} : $\text{MPR}(u) \subseteq N(u)$ tel que :
+$$\forall w \in N_2(u),\ \exists v \in \text{MPR}(u) : (v, w) \in E$$
+\end{definition}
+
+\subsection{Algorithme de sélection des MPR}
+
+\begin{algorithme}
+\textbf{Sélection Gloutonne des MPR pour un nœud $u$}
+
+\textbf{Données :}
+\begin{itemize}
+    \item $N(u)$ : voisins à 1 saut de $u$.
+    \item $N_2(u)$ : voisins à 2 sauts de $u$.
+\end{itemize}
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item $\text{MPR}(u) \leftarrow \emptyset$, $\text{Couvert} \leftarrow \emptyset$.
+    \item \textbf{Étape obligatoire :} Pour tout $w \in N_2(u)$ n'ayant qu'un seul voisin
+          commun avec $u$ (voisin à 1 saut) $v$ : ajouter $v$ à $\text{MPR}(u)$.
+          Mettre à jour $\text{Couvert}$.
+    \item \textbf{Tant que} $\text{Couvert} \neq N_2(u)$ \textbf{faire} :
+    \begin{itemize}
+        \item Choisir $v \in N(u) \setminus \text{MPR}(u)$ maximisant
+              $|N(v) \cap (N_2(u) \setminus \text{Couvert})|$.
+        \item $\text{MPR}(u) \leftarrow \text{MPR}(u) \cup \{v\}$.
+        \item $\text{Couvert} \leftarrow \text{Couvert} \cup (N(v) \cap N_2(u))$.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Complexité :} $O(|N(u)| \cdot |N_2(u)|)$ --- entièrement local.
+\end{algorithme}
+
+\subsection{Diffusion via MPR}
+
+\begin{algorithme}
+\textbf{Diffusion MPR (utilisée dans OLSR)}
+
+\textbf{Prérequis :} Chaque nœud $u$ connaît $\text{MPR}(v)$ pour tout voisin $v$ (échangé
+lors de la découverte de voisinage).
+
+\textbf{Règle de retransmission :}
+
+Un nœud $u$ retransmet un message reçu de $v$ \textbf{si et seulement si}
+$u \in \text{MPR}(v)$.
+
+\textbf{Algorithme :}
+\begin{enumerate}
+    \item La source $s$ diffuse le message.
+    \item Chaque nœud $u$ recevant le message de $v$ :
+    \begin{itemize}
+        \item Si $u \in \text{MPR}(v)$ : retransmettre (une seule fois).
+        \item Sinon : ne pas retransmettre.
+    \end{itemize}
+\end{enumerate}
+\end{algorithme}
+
+\begin{exemple}
+\textbf{Exemple illustré :}
+
+\begin{center}
+\begin{tikzpicture}[
+    noeud/.style={circle, draw, fill=white, inner sep=5pt, font=\small},
+    mpr/.style={circle, draw=importantrouge, fill=importantrouge!20,
+                inner sep=5pt, font=\small, line width=2pt},
+    source/.style={circle, draw=titrebleu, fill=titrebleu!20,
+                   inner sep=5pt, font=\small, line width=2pt}
+]
+    \node[source]  (u)  at (0,0)   {\textbf{s}};
+    \node[mpr]     (v1) at (2,1.5) {$a$};
+    \node[noeud]   (v2) at (2,0)   {$b$};
+    \node[mpr]     (v3) at (2,-1.5){$c$};
+    \node[noeud]   (w1) at (4,2)   {$d$};
+    \node[noeud]   (w2) at (4,1)   {$e$};
+    \node[noeud]   (w3) at (4,-0.5){$f$};
+    \node[noeud]   (w4) at (4,-2)  {$g$};
+
+    \draw (u)--(v1); \draw (u)--(v2); \draw (u)--(v3);
+    \draw (v1)--(w1); \draw (v1)--(w2); \draw (v2)--(w2); \draw (v2)--(w3);
+    \draw (v3)--(w3); \draw (v3)--(w4);
+
+    \node[font=\small, text=importantrouge] at (0,-2.5)
+        {$\text{MPR}(s) = \{a, c\}$};
+    \node[font=\small, text=titrebleu] at (0,-3.2)
+        {$N_2(s) = \{d, e, f, g\}$, tous couverts par $\{a, c\}$};
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}
+    \item $b$ n'est pas dans $\text{MPR}(s)$ : $b$ ne retransmet pas.
+    \item $a$ couvre $\{d, e\}$, $c$ couvre $\{f, g\}$ : couverture complète de $N_2(s)$.
+    \item \textbf{Retransmissions économisées :} 1 sur 3 ($b$ ne retransmet pas).
+\end{itemize}
+\end{exemple}
+
+\begin{important}
+\textbf{Propriété clé des MPR :}
+
+L'algorithme MPR garantit que tout message diffusé atteint \textbf{tous les nœuds du réseau}
+en $O(\text{diamètre}(G))$ tours, avec un nombre de retransmissions \textbf{strictement
+inférieur} au flooding.
+
+\textbf{Analyse :}
+\begin{itemize}
+    \item \textcolor{defvert}{++} \textbf{Garantie de couverture totale} (propriété formellement
+          prouvée).
+    \item \textcolor{defvert}{++} Fonctionne de manière distribuée et locale.
+    \item \textcolor{defvert}{++} Nombre de retransmissions fortement réduit dans les réseaux
+          denses.
+    \item \textcolor{importantrouge}{--} Requiert la connaissance du voisinage à 2 sauts.
+    \item \textcolor{importantrouge}{--} Les ensembles MPR doivent être recalculés si la
+          topologie change.
+\end{itemize}
+\end{important}
+
+\newpage
+
+%=============================================================
+\section{Comparaison des Algorithmes de Diffusion}
+%=============================================================
+
+\begin{center}
+\begin{tabular}{|p{3cm}|p{2.5cm}|p{2.5cm}|p{3cm}|p{2.5cm}|}
+\hline
+\textbf{Algorithme} & \textbf{Couverture garantie} & \textbf{Retransmissions} & \textbf{Information requise} & \textbf{Complexité} \\
+\hline
+Flooding simple & \textcolor{defvert}{Oui} & $O(|E|)$ & Aucune & $O(1)$ par nœud \\
+\hline
+Probabiliste & \textcolor{importantrouge}{Non} & $p \cdot |V|$ & Aucune & $O(1)$ par nœud \\
+\hline
+Compteur & \textcolor{importantrouge}{Non} & Variable & Aucune & $O(1)$ par nœud \\
+\hline
+Distance & \textcolor{importantrouge}{Non} & Variable & Positions GPS & $O(|N(u)|)$ \\
+\hline
+CDS & \textcolor{defvert}{Oui} & $|D|$ & Voisinage 1 saut & $O(|V| \cdot |E|)$ \\
+\hline
+MPR (OLSR) & \textcolor{defvert}{Oui} & $\sum_u |\text{MPR}(u)|$ & Voisinage 2 sauts & $O(|N(u)| \cdot |N_2(u)|)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{astuce}
+\textbf{Règle de choix pratique :}
+\begin{itemize}
+    \item Réseau dense + couverture garantie requise $\Rightarrow$ \textbf{MPR} (OLSR).
+    \item Réseau clairsemé + simple $\Rightarrow$ \textbf{Flooding}.
+    \item Couverture à 100\% pas critique + énergie prioritaire $\Rightarrow$
+          \textbf{Probabiliste} ($p \approx 0.6$).
+    \item Infrastructure stable $\Rightarrow$ \textbf{CDS} pré-calculé.
+\end{itemize}
+\end{astuce}
+
+%=============================================================
+\section{Synthèse et Points Clés}
+%=============================================================
+
+\begin{important}
+\textbf{Ce qu'il faut retenir :}
+
+\textbf{1. Le problème fondamental :}
+\begin{itemize}
+    \item Diffuser à tous $\neq$ faire retransmettre tout le monde.
+    \item L'objectif est de minimiser le nombre de retransmissions tout en garantissant la
+          couverture.
+    \item \textbf{Problème NP-difficile} en général $\Rightarrow$ on utilise des heuristiques.
+\end{itemize}
+
+\textbf{2. Hiérarchie des algorithmes :}
+\begin{itemize}
+    \item \textbf{Sans garantie :} probabiliste, compteur, distance $\Rightarrow$ simples mais
+          insuffisants pour les applications critiques.
+    \item \textbf{Avec garantie :} flooding (trop coûteux), CDS, MPR $\Rightarrow$ compromis
+          couverture / nombre de transmissions.
+\end{itemize}
+
+\textbf{3. Lien avec les structures vues en cours :}
+\begin{itemize}
+    \item Le \textbf{dominant connexe} (CDS) est directement utilisé comme backbone de
+          diffusion.
+    \item Le \textbf{MST} peut servir d'arbre de diffusion (mais centralisé).
+    \item Le \textbf{MPR} est un raffinement du dominant connexe, calculé localement.
+\end{itemize}
+
+\textbf{4. Relation avec le plan du cours :}
+
+Le cours de F. Bendali-Mailfert annonce comme 4\textsuperscript{e} thème des réseaux sans fil :
+\emph{"Algorithmes de diffusion"}, qui constitue le contenu de ce document.
+\end{important}
+
+%=============================================================
+\section*{Exercices}
+%=============================================================
+
+\begin{exemple}
+\textbf{Exercice 1 --- Construction de CDS :}
+
+Soit le graphe $G$ avec $V = \{1,2,3,4,5,6\}$ et arêtes :
+$(1,2),(1,3),(2,4),(3,4),(3,5),(4,6),(5,6)$.
+
+\begin{enumerate}
+    \item Appliquer l'algorithme glouton de construction de CDS.
+    \item Vérifier que le dominant obtenu est connexe.
+    \item Simuler la diffusion d'un message depuis le nœud $1$.
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 2 --- Calcul des MPR :}
+
+Soit un nœud $u$ avec :
+\begin{itemize}
+    \item $N(u) = \{a, b, c, d\}$
+    \item $N(a) = \{u, e, f\}$, $N(b) = \{u, f, g\}$, $N(c) = \{u, g, h\}$, $N(d) = \{u, h, i\}$
+\end{itemize}
+
+\begin{enumerate}
+    \item Déterminer $N_2(u)$.
+    \item Calculer $\text{MPR}(u)$ en appliquant l'algorithme glouton.
+    \item Quel nœud est inutile dans la diffusion depuis $u$ ?
+\end{enumerate}
+\end{exemple}
+
+\begin{exemple}
+\textbf{Exercice 3 --- Comparaison :}
+
+Sur un réseau de 20 nœuds avec degré moyen 4, estimer le nombre de retransmissions pour :
+\begin{enumerate}
+    \item Le flooding simple.
+    \item La diffusion probabiliste avec $p = 0.5$.
+    \item Un CDS de taille 8.
+    \item Une diffusion MPR où chaque nœud a en moyenne 2 MPR.
+\end{enumerate}
+\end{exemple}
+
+\end{document}
